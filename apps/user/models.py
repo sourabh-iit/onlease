@@ -38,7 +38,7 @@ class User(AbstractUser):
     )
     mobile_number = models.CharField(max_length=16, primary_key=True, db_index=True,
         validators=[RegexValidator(mobile_number_regex)])
-    password = models.CharField(max_length=50, null=False, blank=False,
+    password = models.CharField(max_length=100, null=False, blank=False,
         help_text="Password should be atleast of 8 charaters. It should"+
         " consists of atleast one digit, one small alphabet and one capital alphabet.",
         validators=[RegexValidator(password_digit,

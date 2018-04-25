@@ -29,7 +29,7 @@ DEBUG = not bool(os.environ.get('SECRET_KEY'))
 
 ALLOWED_HOSTS = []
 if not DEBUG:
-    ALLOWED_HOSTS = ['rentlstore.com']
+    ALLOWED_HOSTS = ['rentlstore.com','stage-onlease.herokuapp.com']
 
 if not DEBUG:
     PREPEND_WWW = True
@@ -94,13 +94,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql'
-    },
-    'OPTIONS': {
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'onlease_db',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': '',
+        'USER': 'sourabh',
+        'PASSWORD': 'Sourabh@123',
+        'HOST': 'localhost',
         'PORT': ''
     }
 }
