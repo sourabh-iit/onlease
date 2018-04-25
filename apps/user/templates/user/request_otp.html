@@ -1,0 +1,48 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Register{% endblock %}
+{% block register_active %}active{% endblock %}
+
+{% block content %}
+    <div class="container col-sm-8 col-md-6 col-lg-4">
+        <form action="{% url 'user:request-otp' %}" method="post" novalidate class="mt-5">
+            {% csrf_token %}
+            <p class="h4 text-center mb-4">VERIFY MOBILE NUMBER</p>
+
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                            {{message}}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                <div class="md-form">
+                    <i class="fa fa-mobile prefix"></i>
+                    {% render_field form.mobile_number|append_attr:"autofocus" id="mobileNumber" class+="form-control" %}
+                    <label for="username">Mobile number</label>
+                    {% if form.mobile_number.errors %}
+                    <div class="error"><small>{{form.mobile_number.errors.0}}</small></div>
+                    {% else %}
+                        <div class="form-text">
+                            <small id="mobileHelp" class="text-muted">
+                                An OTP will be sent to this mobile number.
+                            </small>
+                        </div>
+                    {% endif %}
+                </div>
+                {% render_field form.reset_password %}
+            {% endwith %}
+
+            <div class="text-center mt-4">
+                <button class="btn btn-default" type="submit">
+                    <i class="fa fa-paper-plane"></i> Send OTP</button>
+            </div>
+            <p class="font-small grey-text d-flex justify-content-end mt-3">Already a member? <a href="{% url 'user:login' %}" class="blue-text ml-1"> Login</a></p>
+        
+        </form>
+    </div>
+{% endblock %}

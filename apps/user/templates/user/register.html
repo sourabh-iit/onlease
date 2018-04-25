@@ -1,0 +1,80 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Register{% endblock %}
+{% block register_active %}active{% endblock %}
+
+{% block content %}
+    <div class="container col-sm-9 col-md-8 col-lg-7 col-xl-5">
+        <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5">
+            {% csrf_token %}
+            <p class="h4 text-center mb-4">REGISTER</p>
+
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                            {{message}}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                <div class="row">
+                    <div class="md-form col">
+                        <i class="fa fa-user prefix"></i>
+                        {% render_field form.first_name|append_attr:"autofocus" id="first_name" class+="form-control" %}
+                        <label for="first_name">First name</label>
+                        {% if form.first_name.errors %}
+                            <div class="error"><small>{{form.first_name.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col">
+                        <i class="fa fa-user prefix"></i>
+                        {% render_field form.last_name id="last_name" class+="form-control" %}
+                        <label for="last_name">Last name</label>
+                        {% if form.last_name.errors %}
+                            <div class="error"><small>{{form.last_name.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="md-form">
+                    <i class="fa fa-envelope prefix"></i>
+                    {% render_field form.email id="email" class+="form-control" %}
+                    <label for="email">Email address</label>
+                    {% if form.email.errors %}
+                        <div class="error"><small>{{form.email.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="md-form col">
+                        <i class="fa fa-key prefix"></i>
+                        {% render_field form.password id="password" class+="form-control" %}
+                        <label for="password">Password</label>
+                        {% if form.password.errors %}
+                            <div class="error"><small>{{form.password.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col">
+                        <i class="fa fa-key prefix"></i>
+                        {% render_field form.confirm_password id="confirm_password" class+="form-control" %}
+                        <label for="confirm_password">Confirm password</label>
+                        {% if form.confirm_password.errors %}
+                            <div class="error"><small>{{form.confirm_password.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endwith %}
+
+            <div class="text-center mt-4">
+                <button class="btn btn-default" type="submit">Register</button>
+            </div>
+
+            <p class="font-small grey-text d-flex justify-content-end mt-3">Already a member? <a href="{% url 'user:login' %}" class="blue-text ml-1"> Login</a></p>
+        </form>
+    </div>
+{% endblock %}

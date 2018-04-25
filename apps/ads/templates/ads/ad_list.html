@@ -1,0 +1,150 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Lodging {{location}}{% endblock %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
+    <link rel="stylesheet" href="{% static 'side-bar/style.css' %}">
+    <link rel="stylesheet" href="{% static 'scrollbar/style.css' %}">
+{% endblock %}
+
+{% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="{% static 'ads/ad_list.js' %}"></script>
+{% endblock script %}
+
+{% block ads_active %}active{% endblock %}
+{% load ads_filters %}
+
+{% block content%}
+
+    {% comment %} messages {% endcomment %}
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                    {{message}}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <nav id="sidebar" class="bg-dark text-white scrollbar-dusty-grass square thin">
+        <h3><div class="sidebar-header">
+            Filters
+        </div></h3>
+
+        <form action="{% url 'ads:list' location=location %}" method="post">
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="error"><small>{{error}}</small></div>
+                {% endfor %}
+            {% endif %}
+
+            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+
+                <label  class="sub-heading">Types</label>
+                <div class="container-box">
+                    {% render_field form.lodging_types class+="list-unstyled" %}
+                </div>
+
+                <label class="sub-heading">Floor</label>
+                <div class="container-box">
+                    {% render_field form.floor class+="list-unstyled" %}
+                </div>
+
+                <label class="sub-heading">Facilities</label>
+                <div class="container-box">
+                    <ul class="list-unstyled">
+                        <li>
+                            <label for="id_furnished">
+                                {% render_field form.furnished %}
+                                Furnished
+                            </label>
+                        </li>
+                        <li>
+                            <label for="id_parking">
+                                {% render_field form.parking %}
+                                Parking
+                            </label>
+                        </li>
+                        <li>
+                            <label for="id_kitchen">
+                                {% render_field form.kitchen %}
+                                Kitchen
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+
+                <label class="sub-heading">Rent range</label>
+                <div class="range-box row">
+                    {% render_field form.min_rent class+="form-control" %}
+                    <div class="separator">-</div>
+                    {% render_field form.max_rent class+="form-control" %}
+                </div>
+
+                <label class="sub-heading">Date range</label>
+                <div class="range-box row">
+                    {% render_field form.lower_availability class+="form-control" %}
+                    <div class="separator">-</div>
+                    {% render_field form.upper_availability class+="form-control" %}
+                </div>
+                <div class="text-center">
+                    <input type="submit" value="Submit" class="btn btn-default btn-md">
+                </div>
+                <br><br><br>
+            {% endwith %}
+            
+
+        </form>
+
+    </nav>
+    <button type="button" id="sidebarCollapse" class="btn btn-primary btn-sm">
+        <i class="fa fa-angle-double-right" id="navbar-header"></i>
+        <span>open filters</span>
+    </button>
+
+    <divc class="card-deck">
+        {% for ad in ads %}
+        <a href="{% url 'ads:detail' ad_id=ad.id slug=ad.title %}">
+        <div class="card">
+            {% if ad.images.first %}
+            <img class="card-img-top" src="{{ad.images.first.image_thumbnail.url}}" alt="{{ad.title}}">
+            {% else %}
+            <img class="card-img-top" src="/media/no_image_available.jpeg" alt="{{ad.title}}">
+            {% endif %}
+            <div class="card-body">
+                <div class="card-title">
+                    {{ad.title}}
+                </div>
+                <p class="card-text">
+                    <i class="fa fa-inr green-text"></i> {{ad.rent}}
+                </p>
+                <p class="card-text">
+                    <i class="fa fa-home orange-text"></i> 
+                    {{ad.lodging_type | type_full_form}}
+                </p>
+                <p class="card-text">
+                    <i class="fa fa-calendar red-text"></i> {{ad.available_from}}</p>
+                <p class="card-text text-muted">
+                    <i class="fa fa-map-marker  purple-text"></i> {{ad.location | location_full_form}}</p>
+            </div>
+        </div>
+        </a>
+            <span></span>
+        
+        {% endfor %}
+    </div>
+<!-- 
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <div></div>
+        </div>
+    </div>
+</div> -->
+
+ {% endblock %}

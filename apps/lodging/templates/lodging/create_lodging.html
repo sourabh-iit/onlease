@@ -1,0 +1,159 @@
+
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Create lodging{% endblock %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
+    <link rel="stylesheet" href="{% static 'lodging/create_lodging.css' %}">
+{% endblock head %}
+{% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="{% static 'lodging/create_lodging.js' %}"></script>
+{% endblock script %}
+
+{% block content %}
+    <div class="container col-sm-10 col-md-9 col-lg-7 col-xl-6">
+        <form action="{% url 'lodging:create' %}" enctype="multipart/form-data" method="post" novalidate class="mt-5">
+            {% csrf_token %}
+            <p class="h4 text-center mb-4">Add lodging business</p>
+
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                            {{message}}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <input name="image-TOTAL_FORMS" type='hidden' id="id-image-TOTAL_FORMS" value="0">
+            <input name="image-INITIAL_FORMS" type='hidden' id="id-image-INITIAL_FORMS" value="0">
+            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                <div class="md-form">
+                        <i class="fa fa-pencil prefix"></i>
+                    {% render_field sub_form.title|append_attr:"autofocus" id="title" class+="form-control" %}
+                    <label for="title">Title</label>
+                    {% if sub_form.title.errors %}
+                        <div class="error"><small>{{sub_form.title.errors.0}}</small></div>
+                    {% else %}
+                        <div class="form-text"><small class="text-muted">A unique title consisting of letters, alphabets and space only.</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="md-form col-12 col-sm-6">
+                        {% render_field sub_form.total_floors id="total_floors" class+="form-control" %}
+                        <label for="total_floors">Total floors</label>
+                        {% if sub_form.total_floors.errors %}
+                            <div class="error"><small>{{sub_form.total_floors.errors.0}}</small></div>
+                        {% else %}
+                            <small class="text-muted">{{sub_form.total_floors.help_text}}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col-12 col-sm-6">
+                        {% render_field sub_form.floor_no id="floor_no" class+="form-control" %}
+                        <label for="floor_no">Floor number</label>
+                        {% if sub_form.floor_no.errors %}
+                            <div class="error"><small>{{sub_form.floor_no.errors.0}}</small></div>
+                        {% else %}
+                            <small class="text-muted">{{sub_form.floor_no.help_text}}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col-12 col-sm-7" id="datepicker-container">
+                        <i class="fa fa-calendar prefix"></i>
+                        {% render_field sub_form.available_from class+="form-control"%}
+                        <label for="id_available_from">Available from</label>
+                        {% if sub_form.available_from.errors %}
+                            <div class="error"><small>{{sub_form.available_from.errors.0}}</small></div>
+                        {% else %}
+                            <div class="form-text">
+                                <small class="text-muted">Date when lodging will be available for rent. Can be any future value.</small>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col-12 col-sm-5">
+                        <i class="fa fa-inr prefix"></i>
+                        {% render_field sub_form.rent id="rent" class+="form-control" %}
+                        <label for="rent">Rent</label>
+                        {% if sub_form.rent.errors %}
+                            <div class="error"><small>{{sub_form.rent.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col-12 col-sm-6">
+                        {% render_field sub_form.location id="location" class+="form-control" %}
+                        {% if sub_form.location.errors %}
+                            <div class="error"><small>{{sub_form.location.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col-12 col-sm-6">
+                        {% render_field sub_form.lodging_type id="lodging_type" class+="form-control" %}
+                        {% if sub_form.lodging_type.errors %}
+                            <div class="error"><small>{{sub_form.lodging_type.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col-12">
+                        <i class="fa fa-address-card prefix"></i>
+                        {% render_field form.address id="address" class+="form-control" %}
+                        <label for="address">Address</label>
+                        {% if form.address.errors %}
+                            <div class="error"><small>{{form.address.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="md-form col-12">
+                        <i class="fa fa-pencil prefix"></i>
+                        {% render_field sub_form.additional_details id="additional_details" class+="md-textarea form-control" %}
+                        <label for="additional_details">Additional details</label>
+                        {% if sub_form.additional_details.errors %}
+                            <div class="error"><small>{{sub_form.additional_details.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 form-row mt-4">
+                        <div class="col-12 col-sm-3">
+                            {% render_field sub_form.is_furnished %}
+                            <label for="id_is_furnished">
+                                Furnished?
+                            </label>
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            {% render_field sub_form.is_parking_available %}
+                            <label for="id_is_parking_available">
+                                Parking available?
+                            </label>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            {% render_field sub_form.is_kitchen_available %}
+                            <label for="id_is_kitchen_available">
+                                Kitchen available
+                            </label>
+                        </div>
+                    </div>
+                    <small class="help-text text-muted mt-2 col-12">Select which are available</small>
+                </div>
+                <div id="images_container">
+
+                </div>
+                <div style="clear:both"></div>
+                <div class="md-form">
+                    <span class='btn btn-sm btn-primary' id="add_image">
+                        <i class="fa fa-file-image-o icon"></i> Add image</span>
+                </div>
+            {% endwith %}
+
+            <div class="text-center mt-4">
+                <button class="btn btn-unique btn-md" type="submit">
+                    <i class="fa fa-plus icon"></i> Add</button>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}

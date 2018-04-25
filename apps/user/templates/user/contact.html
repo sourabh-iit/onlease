@@ -1,0 +1,74 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Feedback{% endblock %}
+{% block contact_active %}active{% endblock %}
+{% block content %}
+    <div class="container col-sm-8 col-md-6 col-lg-4">
+        <form action="{% url 'user:contact' %}" method="post" novalidate class="mt-5">
+            {% csrf_token %}
+            <p class="h4 text-center mb-4"><i class="fa fa-envelope"></i> WRITE TO US</p>
+
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                            {{message}}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                <div class="md-form">
+                    <i class="fa fa-user prefix"></i>
+                    {% render_field form.name  id="name" class+="form-control" %}
+                    <label for="name">Your name</label>
+                    {% if form.name.errors %}
+                        <div class="error"><small>{{form.name.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form">
+                    <i class="fa fa-envelope prefix"></i>
+                    {% render_field form.email  id="email" class+="form-control" %}
+                    <label for="email">Your email</label>
+                    {% if form.email.errors %}
+                        <div class="error"><small>{{form.email.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form">
+                    <i class="fa fa-envelope prefix"></i>
+                    {% render_field form.mobile_number id="mobile_number" class+="form-control" %}
+                    <label for="mobile_number">Your mobile number</label>
+                    {% if form.mobile_number.errors %}
+                        <div class="error"><small>{{form.mobile_number.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form">
+                    <i class="fa fa-tag prefix"></i>
+                    {% render_field form.subject  id="subject" class+="form-control" %}
+                    <label for="subject">Subject</label>
+                    {% if form.subject.errors %}
+                        <div class="error"><small>{{form.subject.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form">
+                    <i class="fa fa-pencil prefix"></i>
+                    {% render_field form.message  id="message" class+="form-control md-textarea" %}
+                    <label for="message">Your message</label>
+                    {% if form.message.errors %}
+                        <div class="error"><small>{{form.message.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+            {% endwith %}
+
+            <div class="text-center mt-4">
+                    <button class="btn btn-outline-default" type="submit">Send<i class="fa fa-paper-plane-o ml-2"></i></button>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}

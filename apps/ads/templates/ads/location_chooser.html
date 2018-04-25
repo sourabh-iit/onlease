@@ -1,0 +1,41 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Choose location{% endblock %}
+
+{% block content %}
+
+    {% comment %} messages {% endcomment %}
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                    {{message}}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="container">
+        <p class="h4 text-center mb-4 mt-4">Choose location</p>
+        <div class="col-12 text-center">
+            <select name="location" id="location_chooser">
+                <option value="">Choose location</option>
+                <option value="mukherjee nagar">Mukherjee Nagar</option>
+                <option value="munirka">Munirka</option>
+                <option value="karol bagh">Karol bagh</option>
+            </select>
+        </div>
+    </div>
+    
+    <script>
+        $('document').ready(function(){
+            $('select').change(function(){
+                var value = $(this).val();
+                if(value!=""){
+                    var url = "{% url 'ads:list' location='value' %}";
+                    location.href=url.replace('value',value);
+                }
+            })
+        })
+    </script>
+{% endblock %}

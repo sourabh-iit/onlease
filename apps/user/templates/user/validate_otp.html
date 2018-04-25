@@ -1,0 +1,47 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Register{% endblock %}
+{% block register_active %}active{% endblock %}
+
+{% block content %}
+    <div class="container col-sm-8 col-md-6 col-lg-4">
+        <form action="{% url 'user:validate-otp' %}" method="post" novalidate class="mt-5">
+            {% csrf_token %}
+            <p class="h4 text-center mb-4">VALIDATE OTP</p>
+
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                            {{message}}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                <div class="md-form">
+                    <i class="fa fa-key prefix"></i>
+                    {% render_field form.otp|append_attr:"autofocus" class+="form-control mt-2" %}
+                    <label for="id_otp">OTP</label>
+                    {% if form.otp.errors %}
+                        <div class="error"><small>{{form.otp.errors.0}}</small></div>
+                    {% else %}
+                    <div class="form-text">
+                        <small id="otpHelp" class="text-muted">
+                            If you do not receive OTP, try resend-otp.
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% render_field form.reset_password %}
+            {% endwith %}
+
+            <div class="text-center mt-4">
+                <button class="btn btn-default" type="submit">Submit OTP</button>
+                <button type="submit" formaction="{% url 'user:request-otp' %}" class="btn btn-primary">Re-send otp</button>
+            </div>
+        
+        </form>
+    </div>
+{% endblock %}

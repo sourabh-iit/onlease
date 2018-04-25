@@ -1,0 +1,75 @@
+{% extends "navbar.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block dashboard_active %}active{% endblock %}
+{% load ads_filters %}
+{% load dashboard_filters %}
+{% block content %}
+
+    {% comment %} messages {% endcomment %}
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                    {{message}}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="container mt-3">
+        <h3 class="mb-3">Current businesses:</h3>
+        <div class="row">
+            {% for lodging in lodging_businesses %}
+
+                <div class="card card-cascade col-sm-8 col-md-6 col-lg-5 col-xl-4">
+
+                    <div class="card-header">Title: {{lodging.sublodging.title}}</div>
+
+                    <!--Card content-->
+                    <div class="card-body">
+                        <p class="card-text">Location: {{lodging.sublodging.location | location_full_form}}</p>
+                        <p class="card-text">Type: {{lodging.sublodging.lodging_type | type_full_form}}</p>
+                        <p class="card-text">Address: {{lodging.address}}</p>
+                        <p class="card-text">Additional details: {{lodging.sublodging.additional_details}}</p>
+                        <p class="card-text">Total floors: {{lodging.sublodging.total_floors}}</p>
+                        <p class="card-text">Floor number: {{lodging.sublodging.floor_no}}</p>
+                        <div class="card-text">Booked: <div class="{{lodging.sublodging.is_booked | get_class}}"></div></div>
+                        <div class="card-text">Furnished: <div class="{{lodging.sublodging.is_furnished | get_class}}"></div></div>
+                        <div class="card-text">Parking available: <div class="{{lodging.sublodging.is_parking_available | get_class}}"></div></div>
+                        <div class="card-text">Kitchen available: <div class="{{lodging.sublodging.is_kitchen_available | get_class}}"></div></div>
+                        <div class="card-text">
+                            <small class="text-muted">Posted on: {{lodging_businesses.0.posted_at}}</small>
+                            <small class="text-muted d-block">Last updated on: {{lodging_businesses.0.updated_at}}</small>
+                        </div>
+                    </div>
+                    <!--/.Card content-->
+
+                    <div class="card-footer d-flex">
+                        <a href="{% url 'lodging:edit' ad_id=lodging.id %}" class="btn btn-default btn-sm">
+                            <i class="fa fa-edit icon"></i>
+                            Edit
+                        </a>
+                    </div>
+
+                </div>
+
+                {% empty %}
+                    <div class="container d-flex justify-content-center">
+                        <div class="card col-sm-6 col-md-6 col-lg-5 col-xl-3">
+                            <div class="card-body">
+                                <h6 class="">No business added yet.</h6>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            
+                <div class="text-center d-block w-100">
+                    <a class="btn btn-unique" href="{% url 'lodging:create' %}">
+                        <i class="fa fa-plus icon"></i> Add new business</a>
+                </div>
+            
+        </div>
+
+                
+    </div>
+{% endblock %}
