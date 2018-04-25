@@ -1,2 +1,3 @@
 media/**
 !media/no_image_available.jpeg
+*.pyc
