@@ -22,10 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY','_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = not bool(os.environ.get('SECRET_KEY'))
 
 ALLOWED_HOSTS = []
 if not DEBUG:
@@ -93,10 +93,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql'
+    },
+    'OPTIONS': {
+        'NAME': 'onlease_db',
+        'USER': 'postgres',
+        'PASSWORD': 'root',
+        'HOST': '',
+        'PORT': ''
+    }
 }
+
+DATABASES['default'] = dj_database_url.config()
 
 
 # Password validation
@@ -172,3 +181,6 @@ RECIPIENTS = ['sourabh7singh@gmail.com']
 
 # for custom widgets
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
