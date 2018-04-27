@@ -6,7 +6,7 @@ from django.views.generic import RedirectView
 
 app_name="user"
 urlpatterns = [
-    path('', RedirectView.as_view(pattern_name='login',permanent=False)),
+    path('', RedirectView.as_view(pattern_name='user:login')),
     path('validate-otp/', views.validate_otp, name="validate-otp"),
     path('request-otp/', views.request_otp, name="request-otp"),
     path('login/', views.loginView, name="login"),

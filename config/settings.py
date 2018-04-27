@@ -92,9 +92,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'onlease_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Sourabh@123',
+        'NAME': 'onlease',
+        'USER': 'sourabh',
+        'PASSWORD': 'sourabh',
         'HOST': '',
         'PORT': ''
     }
