@@ -93,7 +93,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'onlease_db',
-        'USER': 'sourabh',
+        'USER': 'postgres',
         'PASSWORD': 'Sourabh@123',
         'HOST': '',
         'PORT': ''
