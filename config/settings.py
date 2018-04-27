@@ -29,10 +29,7 @@ DEBUG = not bool(os.environ.get('SECRET_KEY'))
 
 ALLOWED_HOSTS = []
 if not DEBUG:
-    ALLOWED_HOSTS = ['www.onlease.com','www.stage-onlease.herokuapp.com']
-
-if not DEBUG:
-    PREPEND_WWW = True
+    ALLOWED_HOSTS = ['onlease.com','.herokuapp.com']
 
 # Application definition
 
