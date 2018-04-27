@@ -168,11 +168,11 @@ AUTH_USER_MODEL = 'user.User'
 
 LOGIN_URL = 'user:login'
 
-if DEBUG:
-    INSTAMOJO_API_KEY = 'test_6789fe46ddf86acf17557f8d030'
-    INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
-    INSTAMOJO_SALT = '1d83a8d73aa84093857eb269fd825d67'
-    INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
+# if DEBUG:
+INSTAMOJO_API_KEY = 'test_6789fe46ddf86acf17557f8d030'
+INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
+INSTAMOJO_SALT = '1d83a8d73aa84093857eb269fd825d67'
+INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
 
 LODGING_FULL_PAYMENT = 450
 
