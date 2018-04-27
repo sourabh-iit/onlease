@@ -29,7 +29,7 @@ DEBUG = not bool(os.environ.get('SECRET_KEY'))
 
 ALLOWED_HOSTS = []
 if not DEBUG:
-    ALLOWED_HOSTS = ['rentlstore.com','stage-onlease.herokuapp.com']
+    ALLOWED_HOSTS = ['www.onlease.com','www.stage-onlease.herokuapp.com']
 
 if not DEBUG:
     PREPEND_WWW = True
@@ -103,7 +103,10 @@ DATABASES = {
     }
 }
 
-DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+if not DEBUG:
+    DATABASES['default'] = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')
+    )
 
 
 # Password validation
