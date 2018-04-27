@@ -2,10 +2,11 @@ from django.contrib import admin
 from django.urls import path
 from . import views
 from django.urls import reverse
+from django.views.generic import RedirectView
 
 app_name="user"
 urlpatterns = [
-    path('', views.loginView),
+    path('', RedirectView.as_view(pattern_name='login',permanent=False)),
     path('validate-otp/', views.validate_otp, name="validate-otp"),
     path('request-otp/', views.request_otp, name="request-otp"),
     path('login/', views.loginView, name="login"),
