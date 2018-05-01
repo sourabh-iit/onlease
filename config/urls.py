@@ -26,4 +26,5 @@ urlpatterns = [
     path('ads/', include('apps.ads.urls')),
     path('home/', include('apps.home.urls')),
     path('transactions/', include('apps.transactions.urls')),
+    path('api/locations/', include('apps.locations.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

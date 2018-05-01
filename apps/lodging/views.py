@@ -12,6 +12,7 @@ import os
 from django.dispatch import receiver
 from django.db.models.signals import post_delete
 from django.contrib import messages
+from apps.locations.models import Location
 
 def delete_files(*args):
     for file in args:
@@ -24,6 +25,9 @@ def delete_image(sender,instance,using,**kwargs):
 
 @login_required
 def lodging_create_view(request):
+    if not request.user.is_verified:
+        messages.error(request,'Verify mobile number to add business')
+        return HttpResponseRedirect(reverse('dashboard:home'))
     if request.method=='POST':
         form = LodgingCreateForm(request.POST)
         sub_form = CommonlyUsedLodgingCreateForm(request.POST)
@@ -39,15 +43,19 @@ def lodging_create_view(request):
                 if form.is_valid() and formset.is_valid():
                     lodging = form.save(commit=False)
                     lodging.posted_by = request.user
+                    location = Location.objects.get(pk=sub_form.cleaned_data['id'])
                     with transaction.atomic():
                         lodging.save()
                         sublodging.lodging = lodging
+                        sublodging.location = location
                         sublodging.save()
                         formset.save()
                     messages.success(request,"Lodging created successfully")
                     return HttpResponseRedirect(reverse('dashboard:home'))
         except ViewException as e:
             messages.error(request,e)
+        except Location.DoesNotExist:
+            messages.error(request,'Choose location only from given options')
     else:
         request.session.set_test_cookie()
         form = LodgingCreateForm()
@@ -59,7 +67,7 @@ def lodging_create_view(request):
 @login_required
 def lodging_edit_view(request,ad_id):
     try:
-        lodging=Lodging.objects.get(id=ad_id)
+        lodging=Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
         if lodging.posted_by!=request.user:
             raise ViewException('Unauthorized access')
         sublodging = lodging.sublodging

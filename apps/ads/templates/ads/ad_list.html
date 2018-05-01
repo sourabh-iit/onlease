@@ -1,12 +1,13 @@
 {% extends 'navbar.html' %}
 {% load widget_tweaks %}
-{% block title %}Lodging {{location}}{% endblock %}
+{% block title %}Lodging {{state}} {{district}}{% endblock %}
 {% load static %}
 
 {% block head %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-    <link rel="stylesheet" href="{% static 'side-bar/style.css' %}">
-    <link rel="stylesheet" href="{% static 'scrollbar/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">
+    <link rel="stylesheet" href="{% static 'ads/ad_list.css' %}">
 {% endblock %}
 
 {% block script %}
@@ -35,7 +36,7 @@
             Filters
         </div></h3>
 
-        <form action="{% url 'ads:list' location=location %}" method="post">
+        <form action="{% url 'ads:list' state=state district=district %}" method="post">
 
             {% if form.non_field_errors %}
                 {% for error in form.non_field_errors %}
@@ -47,32 +48,36 @@
 
                 <label  class="sub-heading">Types</label>
                 <div class="container-box">
-                    {% render_field form.lodging_types class+="list-unstyled" %}
+                    {% render_field form.lodging_types class+="list-unstyled option-input" %}
                 </div>
 
                 <label class="sub-heading">Floor</label>
                 <div class="container-box">
-                    {% render_field form.floor class+="list-unstyled" %}
+                    {% render_field form.floor class+="list-unstyled option-input radio" %}
                 </div>
 
+                <script>
+                    document.getElementById('id_floor').classList.remove('option-input');
+                    document.getElementById('id_lodging_types').classList.remove('option-input');
+                </script>
                 <label class="sub-heading">Facilities</label>
                 <div class="container-box">
                     <ul class="list-unstyled">
                         <li>
                             <label for="id_furnished">
-                                {% render_field form.furnished %}
+                                {% render_field form.furnished class+=" option-input" %}
                                 Furnished
                             </label>
                         </li>
                         <li>
                             <label for="id_parking">
-                                {% render_field form.parking %}
+                                {% render_field form.parking class+=" option-input" %}
                                 Parking
                             </label>
                         </li>
                         <li>
                             <label for="id_kitchen">
-                                {% render_field form.kitchen %}
+                                {% render_field form.kitchen class+=" option-input" %}
                                 Kitchen
                             </label>
                         </li>
@@ -102,14 +107,15 @@
         </form>
 
     </nav>
-    <button type="button" id="sidebarCollapse" class="btn btn-primary btn-sm">
-        <i class="fa fa-angle-double-right" id="navbar-header"></i>
-        <span>open filters</span>
+    <button type="button" id="sidebarCollapse" class="btn btn-primary btn-sm size-9">
+        <i class="fa fa-sliders size-9"></i>
+        <span>filters</span>
     </button>
 
-    <divc class="card-deck">
+    {% if ads %}
+    <div class="card-deck mt-5">
         {% for ad in ads %}
-        <a href="{% url 'ads:detail' ad_id=ad.id slug=ad.title %}">
+        <a href="{% url 'ads:detail' state=state district=district ad_id=ad.id slug=ad.title %}">
         <div class="card">
             {% if ad.images.first %}
             <img class="card-img-top" src="{{ad.images.first.image_thumbnail.url}}" alt="{{ad.title}}">
@@ -130,14 +136,22 @@
                 <p class="card-text">
                     <i class="fa fa-calendar red-text"></i> {{ad.available_from}}</p>
                 <p class="card-text text-muted">
-                    <i class="fa fa-map-marker  purple-text"></i> {{ad.location | location_full_form}}</p>
+                    <i class="fa fa-map-marker  purple-text"></i> {{ad.location.state}}</p>
+                <p class="card-text text-muted">
+                    <i class="fa fa-map-marker  purple-text"></i> {{ad.location.district}}</p>
+                <p class="card-text text-muted">
+                    <i class="fa fa-map-marker  purple-text"></i> {{ad.location.region}}</p>
             </div>
         </div>
         </a>
             <span></span>
-        
         {% endfor %}
     </div>
+    {% else %}
+    <div class="d-flex align-items-center justify-content-center w-100" style="height: 20rem;">
+        No Ad available yet here
+    </div>
+    {% endif %}
 <!-- 
 <div class="container">
     <div class="card">

@@ -4,7 +4,6 @@ from django.core.validators import RegexValidator
 from django.contrib.contenttypes.models import ContentType
 from django.core.mail import send_mail
 from .utils import *
-import uuid
 
 
 class CustomUserManager(BaseUserManager):
@@ -21,20 +20,19 @@ class CustomUserManager(BaseUserManager):
         user.save()
         return user
 
+
 class User(AbstractUser):
     BLOCKED = 'B'
     WARNED = 'W'
-    REGISTERED = 'R'
+    REGULAR = 'R'
     STATUS_CHOICES = (
         (BLOCKED,'Blocked'),
         (WARNED,'Warned'),
-        (BLOCKED,'Blocked'),
+        (REGULAR,'REGULAR')
     )
-    OWNER = 'O'
-    CUSTOMER = 'C'
-    USER_CHOICES = (
-        (OWNER,"Owner"),
-        (CUSTOMER,'Customer'),
+    STATE_CHOICES=(
+        (True,'Yes'),
+        (False,'No')
     )
     mobile_number = models.CharField(max_length=16, primary_key=True, db_index=True,
         validators=[RegexValidator(mobile_number_regex)])
@@ -55,11 +53,15 @@ class User(AbstractUser):
         validators=[RegexValidator('^[a-zA-Z]{3,}$')])
     is_allowed = models.BooleanField(default=False,help_text="Profile completion is required for adding business.")
     status = models.CharField(max_length=1,choices=STATUS_CHOICES,
-        default=REGISTERED)
+        default=REGULAR)
+    is_verified = models.BooleanField(default=False)
     is_dealer = models.BooleanField(default=False)
     no_times_refunded = models.PositiveIntegerField(default=0)
     no_times_not_booked = models.PositiveIntegerField(default=0)
     no_times_took_commission = models.PositiveIntegerField(default=0)
+    is_dealer = models.BooleanField(
+        verbose_name="Are you a dealer?",
+        choices=STATE_CHOICES)
 
     USERNAME_FIELD = 'mobile_number'
     objects = CustomUserManager()
@@ -75,15 +77,6 @@ class User(AbstractUser):
         return self.mobile_number
 
     # TODO indexing
-
-
-class MobileNumber(models.Model):
-    mobile_number = models.CharField(max_length=16, primary_key=True, db_index=True)
-    is_verified = models.BooleanField(default=False)
-    uuid = models.UUIDField(default=uuid.uuid4())
-
-    def __str__(self):
-        return self.mobile_number
 
 
 class ContactModel(models.Model):

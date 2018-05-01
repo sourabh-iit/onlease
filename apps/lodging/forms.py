@@ -20,16 +20,18 @@ class LodgingCreateForm(forms.ModelForm):
         return clean_data(data)
 
 class CommonlyUsedLodgingCreateForm(forms.ModelForm):
+    id = forms.CharField(max_length=20)
     class Meta:
         model = CommonlyUsedLodgingModel
-        exclude = ('slug','no_times_booked')
+        fields = ('lodging_type','total_floors','floor_no','is_furnished',
+            'is_kitchen_available','is_parking_available','available_from',
+            'rent','additional_details','title','id')
         widgets = {
             'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15})
         }
 
     def __init__(self, *args, **kwargs):
         super(CommonlyUsedLodgingCreateForm, self).__init__(*args, **kwargs)
-        self.fields['lodging'].required = False
         self.fields['is_furnished'].required = False
         self.fields['is_parking_available'].required = False
         self.fields['is_kitchen_available'].required = False
@@ -104,7 +106,7 @@ class ImageForm(forms.ModelForm):
         return im
 
 ImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
-    can_delete=True,form=ImageForm,extra=0)
+    can_delete=True,form=ImageForm,extra=3)
 
 class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
     class Meta:

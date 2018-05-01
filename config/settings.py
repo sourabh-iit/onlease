@@ -22,14 +22,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.environ.get('SECRET_KEY','_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = not bool(os.environ.get('SECRET_KEY'))
+DEBUG = True
 
-ALLOWED_HOSTS = []
-if not DEBUG:
-    ALLOWED_HOSTS = ['0.0.0.0', 'localhost','onlease.com','stage-onlease.herokuapp.com','onlease.herokuapp.com']
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost','onlease.com','stage-onlease.herokuapp.com','onlease.herokuapp.com','103.95.13.160']
 
 # Application definition
 
@@ -49,7 +47,8 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.ads',
     'apps.home',
-    'apps.transactions'
+    'apps.transactions',
+    'apps.locations'
 ]
 
 MIDDLEWARE = [
@@ -91,19 +90,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'onlease',
-        'USER': 'sourabh',
-        'PASSWORD': 'sourabh',
+        'USER': os.environ.get('DB_USERNAME'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': '',
         'PORT': ''
     }
 }
-
-if not DEBUG:
-    DATABASES['default'] = dj_database_url.config(
-        default=os.environ.get('DATABASE_URL')
-    )
 
 
 # Password validation
@@ -148,6 +142,11 @@ USE_TZ = False
 STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+
+STATICFILES_FINDERS = (
+  'django.contrib.staticfiles.finders.FileSystemFinder',
+  'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 

@@ -5,7 +5,7 @@
 
 {% block content %}
     <div class="container col-sm-8 col-md-6 col-lg-4">
-        <form action="{% url 'user:validate-otp' %}" method="post" novalidate class="mt-5">
+        <form action="{% url 'user:verify-number' %}" method="post" novalidate class="mt-5">
             {% csrf_token %}
             <p class="h4 text-center mb-4">VALIDATE OTP</p>
 

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator, validate_slug
+from apps.locations.models import Location
 
 User = get_user_model()
 
@@ -41,16 +42,7 @@ class CommonlyUsedLodgingModel(models.Model):
         (PAYING_GUEST, "Paying guest"),
         (ROOM, "Rooms"),
     )
-    MUKHERJEE_NAGAR = 'MN'
-    KAROL_BAGH = 'KA'
-    MUNIRKA = 'MU'
-    LOCATION_CHOICES = (
-        (None,'Choose location'),
-        (MUKHERJEE_NAGAR,'Mukherjee nagar'),
-        (KAROL_BAGH,'Karol bagh'),
-        (MUNIRKA,'Munirka')
-    )
-    location = models.CharField(max_length=2, choices=LOCATION_CHOICES)
+    location = models.ForeignKey(Location,on_delete=models.CASCADE)
     lodging = models.OneToOneField(Lodging,on_delete=models.CASCADE,related_name='sublodging')
     lodging_type = models.CharField(max_length=1,choices=TYPE_CHOICES,
                 verbose_name="type")

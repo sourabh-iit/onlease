@@ -1,6 +1,74 @@
 {% extends 'navbar.html' %}
 {% load widget_tweaks %}
 {% block title %}Choose location{% endblock %}
+{% load static %}
+{% load staticfiles %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'ads/location_chooser.css' %}">
+    <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/indeterminate_progress.css' %}">
+{% endblock %}
+
+{% block script %}
+    <script>
+        function myFunction(id1,id2) {
+            var input, filter, ul, li, a, i;
+            input = document.getElementById(id1);
+            filter = input.value.toUpperCase();
+            ul = document.getElementById(id2);
+            li = ul.getElementsByTagName("li");
+            for (i = 0; i < li.length; i++) {
+                a = li[i].getElementsByTagName("a")[0];
+                if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                    li[i].style.display = "";
+                } else {
+                    li[i].style.display = "none";
+                }
+            }
+            if($('#'+id1).val()==''){
+                $('#'+id2+' li').css({'display':'none'});
+            }
+        }
+        $('document').ready(function(){
+            $.getJSON('/api/locations').done(function(data){
+                $.each(data.values,function(id,state){
+                    var li = document.createElement('li');
+                    li.innerHTML='<a href="#">'+state+'</a>';
+                    li.style.display='none';
+                    li.addEventListener('click',function(){
+                        $('#district-bar').css({'display':'block'});
+                        $('#stateInput').val(this.textContent);
+                        $('#stateUl li').css({'display':'none'});
+                        $.getJSON('/api/locations',{'state':this.textContent})
+                        .done(function(data){
+                            $.each(data.values,function(id,district){
+                                var li1=document.createElement('li');
+                                li1.innerHTML='<a href="#">'+district+'</a>';
+                                li1.style.display='none';
+                                li1.addEventListener('click',function(){
+                                    $('#districtInput').val(this.textContent);
+                                    $('#districtUl').css({'display':'none'});
+                                    if($('#stateInput').val()!='' && $('#districtInput').val()!=''){
+                                        var url = "{% url 'ads:list' state='state' district='district' %}";
+                                        url = url.replace('district',$('#districtInput').val());
+                                        location.href=url.replace('state',$('#stateInput').val());
+                                    }
+                                });
+                                $('#districtUl').append(li1);
+                            });
+                            $('#district').css({'display':'block'});
+                            $('#district-bar').css({'display':'none'});
+                        });
+                    });
+                    $('#stateUl').append(li);
+                });
+                $('#state').css({'display':'block'});
+                $('#state-bar').css({'display':'none'});
+            });
+        });
+    </script>
+{% endblock %}
 
 {% block content %}
 
@@ -15,27 +83,34 @@
         </div>
     {% endif %}
 
-    <div class="container">
-        <p class="h4 text-center mb-4 mt-4">Choose location</p>
-        <div class="col-12 text-center">
-            <select name="location" id="location_chooser">
-                <option value="">Choose location</option>
-                <option value="mukherjee nagar">Mukherjee Nagar</option>
-                <option value="munirka">Munirka</option>
-                <option value="karol bagh">Karol bagh</option>
-            </select>
+    <div class="container-fluid col-8 col-sm-6 col-md-5 col-lg-4 col-xl-3 mt-5">
+        <div class="progress" id="state-bar">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                <span>Please wait<span class="dotdotdot"></span></span>
+            </div>
+        </div>
+    
+        <div class="mt-5 md-form" id="state">
+            <i class="fa fa-search prefix"></i>
+            <input type="text" id="stateInput" class="form-control" onkeyup="myFunction('stateInput','stateUl')" autocomplete="off">
+            <label for="stateInput">Choose State</label>
+            <ul id="stateUl" class="ul text-white scrollbar-dusty-grass square thin">
+            </ul>
+        </div>
+    
+        <div class="progress" id="district-bar">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                <span>Please wait<span class="dotdotdot"></span></span>
+            </div>
+        </div>
+    
+        <div class="mt-5 md-form" id="district">
+            <i class="fa fa-search prefix"></i>
+            <input type="text" id="districtInput" class="form-control" onkeyup="myFunction('districtInput','districtUl')" autocomplete="off">
+            <label for="districtInput">Choose District</label>
+            <ul id="districtUl" class="ul text-white scrollbar-dusty-grass square thin">
+            </ul>
         </div>
     </div>
     
-    <script>
-        $('document').ready(function(){
-            $('select').change(function(){
-                var value = $(this).val();
-                if(value!=""){
-                    var url = "{% url 'ads:list' location='value' %}";
-                    location.href=url.replace('value',value);
-                }
-            })
-        })
-    </script>
 {% endblock %}

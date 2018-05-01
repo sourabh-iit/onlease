@@ -2,6 +2,7 @@ from django import forms
 import datetime
 from django.forms import ValidationError
 from apps.lodging.models import CommonlyUsedLodgingModel
+from apps.locations.models import Location
 
 
 class AdsForm(forms.Form):
@@ -23,6 +24,14 @@ class AdsForm(forms.Form):
     furnished = forms.BooleanField(initial=False,required=False)
     parking = forms.BooleanField(initial=False,required=False)
     kitchen = forms.BooleanField(initial=False,required=False)
+
+    def __init__(self,state, district, *args, **kwargs):
+        super(AdsForm,self).__init__(*args,**kwargs)
+        locations = Location.objects.filter(state=state,district=district).order_by('region').distinct('region')
+        RegionChoices = ()
+        for location in locations:
+            RegionChoices+=((location.id,location.region),)
+        self.fields['regions'] = forms.ChoiceField(choices=RegionChoices,required=False)
 
     def clean(self):
         if self.cleaned_data.get('ground_floor') and self.cleaned_data.get('top_floor'):

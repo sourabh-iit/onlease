@@ -40,13 +40,24 @@
                     </div>
                 </div>
 
-                <div class="md-form">
-                    <i class="fa fa-envelope prefix"></i>
-                    {% render_field form.email id="email" class+="form-control" %}
-                    <label for="email">Email address</label>
-                    {% if form.email.errors %}
-                        <div class="error"><small>{{form.email.errors.0}}</small></div>
-                    {% endif %}
+                <div class="row">
+                    <div class="md-form col">
+                        <i class="fa fa-envelope prefix"></i>
+                        {% render_field form.email id="email" class+="form-control" %}
+                        <label for="email">Email address</label>
+                        {% if form.email.errors %}
+                            <div class="error"><small>{{form.email.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="md-form col">
+                        <i class="fa fa-envelope prefix"></i>
+                        {% render_field form.mobile_number id="mobile_number" class+="form-control" %}
+                        <label for="mobile_number">Mobile number</label>
+                        {% if form.mobile_number.errors %}
+                            <div class="error"><small>{{form.mobile_number.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="row">
@@ -67,6 +78,17 @@
                             <div class="error"><small>{{form.confirm_password.errors.0}}</small></div>
                         {% endif %}
                     </div>
+                </div>
+
+                <div class="custom-form">
+                    <div><label for="label id_is_dealer1">Are you a dealer?</label></div>
+                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True">
+                    <label for="label id_is_dealer">Yes</label>
+                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False">
+                    <label for="label id_is_dealer2">No</label>
+                    {% if form.is_dealer.errors %}
+                        <div class="error"><small>{{form.is_dealer.errors.0}}</small></div>
+                    {% endif %}
                 </div>
             {% endwith %}
 

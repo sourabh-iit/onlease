@@ -26,3 +26,19 @@ def not_logged_in(view):
     wrap.__doc__ = view.__doc__
     wrap.__name__ = view.__name__
     return wrap
+
+def maintain_cookie(view):
+    def wrap(request,*args,**kwargs):
+        if request.method=='POST':
+            if not request.session.test_cookie_worked():
+                raise ViewException(cookie_message)
+        elif request.method=='GET':
+            try:
+                request.session.delete_test_cookie()
+            except KeyError:
+                pass
+            request.session.set_test_cookie()
+        return view(request,*args,**kwargs)
+    wrap.__doc__ = view.__doc__
+    wrap.__name__ = view.__name__
+    return wrap

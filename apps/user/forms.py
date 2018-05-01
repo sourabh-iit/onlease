@@ -6,23 +6,11 @@ from .utils import *
 
 User = get_user_model()
 
-class RequestOtpForm(forms.Form):
-    mobile_number = forms.CharField(
-        max_length=10,
-        validators=[
-            RegexValidator(
-                regex=mobile_number_regex,
-                message="Invalid mobile number",
-                code="invalid_mobile_number"
-            )],
-        required=True)
-
-    reset_password = forms.CharField(max_length=10,
-        widget=forms.HiddenInput)
-
-    def __init__(self,*args,**kwargs):
-        super(RequestOtpForm,self).__init__(*args,**kwargs)
-        self.fields['reset_password'].required = False
+class MobileNumberForm(forms.Form):
+    mobile_number=forms.CharField(max_length=10,
+        validators=[RegexValidator(regex=mobile_number_regex,
+        message='Enter valid mobile number',
+        code='invalid_number')])
 
 class ValidateOtpForm(forms.Form):
     otp = forms.CharField(
@@ -35,21 +23,15 @@ class ValidateOtpForm(forms.Form):
                 code='invalid_otp'
             )])
 
-    reset_password = forms.CharField(max_length=10,
-        widget=forms.HiddenInput)
-
-    def __init__(self,*args,**kwargs):
-        super(ValidateOtpForm,self).__init__(*args,**kwargs)
-        self.fields['reset_password'].required = False
-
 class RegisterForm(forms.ModelForm):
     confirm_password = forms.CharField(max_length=50,widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ('first_name','last_name','email','password')
+        fields = ('first_name','last_name','email','password','mobile_number','is_dealer')
         widgets = {
-            'password': forms.PasswordInput
+            'password': forms.PasswordInput,
+            'is_dealer': forms.RadioSelect
         }
 
     def __init__(self, *args, **kwargs):
@@ -59,6 +41,7 @@ class RegisterForm(forms.ModelForm):
         self.fields['last_name'].required = True
         self.fields['email'].required = True
         self.fields['password'].required = True
+        self.fields['mobile_number'].required = True
 
     def clean(self):
         cleaned_data = super().clean()

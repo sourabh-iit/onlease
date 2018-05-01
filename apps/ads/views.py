@@ -11,6 +11,7 @@ from apps.user.utils import ViewException
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 import datetime
+from apps.locations.models import Location
 
 def reverse_location(location):
     for tup in CommonlyUsedLodgingModel.LOCATION_CHOICES:
@@ -19,20 +20,18 @@ def reverse_location(location):
     raise ViewException('Invalid location value.')
 
 @csrf_exempt
-def ads_list_view(request,location):
+def ads_list_view(request,state,district):
     try:
-        location_ = reverse_location(location)
         if request.method=='POST':
-            form = AdsForm(request.POST)
+            form = AdsForm(state,district,request.POST)
             if form.is_valid():
                 data = form.cleaned_data
-                print(data)
-                print(location_)
                 # min_rent, max_rent will always be available ensured by AdsForm
                 # Similarly for 'lower_availability' and 'upper_availability'
                 q = Q(
                     is_booked=False,
-                    location=location_,
+                    location__state=state,
+                    location__district=district,
                     rent__gte=int(data['min_rent']),
                     rent__lte=int(data['max_rent']),
                     available_from__gte=data['lower_availability'],
@@ -62,13 +61,15 @@ def ads_list_view(request,location):
             else:
                 # messages.error(form)
                 ads = CommonlyUsedLodgingModel.objects.filter(
-                    location=location_,
+                    location__state=state,
+                    location__district=district,
                     available_from__lte=datetime.date.today()+
-                    datetime.timedelta(days=15)).prefetch_related('images')
+                        datetime.timedelta(days=15)).prefetch_related('images')
         else:
-            form = AdsForm()
+            form = AdsForm(state,district)
             ads = CommonlyUsedLodgingModel.objects.filter(
-                    location=location_,
+                    location__state=state,
+                    location__district=district,
                     available_from__lte=datetime.date.today()+
                     datetime.timedelta(days=15)).prefetch_related('images')
     except KeyError:
@@ -77,10 +78,10 @@ def ads_list_view(request,location):
         messages.error(request,'Location is not provided')
         return HttpResponseRedirect(reverse('ads:choose-location'))
     return render(request,'ads/ad_list.html',
-        {'form':form,'ads':ads,'location':location})
+        {'form':form,'ads':ads,'state':state,'district':district})
 
 @csrf_exempt
-def ads_detail_view(request,ad_id,slug):
+def ads_detail_view(request,state,district,ad_id,slug):
     redirection_url = reverse('ads:choose-location')
     try:
         lodging = CommonlyUsedLodgingModel.objects.prefetch_related("images").get(pk=ad_id)

@@ -27,7 +27,9 @@
 
                     <!--Card content-->
                     <div class="card-body">
-                        <p class="card-text">Location: {{lodging.sublodging.location | location_full_form}}</p>
+                        <p class="card-text">State: {{lodging.sublodging.location.state}}</p>
+                        <p class="card-text">District: {{lodging.sublodging.location.district}}</p>
+                        <p class="card-text">Region: {{lodging.sublodging.location.region}}</p>
                         <p class="card-text">Type: {{lodging.sublodging.lodging_type | type_full_form}}</p>
                         <p class="card-text">Address: {{lodging.address}}</p>
                         <p class="card-text">Additional details: {{lodging.sublodging.additional_details}}</p>
@@ -62,12 +64,18 @@
                         </div>
                     </div>
                 {% endfor %}
-            
-                <div class="text-center d-block w-100">
-                    <a class="btn btn-unique" href="{% url 'lodging:create' %}">
-                        <i class="fa fa-plus icon"></i> Add new business</a>
-                </div>
-            
+                {% if user.is_verified %}
+                    <div class="text-center d-block w-100">
+                        <a class="btn btn-unique" href="{% url 'lodging:create' %}">
+                            <i class="fa fa-plus icon"></i> Add new business</a>
+                    </div>
+                {% else %}
+                    <div class="text-center d-block w-100">
+                        <a href="{% url "user:verify-number" %}" class="btn btn-deep-orange btn-md">
+                            Verify mobile number to add business
+                        </a>
+                    </div>
+                {% endif %}
         </div>
 
                 

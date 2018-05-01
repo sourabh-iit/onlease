@@ -11,6 +11,8 @@
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'lodging/edit_lodging.js' %}"></script>
+    <script src="{% static 'js/zebra_datepicker.js' %}"></script>
+    <script src="{% static 'lodging/image_field.js' %}"></script>
 {% endblock script %}
 
 {% block content %}
@@ -85,20 +87,20 @@
                     </div>
 
                     <div class="col-12 col-sm-4 mt-2">
-                        {% render_field sublodging_form.is_furnished %}
-                        <label for="id_is_furnished">
+                        {% render_field sublodging_form.is_furnished class+="option-input checkbox ml-0" %}
+                        <label for="id_is_furnished" class="label align-top">
                             Furnished?
                         </label>
                     </div>
                     <div class="col-12 col-sm-4 mt-2">
-                        {% render_field sublodging_form.is_parking_available %}
-                        <label for="id_is_parking_available">
+                        {% render_field sublodging_form.is_parking_available class+="option-input checkbox" %}
+                        <label for="id_is_parking_available" class="label align-top">
                             Parking available?
                         </label>
                     </div>
                     <div class="col-12 col-sm-4 mt-2">
-                        {% render_field sublodging_form.is_kitchen_available %}
-                        <label for="id_is_kitchen_available">
+                        {% render_field sublodging_form.is_kitchen_available class+="option-input checkbox" %}
+                        <label for="id_is_kitchen_available" class="label align-top">
                             Kitchen available?
                         </label>
                     </div>

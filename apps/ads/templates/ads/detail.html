@@ -5,7 +5,7 @@
 {% load static %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'ads/detail.css' %}">
-    <link rel="stylesheet" href="{% static 'scrollbar/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">
 {% endblock %}
 {% block content %}
 
@@ -23,10 +23,10 @@
     <!-- title -->
     <div class="ad-title col-12 h5">{{ad.title}}</div>
     <!-- badges of facilities -->
-    <div class="col-12 mt-2 mb-2">
+    <div class="col-12 mb-2">
         <span class="badge badge-pill blue">
             <i class="fa fa-map-marker" aria-hidden="true"></i> 
-            {{ad.location | location_full_form}}</span>
+            {{ad.location.region}}</span>
         <span class="badge badge-pill blue">
             <i class="fa fa-home" aria-hidden="true"></i> 
             {{ad.lodging_type | type_full_form}}</span>
@@ -114,7 +114,7 @@
         </div>
         <div class="text-center">
             <a href="{% url 'transactions:lodging' %}?ad_id={{ad.id}}" class="btn btn-default d-block book font-weight-bold">
-                    <i class="fa fa-credit-card"></i>&nbsp BOOK</a>
+                    <i class="fa fa-credit-card"></i>&nbsp BOOK NOW</a>
         </div>
     </div>
     <div style="clear:both"></div>
