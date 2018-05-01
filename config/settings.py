@@ -94,7 +94,7 @@ DATABASES = {
         'NAME': 'onlease',
         'USER': os.environ.get('DB_USERNAME'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': '',
+        'HOST': 'localhost',
         'PORT': ''
     }
 }
