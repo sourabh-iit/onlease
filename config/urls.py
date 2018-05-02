@@ -20,11 +20,12 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.user.urls')),
+    path('account/', include('apps.user.urls')),
     path('lodging/', include('apps.lodging.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
     path('ads/', include('apps.ads.urls')),
     path('home/', include('apps.home.urls')),
     path('transactions/', include('apps.transactions.urls')),
     path('api/locations/', include('apps.locations.urls')),
+    path('', include('apps.legal.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

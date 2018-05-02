@@ -52,7 +52,7 @@
 
             <div class="text-center mt-4">
                 <button class="btn btn-primary" type="submit">Submit OTP</button>
-                <button type="submit" formaction="{% url 'user:request-otp' %}" class="btn btn-secondary">Re-send otp</button>
+                <a href="{% url 'user:verify-number' %}" class="btn btn-secondary">Re-send otp</a>
             </div>
         
         </form>

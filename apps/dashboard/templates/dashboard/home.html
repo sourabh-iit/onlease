@@ -36,7 +36,7 @@
         <div class="row">
             {% for lodging in lodging_businesses %}
 
-                <div class="card card-cascade col-sm-8 col-md-6 col-lg-5 col-xl-4">
+                <div class="card card-cascade ml-2 mt-3 col-sm-8 col-md-6 col-lg-5 col-xl-4">
 
                     <div class="card-header">Title: {{lodging.sublodging.title}}</div>
 
@@ -80,7 +80,7 @@
                     </div>
                 {% endfor %}
                 {% if user.is_verified %}
-                    <div class="text-center d-block w-100">
+                    <div class="text-center d-block w-100 mt-3">
                         <a class="btn btn-primary" href="{% url 'lodging:create' %}">
                             <i class="fa fa-plus icon"></i> Add new business</a>
                     </div>

@@ -2,9 +2,6 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.db.models import Q
 
-def generate_otp(mobile_number):
-    return "0000"
-
 class ViewException(Exception):
     pass
 

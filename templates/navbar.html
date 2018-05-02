@@ -71,7 +71,75 @@
             </ul>
         </div>
     </nav>
+
     {% block content %}{% endblock %}
+
+    <footer class="page-footer font-small blue pt-4 mt-4">
+
+        <!--Footer Links-->
+        <div class="container-fluid text-center text-md-left">
+            <div class="row wow">
+    
+                <div class="col-md-3">
+                    <p class="column-title white-text">
+                        <strong>USEFUL LINKS</strong></p>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="{% url 'dashboard:home' %}">Dashboard</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'user:login' %}">Log in</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'user:register' %}">Register</a>
+                        </li>
+                    </ul>
+                </div>
+    
+                <div class="col-md-3">
+                    <p class="column-title white-text">
+                        <strong>IMPORTANT LINKS</strong></p>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="{% url 'legal:privacy' %}">Terms</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'legal:terms' %}">Privacy</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <p class="column-title white-text text-uppercase">
+                        <strong>Add your business</strong></p>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="{% url 'lodging:create' %}">Lodging</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <p class="column-title white-text text-uppercase">
+                        <strong>Sponsor</strong></p>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="https://msg91.com/startups/?utm_source=startup-banner"><img src="https://msg91.com/images/startups/msg91Badge.png" width="120" height="90" title="MSG91 - SMS for Startups" alt="Bulk SMS - MSG91"></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--/.Footer Links-->
+    
+        <!--Copyright-->
+        <div class="footer-copyright py-3 text-center">
+            © 2018 Copyright:
+            <a href="/"> OnLease.in </a>
+        </div>
+        <!--/.Copyright-->
+    
+    </footer>
     <script type="text/javascript" src="{% static 'js/jquery-3.3.1.js' %}"></script>
     <script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'MDB Free/js/bootstrap.min.js' %}"></script>

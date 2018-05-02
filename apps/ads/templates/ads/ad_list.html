@@ -111,8 +111,7 @@
     {% if ads %}
     <div class="card-deck">
         {% for ad in ads %}
-        <a href="{% url 'ads:detail' state=state district=district ad_id=ad.id slug=ad.title %}">
-        <div class="card">
+        <a class="card" href="{% url 'ads:detail' state=state district=district ad_id=ad.id slug=ad.title %}">
             {% if ad.images.first %}
             <img class="card-img-top" src="{{ad.images.first.image_thumbnail.url}}" alt="{{ad.title}}">
             {% else %}
@@ -138,7 +137,6 @@
                 <p class="card-text text-muted">
                     <i class="fa fa-map-marker  purple-text"></i> {{ad.location.region}}</p>
             </div>
-        </div>
         </a>
             <span></span>
         {% endfor %}

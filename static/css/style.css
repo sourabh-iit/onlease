@@ -37,9 +37,6 @@
 .pd-1.btn.btn-sm{
     padding: 0.5rem 0.2rem;
 }
-body{
-    padding-top: 3.6rem;
-}
 .messages-container{
     position: fixed;
     top: 55px;
@@ -175,4 +172,17 @@ body{
 }
 .btn-primary{
     background: #4b515d!important;
+}
+html,body{
+    height: 100%;
+}
+body{
+    padding-top: 3.4rem;
+}
+footer.page-footer{
+    background: #4b515d!important;
+}
+.container-fluid{
+    margin-left: 6%;
+    margin-right: 6%;
 }

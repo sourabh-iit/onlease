@@ -174,4 +174,3 @@ RECIPIENTS = ['sourabh7singh@gmail.com']
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-

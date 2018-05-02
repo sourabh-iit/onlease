@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from .forms import ValidateOtpForm, RegisterForm, LoginForm,\
       ResetPasswordForm, ContactForm, MobileNumberForm
-from .utils import generate_otp, ViewException, maintain_cookie, not_logged_in
+from .utils import ViewException, maintain_cookie, not_logged_in
 from .models import User
 from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -16,6 +16,7 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.password_validation import validate_password
 from django.contrib import messages
+from apps.transactions.utils import send_otp, generate_otp
 
 cookie_message = 'Cookies are not enabled. We use cookies for better user experience.'
 
@@ -30,7 +31,7 @@ def request_otp(request):
                 # save mobile number in sesison and redirect to verify number view 
                 # with reset variable in get
                 request.session['mobile_number']=form.cleaned_data['mobile_number']
-                url=reverse('user:verify-number')+"?reset=yes"
+                url=reverse('user:verify-number')
                 return HttpResponseRedirect(url)
         except ViewException as e:
             messages.error(request,e)
@@ -44,22 +45,14 @@ def verfiy_number(request):
         form = ValidateOtpForm(request.POST)
         try:
             if form.is_valid():
-                url=reverse('user:verify-number')
-                # if it is for reset password, then url will change
-                if request.session.get('mobile_number'):
-                    url+='?reset=true'
                 # no testcase for expiration till now
                 # expiry time of an otp
                 if time.time()-request.session['time']>60*3:
                     messages.error(request,'OTP has expired')
-                    # if otp has been expired, send get request again to respective url
-                    return HttpResponseRedirect(url)
                 # maximum number of attempts allowed on an otp
                 if request.session['attempts']>=3:
                     messages.error(request,'Too many invalid attempts')
-                    # to resend otp, post get request again to respective url
-                    return HttpResponseRedirect(url)
-                if not form.cleaned_data['otp'] == request.session.get('otp'):
+                if form.cleaned_data['otp'] != request.session.get('otp'):
                     request.session['attempts']+=1
                     # warning for number of invalid attempts
                     raise ViewException('Invalid OTP entered')
@@ -67,6 +60,7 @@ def verfiy_number(request):
                 if request.user.is_authenticated:
                     request.user.is_verified=True
                     request.user.save()
+                    del request.session['time']
                 else:
                     # set verfied as true and time of verification to prevent misuse
                     request.session['verified']=True
@@ -96,10 +90,10 @@ def verfiy_number(request):
             # if user is not authenticated and mobile number is present is session
             mobile_number=request.session['mobile_number']
         # set required values in session
-        request.session['otp'] = generate_otp(mobile_number)
+        request.session['otp'] = generate_otp(6)
         request.session['time'] = time.time()
         request.session['attempts'] = 0
-        messages.info(request,'An OTP has been sent')
+        send_otp(request,mobile_number)
     return render(request,'user/validate_otp.html',{'form':form})
 
 @maintain_cookie
@@ -191,7 +185,7 @@ def reset_password_view(request):
             # if mobile number is verified, verified is set in session key
             if not request.session.get('verified') or time.time()-request.session['time']>3*60:
                 # send mobile number is required message
-                messages.error('Mobile number verification is required')
+                messages.error(request,'Mobile number verification is required')
                 # redirect to enter mobile number view
                 return HttpResponseRedirect(reverse('user:request-otp'))
             if form.is_valid():
@@ -211,6 +205,8 @@ def reset_password_view(request):
             messages.error(request,'Cannot process request. Invalid request')
         except User.DoesNotExist:
             messages.error(request,'User with this mobile number '+mobile_number+' does not exist')
+        except ValidationError as e:
+            form.add_error('password',e)
     else:
         form = ResetPasswordForm()
     return render(request,'user/reset_password.html',{'form':form})

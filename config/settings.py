@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'apps.ads',
     'apps.home',
     'apps.transactions',
-    'apps.locations'
+    'apps.locations',
+    'apps.legal'
 ]
 
 MIDDLEWARE = [
@@ -180,4 +181,3 @@ RECIPIENTS = ['sourabh7singh@gmail.com']
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
