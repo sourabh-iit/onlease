@@ -32,10 +32,6 @@
     {% endif %}
 
     <nav id="sidebar" class="bg-dark text-white scrollbar-dusty-grass square thin">
-        <h3><div class="sidebar-header">
-            Filters
-        </div></h3>
-
         <form action="{% url 'ads:list' state=state district=district %}" method="post">
 
             {% if form.non_field_errors %}
@@ -84,14 +80,14 @@
                     </ul>
                 </div>
 
-                <label class="sub-heading">Rent range</label>
+                <label class="sub-heading">Rent</label>
                 <div class="range-box row">
                     {% render_field form.min_rent class+="form-control" %}
                     <div class="separator">-</div>
                     {% render_field form.max_rent class+="form-control" %}
                 </div>
 
-                <label class="sub-heading">Date range</label>
+                <label class="sub-heading">Date of availability</label>
                 <div class="range-box row">
                     {% render_field form.lower_availability class+="form-control" %}
                     <div class="separator">-</div>
@@ -113,7 +109,7 @@
     </button>
 
     {% if ads %}
-    <div class="card-deck mt-5">
+    <div class="card-deck">
         {% for ad in ads %}
         <a href="{% url 'ads:detail' state=state district=district ad_id=ad.id slug=ad.title %}">
         <div class="card">

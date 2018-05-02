@@ -3,6 +3,21 @@
 {% block dashboard_active %}active{% endblock %}
 {% load ads_filters %}
 {% load dashboard_filters %}
+
+{% block script %}
+    <script>
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+{% endblock %}
+
 {% block content %}
 
     {% comment %} messages {% endcomment %}
@@ -47,7 +62,7 @@
                     <!--/.Card content-->
 
                     <div class="card-footer d-flex">
-                        <a href="{% url 'lodging:edit' ad_id=lodging.id %}" class="btn btn-default btn-sm">
+                        <a href="{% url 'lodging:edit' ad_id=lodging.id %}" class="btn btn-secondary btn-sm">
                             <i class="fa fa-edit icon"></i>
                             Edit
                         </a>
@@ -66,12 +81,12 @@
                 {% endfor %}
                 {% if user.is_verified %}
                     <div class="text-center d-block w-100">
-                        <a class="btn btn-unique" href="{% url 'lodging:create' %}">
+                        <a class="btn btn-primary" href="{% url 'lodging:create' %}">
                             <i class="fa fa-plus icon"></i> Add new business</a>
                     </div>
                 {% else %}
                     <div class="text-center d-block w-100">
-                        <a href="{% url "user:verify-number" %}" class="btn btn-deep-orange btn-md">
+                        <a href="{% url "user:verify-number" %}" class="btn btn-secondary btn-md">
                             Verify mobile number to add business
                         </a>
                     </div>

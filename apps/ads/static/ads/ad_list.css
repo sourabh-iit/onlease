@@ -23,3 +23,18 @@ h3{
     width: 15px;
     font-size: 15px;
 }
+.card-deck{
+    margin-top: 2.4rem;
+}
+.card{
+    max-width: 250px;
+    margin-top: 0.5rem;
+}
+.btn{
+    background: #4b515d!important;
+}
+@media screen and (min-width: 768px){
+    .card-deck{
+        margin-top: 0;
+    }
+}

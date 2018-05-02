@@ -1,9 +1,3 @@
-$(document).ready(function(){
-    $("#delete").click(function(){
-        $("form").prepend('<input type="hidden" name="delete">');
-        $("form").submit();
-    });
-});
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
 (function(){
     var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];

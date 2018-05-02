@@ -1,3 +1,12 @@
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+})();
 $(document).ready(function () {
     var width = $("body").innerWidth();
     if (width>768){
@@ -34,12 +43,4 @@ $(document).ready(function () {
         show_icon: false,
         direction: [1,15],
     });
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-        s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
-        s1.charset='UTF-8';
-        s1.setAttribute('crossorigin','*');
-        s0.parentNode.insertBefore(s1,s0);
-    })();
  });

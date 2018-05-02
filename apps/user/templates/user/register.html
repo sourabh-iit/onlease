@@ -3,8 +3,22 @@
 {% block title %}Register{% endblock %}
 {% block register_active %}active{% endblock %}
 
+{% block script %}
+    <script>
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+{% endblock %}
+
 {% block content %}
-    <div class="container col-sm-9 col-md-8 col-lg-7 col-xl-5">
+    <div class="container col-11 col-sm-10 col-md-9 col-lg-7 col-xl-5">
         <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5">
             {% csrf_token %}
             <p class="h4 text-center mb-4">REGISTER</p>
@@ -21,7 +35,7 @@
             
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="row">
-                    <div class="md-form col">
+                    <div class="md-form col-12 col-md-6">
                         <i class="fa fa-user prefix"></i>
                         {% render_field form.first_name|append_attr:"autofocus" id="first_name" class+="form-control" %}
                         <label for="first_name">First name</label>
@@ -30,7 +44,7 @@
                         {% endif %}
                     </div>
 
-                    <div class="md-form col">
+                    <div class="md-form col-12 col-md-6">
                         <i class="fa fa-user prefix"></i>
                         {% render_field form.last_name id="last_name" class+="form-control" %}
                         <label for="last_name">Last name</label>
@@ -41,7 +55,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="md-form col">
+                    <div class="md-form col-12 col-md-6">
                         <i class="fa fa-envelope prefix"></i>
                         {% render_field form.email id="email" class+="form-control" %}
                         <label for="email">Email address</label>
@@ -50,7 +64,7 @@
                         {% endif %}
                     </div>
                     
-                    <div class="md-form col">
+                    <div class="md-form col-12 col-md-6">
                         <i class="fa fa-envelope prefix"></i>
                         {% render_field form.mobile_number id="mobile_number" class+="form-control" %}
                         <label for="mobile_number">Mobile number</label>
@@ -61,7 +75,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="md-form col">
+                    <div class="md-form col-12 col-md-6">
                         <i class="fa fa-key prefix"></i>
                         {% render_field form.password id="password" class+="form-control" %}
                         <label for="password">Password</label>
@@ -70,7 +84,7 @@
                         {% endif %}
                     </div>
 
-                    <div class="md-form col">
+                    <div class="md-form col-12 col-md-6">
                         <i class="fa fa-key prefix"></i>
                         {% render_field form.confirm_password id="confirm_password" class+="form-control" %}
                         <label for="confirm_password">Confirm password</label>
@@ -93,7 +107,7 @@
             {% endwith %}
 
             <div class="text-center mt-4">
-                <button class="btn btn-default" type="submit">Register</button>
+                <button class="btn btn-primary" type="submit">Register</button>
             </div>
 
             <p class="font-small grey-text d-flex justify-content-end mt-3">Already a member? <a href="{% url 'user:login' %}" class="blue-text ml-1"> Login</a></p>

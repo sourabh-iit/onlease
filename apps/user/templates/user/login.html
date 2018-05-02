@@ -2,6 +2,21 @@
 {% load widget_tweaks %}
 {% block title %}Login{% endblock %}
 {% block login_active %}active{% endblock %}
+
+{% block script %}
+    <script>
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+{% endblock %}
+
 {% block content %}
     <div class="container col-sm-8 col-md-6 col-lg-4">
         <form action="{% url 'user:login' %}" method="post" novalidate class="mt-5">
@@ -46,9 +61,9 @@
                 Forgot <a href="{% url 'user:request-otp' %}?reset_password=True" class="blue-text ml-1"> Password?</a></p>
             
             <div class="text-center mt-4">
-                <button class="btn btn-default" type="submit">Log in</button>
+                <button class="btn btn-primary" type="submit">Log in</button>
             </div>
-            <p class="font-small grey-text d-flex justify-content-end mt-3">Not a member? <a href="{% url 'user:request-otp' %}" class="blue-text ml-1"> Sign Up</a></p>
+            <p class="font-small grey-text d-flex justify-content-end mt-3">Not a member? <a href="{% url 'user:register' %}" class="blue-text ml-1"> Sign Up</a></p>
         </form>
     </div>
 {% endblock %}

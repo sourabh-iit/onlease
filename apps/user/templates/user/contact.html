@@ -2,6 +2,21 @@
 {% load widget_tweaks %}
 {% block title %}Feedback{% endblock %}
 {% block contact_active %}active{% endblock %}
+
+{% block script %}
+    <script>
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+{% endblock %}
+
 {% block content %}
     <div class="container col-sm-8 col-md-6 col-lg-4">
         <form action="{% url 'user:contact' %}" method="post" novalidate class="mt-5">

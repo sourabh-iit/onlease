@@ -112,8 +112,8 @@
                 <p>{{ad.additional_details}}</p>
             </div>
         </div>
-        <div class="text-center">
-            <a href="{% url 'transactions:lodging' %}?ad_id={{ad.id}}" class="btn btn-default d-block book font-weight-bold">
+        <div class="text-center d-flex align-items-center">
+            <a href="{% url 'transactions:lodging' %}?ad_id={{ad.id}}" class="btn btn-primary d-block book font-weight-bold">
                     <i class="fa fa-credit-card"></i>&nbsp BOOK NOW</a>
         </div>
     </div>

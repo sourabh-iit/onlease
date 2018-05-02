@@ -170,3 +170,9 @@ body{
     padding-left: 15px; 
     padding-right: 15px; 
 }
+.btn-secondary{
+    background: #676060!important;
+}
+.btn-primary{
+    background: #4b515d!important;
+}
