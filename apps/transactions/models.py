@@ -31,6 +31,7 @@ class LodgingTransaction(models.Model):
     email_status = models.CharField(max_length=1,choices=STATUS_CHOICES,
         default=PENDING)
     payment_gateway_fees = models.CharField(max_length=12,default=0)
+    amount_paid = models.CharField(max_length=10,null=True)
 
     def save(self, *args, **kwargs):
         super(LodgingTransaction, self).save(*args, **kwargs)

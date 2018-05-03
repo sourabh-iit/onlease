@@ -1,0 +1,12 @@
+.sub-container{
+    max-width: 400px;
+}
+.success-message{
+    font-size: 1.5rem;
+    color: #28a745;
+}
+.container-fluid{
+    margin-left: 0;
+    margin-right: 0;
+    flex-wrap: wrap;
+}

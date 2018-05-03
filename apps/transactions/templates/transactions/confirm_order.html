@@ -1,0 +1,27 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Confirm order{% endblock %}
+
+{% block content %}
+<div class="continer-fluid d-flex justify-content-center mt-5">
+    <div class="card">
+        <div class="card-body">
+            <p class="card-text">10% of total rent is the booking amount.</p>
+            <p class="card-text">Total amount: {{total_amount}}</p>
+            <p class="card-text">This amount is refundable accourding to 
+                <a href="{% url 'legal:terms' %}">terms and conditions</a>.</p>
+            <p class="card-text">
+                <a href="{% url 'transactions:lodging-redirect-to-instamojo' state=state district=district ad_id=ad_id %}" class="btn btn-default btn-md">
+                    CONFIRM
+                </a>
+                <a href="{% url 'ads:detail' state=state district=district ad_id=ad_id slug=slug %}" class="btn btn-default btn-md">
+                    CANCEL
+                </a>
+            </p>
+            <div class="card-footer">
+                Refundable*
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

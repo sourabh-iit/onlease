@@ -29,7 +29,6 @@ def ads_list_view(request,state,district):
                 # min_rent, max_rent will always be available ensured by AdsForm
                 # Similarly for 'lower_availability' and 'upper_availability'
                 q = Q(
-                    is_booked=False,
                     location__state=state,
                     location__district=district,
                     rent__gte=int(data['min_rent']),
@@ -37,7 +36,6 @@ def ads_list_view(request,state,district):
                     available_from__gte=data['lower_availability'],
                     available_from__lte=data['upper_availability']
                 )
-                print(CommonlyUsedLodgingModel.objects.filter(q).count())
                 # at most one of 'ground floor' and 'top floor' should be true.
                 # if floor value is 'any' then show all ads irrespective of floor number
                 if data['floor']=='ground floor':
@@ -82,17 +80,20 @@ def ads_list_view(request,state,district):
 
 @csrf_exempt
 def ads_detail_view(request,state,district,ad_id,slug):
-    redirection_url = reverse('ads:choose-location')
+    redirection_url = reverse('ads:list',kwargs={'state':state,'district':district})
     try:
         lodging = CommonlyUsedLodgingModel.objects.prefetch_related("images").get(pk=ad_id)
     except CommonlyUsedLodgingModel.DoesNotExist:
         messages.error(request,'Lodging with id '+ad_id+' does not exist')
-        return HttpResponseRedirect(request,redirection_url)
+        return HttpResponseRedirect(redirection_url)
     if lodging.is_booked:
         messages.error(request,'Lodging is already booked')
-        return HttpResponseRedirect(request,redirection_url)
+        return HttpResponseRedirect(redirection_url)
     context = {
         'ad': lodging,
-        'images': lodging.images.all()
+        'images': lodging.images.all(),
+        'state': state,
+        'district': district,
+        'ad_id': ad_id
     }
     return render(request,'ads/detail.html',context)

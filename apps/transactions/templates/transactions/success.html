@@ -1,0 +1,49 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Successful transaction{% endblock %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'transactions/success.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% comment %} messages {% endcomment %}
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+            {{message}}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid d-flex justify-content-center mt-5">
+    <div class="sub-container">
+        <div class="success-message text-capitalize alert alert-success">
+            <i class="fa fa-check-circle text-green"></i>
+            Transaction successfull
+        </div>
+        <div class="card mt-1">
+            <div class="card-body">
+                <p class="card-title">Following are transaction details:</p>
+                <ol>
+                    <li>Total amount paid: <i class="fa fa-inr"></i> {{transaction.amount}}</li>
+                    <li>Transaction id: {{transaction.id}}</li>
+                </ol>
+                <p class="card-title">Following are contact details:</p>
+                <ol>
+                    <li>Address: {{lodging.address}}</li>
+                    <li>Contact number: {{lodging.purchased_by.mobile_number}}</li>
+                </ol>
+                <div class="card-footer">
+                    You can also view contact details by click this <a href="{% url 'ads:detail' state=location.state district=location.district ad_id=lodging.id slug=sublodging.slug %}">link</a>.
+                    Here, you can ask for refund also. <a href="{% url 'legal:terms' %}">Terms and conditions</a> will apply
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

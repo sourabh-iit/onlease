@@ -113,7 +113,7 @@
             </div>
         </div>
         <div class="text-center d-flex align-items-center">
-            <a href="{% url 'transactions:lodging' %}?ad_id={{ad.id}}" class="btn btn-primary d-block book font-weight-bold">
+            <a href="{% url 'transactions:lodging' state=state district=district ad_id=ad_id %}" class="btn btn-primary d-block book font-weight-bold">
                     <i class="fa fa-credit-card"></i>&nbsp BOOK NOW</a>
         </div>
     </div>

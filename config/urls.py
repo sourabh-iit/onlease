@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from apps.ads import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,5 +28,5 @@ urlpatterns = [
     path('home/', include('apps.home.urls')),
     path('transactions/', include('apps.transactions.urls')),
     path('api/locations/', include('apps.locations.urls')),
-    path('', include('apps.legal.urls')),
+    path('legal/', include('apps.legal.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

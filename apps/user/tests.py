@@ -172,7 +172,6 @@ class UserModelTests(TestCase):
             'email': details['email'],
             'password': password1,
             'confirm_password': password1})
-        import pdb ; pdb.set_trace()
         self.assertEqual(repr(response),'<HttpResponseRedirect status_code=302, "text/html; charset=utf-8", url="/dashboard/">')
         self.assertEqual(MobileNumber.objects.filter(mobile_number=\
             self.right_number).exists(),True)
