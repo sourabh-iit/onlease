@@ -2,6 +2,7 @@
 {% load widget_tweaks %}
 {% block title %}Lodging {{state}} {{district}}{% endblock %}
 {% load static %}
+{% load ads_filters %}
 
 {% block ads_active %}
 active
@@ -18,9 +19,6 @@ active
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'ads/ad_list.js' %}"></script>
 {% endblock script %}
-
-{% block ads_active %}active{% endblock %}
-{% load ads_filters %}
 
 {% block content%}
 
