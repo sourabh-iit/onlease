@@ -13,6 +13,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_delete
 from django.contrib import messages
 from apps.locations.models import Location
+from django.db.models.query import Prefetch
 
 def delete_files(*args):
     for file in args:
@@ -67,7 +68,13 @@ def lodging_create_view(request):
 @login_required
 def lodging_edit_view(request,ad_id):
     try:
-        lodging=Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
+        lodging=Lodging.objects.prefetch_related(
+            Prefetch(
+                'sublodging',
+                queryset=CommonlyUsedLodgingModel.objects.prefetch_related('images')
+            ),
+            'posted_by'
+        ).get(id=ad_id)
         if lodging.posted_by!=request.user:
             raise ViewException('Unauthorized access')
         sublodging = lodging.sublodging
@@ -81,8 +88,7 @@ def lodging_edit_view(request,ad_id):
         if request.session.test_cookie_worked():
             if 'delete' in request.POST:
                 with transaction.atomic():
-                    for image in images:
-                        image.delete()
+                    images.delete()
                     lodging.delete()
                 messages.success(request,"Lodging deleted successfully")
                 return HttpResponseRedirect(reverse('dashboard:home'))

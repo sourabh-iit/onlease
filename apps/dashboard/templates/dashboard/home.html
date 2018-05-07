@@ -3,6 +3,12 @@
 {% block dashboard_active %}active{% endblock %}
 {% load ads_filters %}
 {% load dashboard_filters %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'dashboard/home.css' %}">
+{% endblock %}
 
 {% block script %}
     <script>
@@ -19,35 +25,32 @@
 {% endblock %}
 
 {% block content %}
-
-    {% comment %} messages {% endcomment %}
-    {% if messages %}
-        <div class="messages-container">
-            {% for message in messages %}
-                <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
-                    {{message}}
-                </div>
-            {% endfor %}
+    
+    <div class="container-fluid mt-4 ml-0 mr-0">
+        <div class="card">
+        <div class="card-body">
+            <a href="{% url 'dashboard:home' %}?type=businesses" class="btn btn-default {% if lodging_businesses %}active{% endif %}">All Businesses</a>
+            <a href="{% url 'dashboard:home' %}?type=transactions" class="btn btn-default {% if lodgingtransactions %}active{% endif %}">All Transactions</a>
         </div>
-    {% endif %}
-
-    <div class="container mt-3">
-        <h3 class="mb-3">Current businesses:</h3>
+        </div>
+    </div>
+    
+    {% if lodging_businesses %}
+    <div class="container">
         <div class="row">
             {% for lodging in lodging_businesses %}
+            <div class="card-wrapper">
 
-                <div class="card card-cascade ml-2 mt-3 col-sm-8 col-md-6 col-lg-5 col-xl-4">
+                <div class="card card-cascade mt-1 z-depth-2">
 
-                    <div class="card-header">Title: {{lodging.sublodging.title}}</div>
+                    <div class="card-header">{{lodging.sublodging.title}}</div>
 
                     <!--Card content-->
                     <div class="card-body">
-                        <p class="card-text">State: {{lodging.sublodging.location.state}}</p>
-                        <p class="card-text">District: {{lodging.sublodging.location.district}}</p>
-                        <p class="card-text">Region: {{lodging.sublodging.location.region}}</p>
-                        <p class="card-text">Type: {{lodging.sublodging.lodging_type | type_full_form}}</p>
-                        <p class="card-text">Address: {{lodging.address}}</p>
-                        <p class="card-text">Additional details: {{lodging.sublodging.additional_details}}</p>
+                        <p class="card-text"><i class="fa fa-map-marker"></i> {{lodging.sublodging.location.region}}, {{lodging.sublodging.location.district}}, {{lodging.sublodging.location.state}}</p>
+                        <p class="card-text"><i class="fa fa-home"></i> {{lodging.sublodging.lodging_type | type_full_form}}</p>
+                        <p class="card-text"><i class="fa fa-address-card"></i> {{lodging.address}}</p>
+                        <p class="card-text"><i class="fa fa-info-circle"></i> {{lodging.sublodging.additional_details}}</p>
                         <p class="card-text">Total floors: {{lodging.sublodging.total_floors}}</p>
                         <p class="card-text">Floor number: {{lodging.sublodging.floor_no}}</p>
                         <div class="card-text">Booked: <div class="{{lodging.sublodging.is_booked | get_class}}"></div></div>
@@ -55,8 +58,8 @@
                         <div class="card-text">Parking available: <div class="{{lodging.sublodging.is_parking_available | get_class}}"></div></div>
                         <div class="card-text">Kitchen available: <div class="{{lodging.sublodging.is_kitchen_available | get_class}}"></div></div>
                         <div class="card-text">
-                            <small class="text-muted">Posted on: {{lodging_businesses.0.posted_at}}</small>
-                            <small class="text-muted d-block">Last updated on: {{lodging_businesses.0.updated_at}}</small>
+                            <small class="text-muted">Posted on: {{lodging.posted_at}}</small>
+                            <small class="text-muted d-block">Last updated on: {{lodging.updated_at}}</small>
                         </div>
                     </div>
                     <!--/.Card content-->
@@ -69,7 +72,7 @@
                     </div>
 
                 </div>
-
+            </div>
                 {% empty %}
                     <div class="container d-flex justify-content-center">
                         <div class="card col-sm-6 col-md-6 col-lg-5 col-xl-3">
@@ -92,6 +95,62 @@
                     </div>
                 {% endif %}
         </div>
+        </div>
+        {% endif %}
+
+        {% if lodgingtransactions %}
+        <div class="container">
+        <div class="row">
+            {% for lodgingtransaction in lodgingtransactions %}
+            <div class="card-wrapper">
+
+                <div class="card card-cascade mt-1 z-depth-2">
+
+                    <div class="card-header">{{lodgingtransaction.title}}</div>
+
+                    <!--Card content-->
+                    <div class="card-body">
+                        <p class="card-text"><i class="fa fa-map-marker color"></i> {{lodgingtransaction.location}}</p>
+                        <p class="card-text"><i class="fa fa-address-card color"></i> {{lodgingtransaction.address}}</p>
+                        <p class="card-text"><i class="fa fa-phone color"></i> {{user.mobile_number}}</p>
+                        <p class="card-text">Transaction Id: {{lodgingtransaction.id}}</p>
+                        <p class="card-text">
+                            <span class='badge badge-pill {% if lodgingtransaction.status == "R" %}indigo{% elif lodgingtransaction.status == "S" %}green {% else %}pink{% endif %}'>
+                                {{lodgingtransaction.status | get_status}}
+                            </span>
+                        </p>
+                        <p class="card-text">Payment Id: {{lodgingtransaction.payment_id}}</p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fa fa-calendar color"></i>
+                                {{lodgingtransaction.created_at}}
+                            </small> 
+                        </p>
+                    </div>
+                    <!--/.Card content-->
+
+                    {% ifnotequal lodgingtransaction.refund 0 %}
+                    <div class="card-footer d-flex">
+                        <a class="btn btn-sm btn-small info-color" href="{% url 'dashboard:refund' transaction_id=lodgingtransaction.id %}">
+                            Get refund of <i class="fa fa-inr"></i> 
+                            {{lodgingtransaction.refund}}
+                        </a>
+                    </div>
+                    {% endifnotequal %}
+
+                </div>
+            </div>
+            {% empty %}
+            <div class="container d-flex justify-content-center">
+                <div class="card col-sm-6 col-md-6 col-lg-5 col-xl-3">
+                    <div class="card-body">
+                        <h6 class="">No transaction made yet.</h6>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
                 
     </div>

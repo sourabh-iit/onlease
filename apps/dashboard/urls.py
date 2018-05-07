@@ -4,5 +4,6 @@ from . import views
 app_name='dashboard'
 urlpatterns = [
     path('',views.home_view,name="home"),
-    path('edit-profile',views.home_view,name="edit-profile"),
+    path('refund/<transaction_id>',views.refund_view,name="refund"),
+    path('profile',views.edit_profile_view,name="profile"),
 ]

@@ -28,50 +28,66 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item {% block contact_active %}{% endblock %}">
-                    <a class="nav-link waves-effect waves-light" href="{% url 'user:contact' %}">
-                        <i class="fa fa-envelope"></i> Contact
+                <li class="nav-item {% block home_active %}{% endblock %}">
+                    <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'home:front-page' %}">
+                        <i class="fa fa-home"></i> Home
                     </a>
                 </li>
-                <li class="nav-item {% block dashboard_active %}{% endblock %}">
-                    <a class="nav-link waves-effect waves-light" href="{% url 'dashboard:home' %}">
-                        <i class="fa fa-dashboard"></i> Dashboard</a>
-                </li>
                 {% if user.is_authenticated %}
-                    {% if not user.is_verified %}
-                        <a id="mobile-number" class="btn btn-deep-orange btn-sm" href="{% url 'user:verify-number'%}">
-                            Verify your number</a>
-                    {% endif %}
+                    <li class="nav-item {% block dashboard_active %}{% endblock %}">
+                        <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'dashboard:home' %}">
+                            <i class="fa fa-dashboard"></i> Dashboard</a>
+                    </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle waves-effect waves-light" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                             <i class="fa fa-user"></i> {{user.first_name | lower}} </a>
                         <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
-                            <a class="dropdown-item waves-effect waves-light" href="{% url 'user:change-password'%}">
+                            <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'dashboard:profile'%}">
+                                Profile</a>
+                            <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'user:change-password'%}">
                                 Change password</a>
                             {% if not user.is_verified %}
-                            <a class="dropdown-item waves-effect waves-light" href="{% url 'user:verify-number'%}">
+                            <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'user:verify-number'%}">
                                 Verify mobile number</a>
                             {% endif %}
-                            <a class="dropdown-item waves-effect waves-light{% if not user.is_verified %} disabled{% endif %}" href="{% url 'lodging:create'%}">
+                            <a class="dropdown-item text-capitalized waves-effect waves-light{% if not user.is_verified %} disabled{% endif %}" href="{% url 'lodging:create'%}">
                                 Add new business</a>
                             <div class="dropdown-dividerx"></div>
-                            <a class="dropdown-item waves-effect waves-light" href="{% url 'user:logout' %}">Log out</a>
+                            <a class="dropdown-item text-capitalized waves-effect waves-light" href="{% url 'user:logout' %}">
+                                Log out</a>
                         </div>
                     </li>
+                    {% if not user.is_verified %}
+                        <a id="mobile-number" class="btn btn-deep-orange btn-sm text-capitalized" href="{% url 'user:verify-number'%}">
+                            Verify your number</a>
+                    {% else %}
+                        <a class="btn btn-deep-orange btn-sm text-capitalized" href="{% url 'lodging:create'%}">
+                                Add new business</a>
+                    {% endif %}
                 {% else %}
-                <li class="nav-item {% block register_active %}{% endblock %}">
-                  <a class="nav-link waves-effect waves-light" href="{% url 'user:register' %}">
-                    <i class="fa fa-user-plus"></i> Register</a>
-                </li>
                 <li class="nav-item {% block login_active %}{% endblock %}">
-                    <a class="nav-link waves-effect waves-light" href="{% url 'user:login' %}">
+                    <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'user:login' %}">
                       <i class="fa fa-sign-in"></i> Log In</a>
+                </li>
+                <li class="nav-item {% block register_active %}{% endblock %}">
+                  <a class="nav-link waves-effect waves-light btn btn-sm btn-default text-capitalized" href="{% url 'user:register' %}">
+                    <i class="fa fa-user-plus"></i> Register</a>
                 </li>
                 {% endif %}
             </ul>
         </div>
     </nav>
 
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                {{message}}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
     {% block content %}{% endblock %}
 
     <footer class="page-footer font-small blue pt-4 mt-4">
@@ -108,6 +124,9 @@
                         </li>
                         <li>
                             <a href="{% url 'legal:terms' %}">Privacy</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'user:contact' %}">Contact Us</a>
                         </li>
                     </ul>
                 </div>
@@ -148,6 +167,7 @@
     <script type="text/javascript" src="{% static 'MDB Free/js/bootstrap.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'MDB Free/js/mdb.min.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
+    
     {% block script %}{% endblock %}
 
 </body>

@@ -25,7 +25,7 @@ urlpatterns = [
     path('lodging/', include('apps.lodging.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
     path('ads/', include('apps.ads.urls')),
-    path('home/', include('apps.home.urls')),
+    path('', include('apps.home.urls')),
     path('transactions/', include('apps.transactions.urls')),
     path('api/locations/', include('apps.locations.urls')),
     path('legal/', include('apps.legal.urls')),

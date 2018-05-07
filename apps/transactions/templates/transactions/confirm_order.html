@@ -3,24 +3,30 @@
 {% block title %}Confirm order{% endblock %}
 
 {% block content %}
-<div class="continer-fluid d-flex justify-content-center mt-5">
-    <div class="card">
-        <div class="card-body">
-            <p class="card-text">10% of total rent is the booking amount.</p>
-            <p class="card-text">Total amount: {{total_amount}}</p>
-            <p class="card-text">This amount is refundable accourding to 
-                <a href="{% url 'legal:terms' %}">terms and conditions</a>.</p>
-            <p class="card-text">
+<div class="continer-fluid d-flex justify-content-center">
+    <div class="sub-container" id="center">
+        <div class="card">
+            <div class="card-body">
+                <p class="card-text">
+                    <ul>
+                        <li>Payment gateway is fully secured with end to end encryption.</li>
+                        <li>A refund can be genrated after successfull transaction if you do not like it in any case.</li>
+                        <li>Refund option will be available in dashboard.</li>
+                        <li>Refund option will be instantly available after successfull transaction.</li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+        <div class="mt-2">
+            <div>
                 <a href="{% url 'transactions:lodging-redirect-to-instamojo' state=state district=district ad_id=ad_id %}" class="btn btn-default btn-md">
-                    CONFIRM
+                    PAY &nbsp;&nbsp; <i class="fa fa-inr"></i> {{amount}}
                 </a>
-                <a href="{% url 'ads:detail' state=state district=district ad_id=ad_id slug=slug %}" class="btn btn-default btn-md">
+                <a href="{% url 'ads:detail' state=state district=district ad_id=ad_id slug=slug %}" class="btn btn-danger btn-md">
                     CANCEL
                 </a>
-            </p>
-            <div class="card-footer">
-                Refundable*
             </div>
+            <small class="text-muted"><a href="{% url 'legal:terms' %}">T&C apply</small>
         </div>
     </div>
 </div>

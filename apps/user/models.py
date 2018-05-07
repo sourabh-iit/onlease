@@ -7,19 +7,16 @@ from .utils import *
 
 
 class CustomUserManager(BaseUserManager):
-
     def create_user(self,mobile_number,password):
         user = User.objects.create(mobile_number=mobile_number)
         user.set_password(password)
         user.save()
         return user
-
     def create_superuser(self,mobile_number,password):
         user = User.objects.create(mobile_number=mobile_number)
         user.set_password(password)
         user.save()
         return user
-
 
 class User(AbstractUser):
     BLOCKED = 'B'
@@ -55,13 +52,15 @@ class User(AbstractUser):
     status = models.CharField(max_length=1,choices=STATUS_CHOICES,
         default=REGULAR)
     is_verified = models.BooleanField(default=False)
-    is_dealer = models.BooleanField(default=False)
     no_times_refunded = models.PositiveIntegerField(default=0)
-    no_times_not_booked = models.PositiveIntegerField(default=0)
     no_times_took_commission = models.PositiveIntegerField(default=0)
     is_dealer = models.BooleanField(
         verbose_name="Are you a dealer?",
         choices=STATE_CHOICES)
+    mobile_number_alternate1 = models.CharField(max_length=16,
+        validators=[RegexValidator(mobile_number_regex)],null=True)
+    mobile_number_alternate2 = models.CharField(max_length=16,
+        validators=[RegexValidator(mobile_number_regex)],null=True)
 
     USERNAME_FIELD = 'mobile_number'
     objects = CustomUserManager()

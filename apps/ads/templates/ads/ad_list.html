@@ -20,17 +20,6 @@
 
 {% block content%}
 
-    {% comment %} messages {% endcomment %}
-    {% if messages %}
-        <div class="messages-container">
-            {% for message in messages %}
-                <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
-                    {{message}}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <nav id="sidebar" class="bg-dark text-white scrollbar-dusty-grass square thin">
         <form action="{% url 'ads:list' state=state district=district %}" method="post">
 
@@ -109,40 +98,43 @@
     </button>
 
     {% if ads %}
-    <div class="card-deck">
+    <div class="row">
         {% for ad in ads %}
-        <a class="card" href="{% url 'ads:detail' state=state district=district ad_id=ad.id slug=ad.title %}">
-            {% if ad.lodging.posted_by.is_dealer %}
-            <div class="tag-bottom-right">Dealer</div>
-            {% endif %}
-            {% if ad.images.first %}
-            <img class="card-img-top" src="{{ad.images.first.image_thumbnail.url}}" alt="{{ad.title}}">
-            {% else %}
-            <img class="card-img-top" src="/media/no_image_available.jpeg" alt="{{ad.title}}">
-            {% endif %}
-            <div class="card-body">
-                <div class="card-title">
-                    {{ad.title}}
-                </div>
-                {% if ad.is_booked %}
-                <p class="card-text">
-                    <div class="badge badge-danger">Booked</div>
-                </p>
+        <div class="card-wrapper">
+            <a class="card z-depth-2" href="{% url 'ads:detail' state=state district=district ad_id=ad.id slug=ad.title %}">
+                {% if ad.lodging.posted_by.is_dealer %}
+                <div class="tag-bottom-right">Dealer</div>
                 {% endif %}
-                <p class="card-text">
-                    <i class="fa fa-inr green-text"></i> {{ad.rent}}
-                </p>
-                <p class="card-text">
-                    <i class="fa fa-home orange-text"></i> 
-                    {{ad.lodging_type | type_full_form}}
-                </p>
-                <p class="card-text">
-                    <i class="fa fa-calendar red-text"></i> {{ad.available_from}}</p>
-                <p class="card-text text-muted">
-                <p class="card-text text-muted">
-                    <i class="fa fa-map-marker purple-text"></i> {{ad.location.region}}</p>
-            </div>
-        </a>
+                {% if ad.image %}
+                <img class="card-img-top" src="{{ad.image.image_thumbnail.url}}" alt="{{ad.title}}">
+                {% else %}
+                <img class="card-img-top" src="/media/no_image_available.jpeg" alt="{{ad.title}}">
+                {% endif %}
+                <div class="card-body">
+                    <div class="card-title">
+                        {{ad.title}}
+                    </div>
+                    <div style="display: flow-root">
+                        {% if ad.is_booked %}
+                        <div class="badge badge-danger mb-2 float-right">Booked</div>
+                        {% endif %}
+                        <div class="float-left">
+                                <i class="fa fa-inr green-text"></i> {{ad.rent}}
+                        </div>
+                        
+                    </div>
+                    <p class="card-text">
+                        <i class="fa fa-home orange-text"></i> 
+                        {{ad.lodging_type | type_full_form}}
+                    </p>
+                    <p class="card-text">
+                        <i class="fa fa-calendar red-text"></i> {{ad.available_from}}</p>
+                    <p class="card-text text-muted">
+                    <p class="card-text text-muted">
+                        <i class="fa fa-map-marker purple-text"></i> {{ad.location.region}}</p>
+                </div>
+            </a>
+        </div>
             <span></span>
         {% endfor %}
     </div>

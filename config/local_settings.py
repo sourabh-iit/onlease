@@ -167,11 +167,50 @@ INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
 INSTAMOJO_SALT = '1d83a8d73aa84093857eb269fd825d67'
 INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
 
-LODGING_PAYMENT = 500
-
 RECIPIENTS = ['sourabh7singh@gmail.com']
 
 # for custom widgets
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'onlease.log',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'MYAPP': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+        },
+    }
+}
+
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'postmaster@mg.onlease.in'
+EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_PASSWORD')
+EMAIL_USE_TLS = True
+
+BASE_URL = 'http://localhost:8000'

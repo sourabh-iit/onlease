@@ -35,14 +35,6 @@ h3{
 .btn{
     background: #4b515d!important;
 }
-@media screen and (min-width: 768px){
-    .card-deck{
-        margin-top: 0;
-    }
-}
-.card-link{
-    max-width: 250px;
-}
 .tag-bottom-right{
     position: absolute;
     bottom: 15px;
@@ -55,4 +47,49 @@ h3{
     transform: rotate(-45deg);
     text-align: center;
     box-shadow: 2px -2px 2px rgb(145, 150, 150), 2px 2px 2px rgb(145, 150, 150);
+}
+.card-wrapper{
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+}
+.card-deck{
+    justify-content: space-between;
+}
+.row{
+    margin-top: 2rem;
+}
+p{
+    margin-bottom: 0.4rem;
+}
+.card-title{
+    margin-bottom: 0rem;
+}
+@media screen and (min-width: 560px){
+    .card-wrapper{
+        width: 50%;
+    }
+}
+@media screen and (min-width: 720px){
+    .card-wrapper{
+        width: 33.33%;
+    }
+}
+@media screen and (min-width: 768px){
+    .row{
+        margin-top: 0;
+    }
+    .card-wrapper{
+        width: 50%;
+    }
+}
+@media screen and (min-width: 980px){
+    .card-wrapper{
+        width: 33.33%;
+    }
+}
+@media screen and (min-width: 1200px){
+    .card-wrapper{
+        width: 25%;
+    }
 }

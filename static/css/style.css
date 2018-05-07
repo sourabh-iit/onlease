@@ -81,6 +81,13 @@
     left: -5px;
     font-size: 1rem;
 }
+.nav-item{
+    display: flex;
+    align-items: center;
+}
+.btn-sm{
+    font-size: 0.8rem!important;
+}
 @keyframes click-wave {
     0% {
         height: 20px;

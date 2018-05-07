@@ -3,3 +3,4 @@ media/**
 *.pyc
 **.tar.xz
 venv
+*.log

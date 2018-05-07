@@ -20,7 +20,7 @@ class LodgingTransaction(models.Model):
     )
     status = models.CharField(max_length=1, default=PENDING, choices=STATUS_CHOICES)
     amount = models.PositiveIntegerField(validators=[RegexValidator('^[1-9][0-9]{1,10}$')])
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="lodgingtransaction")
     lodging = models.ForeignKey(Lodging,on_delete=models.CASCADE)
     payment_request_id = models.CharField(max_length=40,null=True)
     payment_id = models.CharField(max_length=40,null=True)
@@ -31,7 +31,8 @@ class LodgingTransaction(models.Model):
     email_status = models.CharField(max_length=1,choices=STATUS_CHOICES,
         default=PENDING)
     payment_gateway_fees = models.CharField(max_length=12,default=0)
-    amount_paid = models.CharField(max_length=10,null=True)
+    amount_paid = models.CharField(max_length=10,default=0)
+    reason = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
         super(LodgingTransaction, self).save(*args, **kwargs)
@@ -42,5 +43,8 @@ class LodgingTransaction(models.Model):
             # send message of fail transaction
             print("transaction fail")
 
+    class Meta:
+        ordering=['-updated_at']
+
     def __str__(self):
-        return self.id
+        return str(self.id)

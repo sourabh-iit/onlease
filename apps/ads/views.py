@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .forms import AdsForm
 from django.db.models import Q
-from apps.lodging.models import Lodging, CommonlyUsedLodgingModel
+from apps.lodging.models import Lodging, CommonlyUsedLodgingModel, ImageModel
 from django.utils.http import urlencode
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 import datetime
 from apps.locations.models import Location
+from django.db.models.query import Prefetch
 
 def reverse_location(location):
     for tup in CommonlyUsedLodgingModel.LOCATION_CHOICES:
@@ -22,15 +23,19 @@ def reverse_location(location):
 @csrf_exempt
 def ads_list_view(request,state,district):
     try:
+        q=Q(
+            location__state=state,
+            location__district=district,
+            available_from__lte=datetime.date.today()+
+                        datetime.timedelta(days=15)
+        )
         if request.method=='POST':
             form = AdsForm(state,district,request.POST)
             if form.is_valid():
                 data = form.cleaned_data
                 # min_rent, max_rent will always be available ensured by AdsForm
                 # Similarly for 'lower_availability' and 'upper_availability'
-                q = Q(
-                    location__state=state,
-                    location__district=district,
+                q &= Q(
                     rent__gte=int(data['min_rent']),
                     rent__lte=int(data['max_rent']),
                     available_from__gte=data['lower_availability'],
@@ -55,26 +60,23 @@ def ads_list_view(request,state,district):
                     for lodging_type in data['lodging_types']:
                         q_ |= Q(lodging_type=lodging_type)
                     q &= q_
-                ads = CommonlyUsedLodgingModel.objects.filter(q).prefetch_related('images')
-            else:
-                # messages.error(form)
-                ads = CommonlyUsedLodgingModel.objects.filter(
-                    location__state=state,
-                    location__district=district,
-                    available_from__lte=datetime.date.today()+
-                        datetime.timedelta(days=15)).prefetch_related('images')
         else:
             form = AdsForm(state,district)
-            ads = CommonlyUsedLodgingModel.objects.filter(
-                    location__state=state,
-                    location__district=district,
-                    available_from__lte=datetime.date.today()+
-                    datetime.timedelta(days=15)).prefetch_related('images')
     except KeyError:
         messages.error(request,"Bad request")
     except ViewException:
         messages.error(request,'Location is not provided')
         return HttpResponseRedirect(reverse('ads:choose-location'))
+    ads = CommonlyUsedLodgingModel.objects.select_related('location').prefetch_related(
+        Prefetch(
+            'lodging',queryset=Lodging.objects.select_related('posted_by')
+        ),'images'
+    ).filter(q)
+    for ad in ads:
+        try:
+            ad.image = ad.images.all()[0]
+        except:
+            ad.image = None
     return render(request,'ads/ad_list.html',
         {'form':form,'ads':ads,'state':state,'district':district})
 

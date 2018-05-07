@@ -8,4 +8,15 @@ $('document').ready(function(){
     if(offset.top<windowHeight){
         $('footer').css({'position': 'relative','top':windowHeight-offset.top,'width':'100%'});
     }
+    var height = $('#center').height();
+    $('#center').css({'margin-top':(windowHeight/2-height/2-$('body').css('padding-top'))+'px'});
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+    })();
 })

@@ -1,0 +1,48 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <div class="container col-10 col-sm-8 col-md-6 col-xl-4">
+        <form action="{% url 'dashboard:profile' %}" method="post" novalidate class="mt-5">
+            {% csrf_token %}
+            <p class="h4 text-center mb-4 text-capitalize">PROFILE</p>
+            
+            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                
+                <div class="md-form">
+                    <i class="fa fa-envelope prefix"></i>
+                    {% render_field form.email class+="form-control" %}
+                    <label for="id_email">Email address</label>
+                    {% if form.email.errors %}
+                        <div class="error"><small>{{form.email.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form">
+                    <i class="fa fa-envelope prefix"></i>
+                    {% render_field form.mobile_number_alternate1 class+="form-control" %}
+                    <label for="id_mobile_number_alternate1">Alternate Mobile Number</label>
+                    {% if form.mobile_number_alternate1.errors %}
+                        <div class="error"><small>{{form.mobile_number_alternate1.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+                
+                <div class="md-form">
+                    <i class="fa fa-envelope prefix"></i>
+                    {% render_field form.mobile_number_alternate2 class+="form-control" %}
+                    <label for="id_mobile_number_alternate2">Alternate Mobile Number</label>
+                    {% if form.mobile_number_alternate2.errors %}
+                        <div class="error"><small>{{form.mobile_number_alternate2.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+            {% endwith %}
+
+            <div class="text-center mt-4">
+                <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}

@@ -36,3 +36,7 @@
 #district{
   display: none;
 }
+.sub-container{
+  max-width: 250px;
+  width: 100%;
+}
