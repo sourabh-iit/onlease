@@ -19,5 +19,4 @@ $('document').ready(function(){
         s1.setAttribute('crossorigin','*');
         s0.parentNode.insertBefore(s1,s0);
     })();
-    $('body').css({'padding-top':$('.navbar').outerHeight()});
 })

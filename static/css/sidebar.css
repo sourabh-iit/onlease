@@ -1,7 +1,7 @@
 
 #sidebar {
     position: fixed;
-    top: 3.6rem;
+    top: 4.2rem;
     left: 0;
     width: 100%;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
