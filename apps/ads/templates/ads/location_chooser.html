@@ -4,6 +4,10 @@
 {% load static %}
 {% load staticfiles %}
 
+{% block ads_active %}
+active
+{% endblock %}
+
 {% block head %}
     <link rel="stylesheet" href="{% static 'ads/location_chooser.css' %}">
     <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">

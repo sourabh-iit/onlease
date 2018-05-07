@@ -33,6 +33,11 @@
                         <i class="fa fa-home"></i> Home
                     </a>
                 </li>
+                <li class="nav-item {% block ads_active %}{% endblock %}">
+                    <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'ads:choose-location' %}">
+                        <i class="fa fa-search"></i> Search Ads
+                    </a>
+                </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item {% block dashboard_active %}{% endblock %}">
                         <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'dashboard:home' %}">
