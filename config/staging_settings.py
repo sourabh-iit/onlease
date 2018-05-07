@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost','onlease.com','stage-onlease.herokuapp.com','onlease.herokuapp.com','103.95.13.160']
+ALLOWED_HOSTS = ['103.95.13.160','staging.onlease.in','www.staging.onlease.in']
 
 # Application definition
 
