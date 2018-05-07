@@ -68,7 +68,7 @@ class CommonlyUsedLodgingModel(models.Model):
         " Valid length is under 70 characters.")
     slug = models.SlugField(max_length=70,editable=False,validators=[validate_slug])
     is_blocked = models.BooleanField(default=False)
-    no_times_not_booked = models.PositiveIntegerField(default=0)
+    no_times_refunded = models.PositiveIntegerField(default=0)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
