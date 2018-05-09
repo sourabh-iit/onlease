@@ -13,17 +13,19 @@ active
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
     <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">
     <link rel="stylesheet" href="{% static 'ads/ad_list.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}">
 {% endblock %}
 
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'ads/ad_list.js' %}"></script>
+    <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
 {% endblock script %}
 
 {% block content%}
 
     <nav id="sidebar" class="bg-dark text-white scrollbar-dusty-grass square thin">
-        <form action="{% url 'ads:list' state=state district=district %}" method="post">
+        <form id="filterForm" action="{% url 'ads:list' state=state district=district %}" method="post">
 
             {% if form.non_field_errors %}
                 {% for error in form.non_field_errors %}
@@ -32,6 +34,11 @@ active
             {% endif %}
 
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+
+                <label  class="sub-heading">Regions</label>
+                <div class="container-box">
+                    {% render_field form.regions multiple="multiple" %}
+                </div>
 
                 <label  class="sub-heading">Types</label>
                 <div class="container-box">

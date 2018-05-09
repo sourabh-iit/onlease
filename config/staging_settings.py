@@ -228,3 +228,5 @@ LOGGING = {
 }
 
 BASE_URL = 'http://staging.onlease.in'
+
+USE_I18N = False

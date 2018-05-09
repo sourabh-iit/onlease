@@ -4,7 +4,6 @@ from django.forms import ValidationError
 from apps.lodging.models import CommonlyUsedLodgingModel
 from apps.locations.models import Location
 
-
 class AdsForm(forms.Form):
     FLOOR_CHOICES = (
         ('ground floor','Ground floor'),
@@ -24,14 +23,19 @@ class AdsForm(forms.Form):
     furnished = forms.BooleanField(initial=False,required=False)
     parking = forms.BooleanField(initial=False,required=False)
     kitchen = forms.BooleanField(initial=False,required=False)
+    regions = forms.ChoiceField(required=False,widget=forms.SelectMultiple)
 
     def __init__(self,state, district, *args, **kwargs):
         super(AdsForm,self).__init__(*args,**kwargs)
         locations = Location.objects.filter(state=state,district=district).order_by('region').distinct('region')
         RegionChoices = ()
         for location in locations:
-            RegionChoices+=((location.id,location.region),)
-        self.fields['regions'] = forms.ChoiceField(choices=RegionChoices,required=False)
+            RegionChoices+=((location.region,location.region),)
+        self.fields['regions'].choices = RegionChoices
+
+    def clean_regions(self):
+        import pdb ; pdb.set_trace()
+        regions = self.cleaned_data.get('regions')
 
     def clean(self):
         if self.cleaned_data.get('ground_floor') and self.cleaned_data.get('top_floor'):

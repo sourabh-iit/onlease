@@ -44,7 +44,7 @@ class LodgingTransaction(models.Model):
             print("transaction fail")
 
     class Meta:
-        ordering=['-updated_at']
+        ordering=['updated_at']
 
     def __str__(self):
         return str(self.id)

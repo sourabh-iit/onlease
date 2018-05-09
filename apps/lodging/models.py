@@ -22,7 +22,7 @@ class Lodging(models.Model):
     posted_by = models.ForeignKey(User,on_delete=models.CASCADE,related_name="lodgings")
     purchased_by = models.ManyToManyField(User,related_name="customers")
     address = models.CharField(max_length=200, validators=[
-        RegexValidator('^[0-9A-Za-z ./,]{10,}$')],
+        RegexValidator('^[0-9A-Za-z .\/\-\,]{10,}$')],
         help_text='Valid characters are alphabets, digits, period and hyphen'+
         ' Valid length is under 200 characters.')
     posted_at = models.DateField(auto_now=True, editable=False, blank=True)

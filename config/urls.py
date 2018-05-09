@@ -29,4 +29,5 @@ urlpatterns = [
     path('transactions/', include('apps.transactions.urls')),
     path('api/locations/', include('apps.locations.urls')),
     path('legal/', include('apps.legal.urls')),
+    path('i18n/', include('django.conf.urls.i18n')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

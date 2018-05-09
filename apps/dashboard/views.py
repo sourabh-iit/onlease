@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
 from django.db.models.query import Prefetch
+from .models import Refund
 
 User = get_user_model()
 
@@ -65,7 +66,18 @@ def home_view(request):
             INNER JOIN locations_location ln
                 ON c.location_id=ln.id
             WHERE
-                u.mobile_number=%s""",[request.user.mobile_number]
+                u.mobile_number=%s
+            AND(
+                t.status=%s
+            OR
+                t.status=%s
+            OR
+                t.status=%s
+            )
+            ORDER BY
+                t.updated_at DESC""",[request.user.mobile_number,
+                LodgingTransaction.SUCCESS,LodgingTransaction.FAIL,
+                LodgingTransaction.REFUNDED]
         )
         lodgingtransactions = []
         for lodging in lodgings_bought:
@@ -91,6 +103,7 @@ def home_view(request):
 
 @login_required
 def refund_view(request,transaction_id):
+    form = RefundForm()
     try:
         transaction_ = LodgingTransaction.objects.prefetch_related(
             Prefetch('lodging',queryset=Lodging.objects.select_related('sublodging'))
@@ -103,26 +116,39 @@ def refund_view(request,transaction_id):
             if form.is_valid():
                 if request.user.no_times_refunded>=2:
                     raise ViewException('Maximum times of refund has reached')
-                response = api.refund_create(transaction_.payment_id,'QFL',form.cleaned_data['reason'],refund_amount)
+                try:
+                    response = api.refund_create(transaction_.payment_id,'QFL',form.cleaned_data['reason'],refund_amount)
+                except ConnectionError:
+                    response=None
                 if response.get('success'):
                     sublodging=transaction_.lodging.sublodging
                     sublodging.is_booked=False
                     transaction_.status=LodgingTransaction.REFUNDED
                     request.user.no_times_refunded+=1
-                    transaction_last = LodgingTransaction.objects.filter(lodging=transaction_.lodging)[1]
-                    if transaction_last.status==LodgingTransaction.REFUNDED:
-                        sublodging.no_times_refunded+=1
-                    else:
-                        sublodging.no_times_refunded=0                        
+                    if request.user.lodgingtransaction.count()>1:
+                        trans = request.user.lodgingtransaction.latest('updated_at')
+                        if trans.status==LodgingTransaction.SUCCESS:
+                            request.user.no_times_refunded=0
+                    sublodging.no_times_refunded+=1
+                    if transaction_.lodging.lodgingtransaction_set.count()>1:
+                        trans = transaction_.lodging.lodgingtransaction_set.latest('updated_at')
+                        if trans.status==LodgingTransaction.SUCCESS:
+                            sublodging.no_times_refunded=0
                     with transaction.atomic():
                         transaction_.save()
                         sublodging.save()
                         request.user.save()
+                    Refund.objects.create(
+                        user=request.user,
+                        amount=refund_amount,
+                        reason = form.cleaned_data['reason']
+                    )
                     messages.success(request,'Your refund has been generated')
                 else:
-                    messages.error(request,'Faced some error in generating your refund')
-        else:
-            form = RefundForm()
+                    if response:
+                        messages.error(request,'Faced some error in generating your refund')
+                    else:
+                        messages.error(request,'Unable to process your request currently')
     except LodgingTransaction.DoesNotExist:
         messages.error(request,'Transaction does not exist')
         return HttpResponseRedirect(reverse('dashboard:home'))

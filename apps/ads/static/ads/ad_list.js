@@ -8,6 +8,27 @@ var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     s0.parentNode.insertBefore(s1,s0);
 })();
 $(document).ready(function () {
+    $('#id_regions').multiselect({
+        enableHTML: false,
+        enableCaseInsensitiveFiltering: true,
+        maxHeight: 300,
+        buttonWidth: '200px',
+        includeResetOption: true,
+        resetText: "Reset all",
+        onInitialized: function(select, container){
+            $("button.multiselect").addClass('btn-sm btn-primary');
+            $("button.multiselect").removeClass('btn-default');
+            $(".multiselect-reset a").removeClass('btn-default').addClass('btn-sm btn-secondary');
+            $('.multiselect-search').removeClass('form-control');
+            var i=document.createElement('i');
+            i.className='fa fa-times-circle multiselect-clear-filter';
+            $('.input-group-btn').append(i);
+            $('.glyphicon.glyphicon-search').addClass('fa fa-search');
+        }
+    });
+    $('#filterForm').submit(function(event){
+        event.preventDefault();
+    })
     var width = $("body").innerWidth();
     if (width>768){
         $("#sidebarCollapse").css("display","none");

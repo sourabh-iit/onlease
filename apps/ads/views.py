@@ -60,6 +60,12 @@ def ads_list_view(request,state,district):
                     for lodging_type in data['lodging_types']:
                         q_ |= Q(lodging_type=lodging_type)
                     q &= q_
+                if data['regions']:
+                    q_ = Q()
+                    for region in data['regions']:
+                        q_ |= Q(location__region=region)
+                    q &= q_
+            print(form.errors)
         else:
             form = AdsForm(state,district)
     except KeyError:

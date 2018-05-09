@@ -19,6 +19,7 @@ from django.db import transaction
 from django.db.models.query import Prefetch
 from apps.user.utils import ViewException
 from django.views.decorators.csrf import csrf_exempt
+from requests.exceptions import ConnectionError
 
 api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
         auth_token=settings.INSTAMOJO_AUTH_KEY,
@@ -37,21 +38,25 @@ def redirect_to_instamojo_view(request,state,district,ad_id):
                 kwargs={'state':state,'district':district}))
         if lodging.sublodging.is_blocked:
             raise ViewException('This lodging is under process of booking by another user')
-        transaction = LodgingTransaction.objects.filter(
-            status=LodgingTransaction.SUCCESS,
-            created_at__gte=datetime.datetime.now()-datetime.timedelta(days=3)
-        ).latest('updated_at')
-        if transaction:
+        try:
+            transaction_ = LodgingTransaction.objects.filter(
+                status=LodgingTransaction.SUCCESS,
+                created_at__gte=datetime.datetime.now()-datetime.timedelta(days=3),
+                user=request.user
+            ).latest('updated_at')
+        except:
+            transaction_=None
+        if transaction_:
             raise ValidationError('You have lodging that needs to be settled')
         amount = lodging.sublodging.rent//10
-        transaction = LodgingTransaction.objects.create(
+        transaction_ = LodgingTransaction.objects.create(
             amount = amount,
             user = request.user,
             lodging = lodging
         )
         response = api.payment_request_create(
             amount=amount,
-            purpose=transaction.id,
+            purpose=transaction_.id,
             buyer_name=request.user.first_name,
             send_sms=True,
             phone=request.user.mobile_number,
@@ -62,14 +67,10 @@ def redirect_to_instamojo_view(request,state,district,ad_id):
             # webhook will be added here   
         )
         if response['success']:
-            transaction.payment_request_id = response['payment_request']['id']
-            lodging.sublodging.is_blocked=True
-            with transaction.atomic():
-                lodging.sublodging.save()
-                transaction.save()
+            transaction_.payment_request_id = response['payment_request']['id']
+            transaction_.save()
             return HttpResponseRedirect(
                 response['payment_request']['longurl']+'?embed=form')
-        print(response)
         messages.error(request,'Failed to process request')
         return HttpResponseRedirect(reverse('transactions:lodging',kwargs={'state':state,'district':district,'ad_id':ad_id}))
     except Lodging.DoesNotExist:
@@ -78,6 +79,9 @@ def redirect_to_instamojo_view(request,state,district,ad_id):
     except (ValidationError,ViewException) as e:
         messages.error(request,e)
         return HttpResponseRedirect(reverse('ads:list',kwargs={'state':state,'district':district}))
+    except ConnectionError as e:
+        messages.error(request,'Connection could not be made. Please check your internet connection')
+        return HttpResponseRedirect(reverse('transactions:lodging', kwargs={'state':state,'district':district,'ad_id':ad_id}))
 
 @login_required
 def lodging_post_redirection_view(request):
@@ -107,15 +111,9 @@ def lodging_post_redirection_view(request):
                 messages.error(request,'An invalid amount was paid')
         else:
             messages.error(request,'Transaction was failed')
-        if LodgingTransaction.objects.count()>1:
-            transaction_prev = LodgingTransaction.objects.order_by('-updated_at')[1]
-            if transaction_prev.status==LodgingTransaction.SUCCESS:
-                request.user.no_times_refunded=0
-        sublodging.is_blocked=False
         with transaction.atomic():
             sublodging.save()
             transaction_.save()
-            request.user.save()
         return render(request,'transactions/success.html',{'location':location,
                     'lodging':lodging,'transaction':transaction_,'sublodging':sublodging})
     except LodgingTransaction.DoesNotExist:

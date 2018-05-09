@@ -35,7 +35,6 @@
         </div>
     </div>
     
-    {% if lodging_businesses %}
     <div class="container">
         <div class="row">
             {% for lodging in lodging_businesses %}
@@ -74,7 +73,7 @@
                 </div>
             </div>
                 {% empty %}
-                    <div class="container d-flex justify-content-center">
+                    <div class="container d-flex justify-content-center mt-3">
                         <div class="card col-sm-6 col-md-6 col-lg-5 col-xl-3">
                             <div class="card-body">
                                 <h6 class="">No business added yet.</h6>
@@ -82,23 +81,9 @@
                         </div>
                     </div>
                 {% endfor %}
-                {% if user.is_verified %}
-                    <div class="text-center d-block w-100 mt-3">
-                        <a class="btn btn-primary" href="{% url 'lodging:create' %}">
-                            <i class="fa fa-plus icon"></i> Add new business</a>
-                    </div>
-                {% else %}
-                    <div class="text-center d-block w-100">
-                        <a href="{% url "user:verify-number" %}" class="btn btn-secondary btn-md">
-                            Verify mobile number to add business
-                        </a>
-                    </div>
-                {% endif %}
         </div>
         </div>
-        {% endif %}
 
-        {% if lodgingtransactions %}
         <div class="container">
         <div class="row">
             {% for lodgingtransaction in lodgingtransactions %}
@@ -141,7 +126,7 @@
                 </div>
             </div>
             {% empty %}
-            <div class="container d-flex justify-content-center">
+            <div class="container d-flex justify-content-center mt-3">
                 <div class="card col-sm-6 col-md-6 col-lg-5 col-xl-3">
                     <div class="card-body">
                         <h6 class="">No transaction made yet.</h6>
@@ -150,7 +135,7 @@
             </div>
             {% endfor %}
         </div>
-        {% endif %}
+
 
                 
     </div>

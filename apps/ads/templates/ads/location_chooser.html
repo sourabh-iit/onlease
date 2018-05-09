@@ -10,121 +10,104 @@ active
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'ads/location_chooser.css' %}">
-    <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">
     <link rel="stylesheet" href="{% static 'css/indeterminate_progress.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}">
 {% endblock %}
 
 {% block script %}
     <script>
-        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-        (function(){
-            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-            s1.async=true;
-            s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
-            s1.charset='UTF-8';
-            s1.setAttribute('crossorigin','*');
-            s0.parentNode.insertBefore(s1,s0);
-        })();
-        function myFunction(id1,id2) {
-            var input, filter, ul, li, a, i;
-            input = document.getElementById(id1);
-            filter = input.value.toUpperCase();
-            ul = document.getElementById(id2);
-            li = ul.getElementsByTagName("li");
-            for (i = 0; i < li.length; i++) {
-                a = li[i].getElementsByTagName("a")[0];
-                if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-                    li[i].style.display = "";
-                } else {
-                    li[i].style.display = "none";
-                }
-            }
-            if($('#'+id1).val()==''){
-                $('#'+id2+' li').css({'display':'none'});
-            }
-        }
         $('document').ready(function(){
-            $.getJSON('/api/locations').done(function(data){
-                $.each(data.values,function(id,state){
-                    var li = document.createElement('li');
-                    li.innerHTML='<a href="#">'+state+'</a>';
-                    li.style.display='none';
-                    li.addEventListener('click',function(){
-                        $('#district-bar').css({'display':'block'});
-                        $('#stateInput').val(this.textContent);
-                        $('#stateUl li').css({'display':'none'});
-                        $.getJSON('/api/locations',{'state':this.textContent})
-                        .done(function(data){
-                            $.each(data.values,function(id,district){
-                                var li1=document.createElement('li');
-                                li1.innerHTML='<a href="#">'+district+'</a>';
-                                li1.style.display='none';
-                                li1.addEventListener('click',function(){
-                                    $('#districtInput').val(this.textContent);
-                                    $('#districtUl').css({'display':'none'});
-                                    if($('#stateInput').val()!='' && $('#districtInput').val()!=''){
-                                        var url = "{% url 'ads:list' state='state' district='district' %}";
-                                        url = url.replace('district',$('#districtInput').val());
-                                        location.href=url.replace('state',$('#stateInput').val());
-                                    }
-                                });
-                                $('#districtUl').append(li1);
-                            });
-                            $('#district').css({'display':'block'});
-                            $('#district-bar').css({'display':'none'});
-                        });
-                    });
-                    $('#stateUl').append(li);
+            var state="";
+            var appendedDistrict=false,appendedState=false;
+            $.getJSON('/api/locations').done(function(data1){
+                $.each(data1.values,function(id,value){
+                    var option = document.createElement('option');
+                    option.innerHTML=value;
+                    option.value=value;
+                    $('#stateInput').append(option);
                 });
-                $('#state').css({'display':'block'});
-                $('#state-bar').css({'display':'none'});
+                $('#stateInput').multiselect({
+                    onChange: function(option, checked, select){
+                        $('#stateInput').css({'dispay':'none'});
+                        $('.progress').css({'display':'block'});
+                        state=$(option).val();
+                        $.getJSON('/api/locations',{'state':state})
+                        .done(function(data2){
+                            $.each(data2.values,function(id,value){
+                                var option = document.createElement('option');
+                                option.innerHTML=value;
+                                option.value=value;
+                                $('#districtInput').append(option);
+                            });
+                            $('#districtInput').multiselect({
+                                onChange: function(option, checked, select){
+                                    $('#districtInput').multiselect('destroy');
+                                    $('.progress').css({'display':'block'});
+                                    var district = $(option).val();
+                                    var url = "{% url 'ads:list' state='state' district='district' %}";
+                                    window.location.href=url.replace('state',state).replace('district',district);
+                                },
+                                enableHTML: false,
+                                enableCaseInsensitiveFiltering: true,
+                                maxHeight: 300,
+                                noneSelectedText: 'Choose District',
+                                buttonWidth: '300px',
+                                onInitialized: function(select, container){
+                                    $('#stateInput').multiselect('destroy');
+                                    $('.progress').css({'display':'none'});
+                                    $('#districtInput').css({'display':'block'});
+                                    $('.multiselect-search').removeClass('form-control');
+                                    var i=document.createElement('i');
+                                    i.className='fa fa-times-circle multiselect-clear-filter';
+                                    $('.input-group-btn').append(i);
+                                    $('.glyphicon.glyphicon-search').addClass('fa fa-search');
+                                    appendedDistrict=true;
+                                }
+                            });
+                        });
+                    },
+                    enableHTML: false,
+                    enableCaseInsensitiveFiltering: true,
+                    maxHeight: 300,
+                    nonSelectedText: 'Choose State',
+                    buttonWidth: '300px',
+                    onInitialized: function(select, container){
+                        $('.progress').css({'display':'none'});
+                        $('#stateInput').css({'display':'block'});
+                        $('.multiselect-search').removeClass('form-control');
+                        var i=document.createElement('i');
+                        i.className='fa fa-times-circle multiselect-clear-filter';
+                        $('.input-group-btn').append(i);
+                        $('.glyphicon.glyphicon-search').addClass('fa fa-search');
+                    }
+                });
             });
         });
     </script>
+    <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 
-    {% comment %} messages {% endcomment %}
-    {% if messages %}
-        <div class="messages-container">
-            {% for message in messages %}
-                <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
-                    {{message}}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <div class="container-fluid col-10 d-flex justify-content-center">
         <div class="sub-container">
-            <div class="progress" id="state-bar">
-                <div class="progress-bar progress-bar-striped active w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                    <span>Please wait<span class="dotdotdot"></span></span>
+        
+            <div class="mt-5" id="location">
+
+                <select id="stateInput">
+                </select>
+
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                        <span>Please wait<span class="dotdotdot"></span></span>
+                    </div>
                 </div>
+
+                <select id="districtInput">
+                </select>
+                
             </div>
-        
-            <div class="mt-5 md-form" id="state">
-                <i class="fa fa-search prefix"></i>
-                <input type="text" id="stateInput" class="form-control" onkeyup="myFunction('stateInput','stateUl')" autocomplete="off">
-                <label for="stateInput">Choose State</label>
-                <ul id="stateUl" class="ul text-white scrollbar-dusty-grass square thin">
-                </ul>
-            </div>
-        
-            <div class="progress" id="district-bar">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                    <span>Please wait<span class="dotdotdot"></span></span>
-                </div>
-            </div>
-        
-            <div class="mt-5 md-form" id="district">
-                <i class="fa fa-search prefix"></i>
-                <input type="text" id="districtInput" class="form-control" onkeyup="myFunction('districtInput','districtUl')" autocomplete="off">
-                <label for="districtInput">Choose District</label>
-                <ul id="districtUl" class="ul text-white scrollbar-dusty-grass square thin">
-                </ul>
-            </div>
+
         </div>
         
     </div>

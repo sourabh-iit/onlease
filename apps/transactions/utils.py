@@ -7,6 +7,8 @@ import json
 from django.contrib import messages
 
 def generate_otp(length):
+    if settings.DEBUG:
+        return '0000'
     rng = random.SystemRandom()
     return ''.join([str(rng.randint(0,9)) for _ in range(length)])
 
@@ -26,6 +28,8 @@ def send_message(mobile_number,message):
     import pdb; pdb.set_trace()
 
 def send_otp(request,mobile_number):
+    if settings.DEBUG==True:
+        return
     mobile_number="+91"+mobile_number
     url = 'http://control.msg91.com/api/sendotp.php'
     otp = request.session['otp']

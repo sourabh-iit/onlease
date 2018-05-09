@@ -1,42 +1,52 @@
 * {
   box-sizing: border-box;
 }
-
-.ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+#stateInput{
+  display: none;
+}
+#district-progress{
+  display: none;
+}
+.progress-bar{
   width: 100%;
-  max-height: 200px;
-  overflow-y: scroll;
-  padding-left: 2.5rem;
 }
-
-.ul li a {
-  border: 1px solid #ddd;
-  margin-top: -1px;
-  background-color: #f6f6f6;
-  padding: 5px;
-  text-decoration: none;
-  font-size: 16px;
-  color: black;
-  display: block;
-  width: inherit;
-}
-
-.ul li a:hover:not(.header) {
-  background-color: #eee;
-}
-#state{
-  display: none;
-}
-#district-bar{
-  display: none;
-}
-#district{
+#districtInput{
   display: none;
 }
 .sub-container{
   max-width: 250px;
   width: 100%;
+}
+.multiselect-search{
+  padding-left: 5px;
+  width: 90%;
+  padding-left: 25px;
+  padding-right: 20px;
+}
+.input-group-btn{
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 32px;
+}
+button.multiselect-clear-filter{
+  display: none;
+}
+.multiselect-clear-filter{
+  font-size: 20px;
+}
+.input-group{
+  position: relative;
+  align-items: center;
+  flex-wrap: inherit;
+}
+.input-group-addon{
+  position: absolute;
+  left: 5px;
+}
+.progress{
+  width: 300px;
+  margin: 0px!important;
 }

@@ -30,15 +30,6 @@
             {% csrf_token %}
             <p class="h4 text-center mb-4">Add lodging business</p>
 
-            {% if messages %}
-                <div class="messages-container">
-                    {% for message in messages %}
-                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
-                            {{message}}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
             {{formset.management_form}}
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="md-form">
@@ -179,6 +170,9 @@
                 <div class="md-form">
                     <span class='btn btn-sm btn-secondary' id="add_image">
                         <i class="fa fa-file-image-o icon"></i> Add image</span>
+                    {% if formset.errors %}
+                        <div class="error"><small>{{formset.errors.0}}</small></div>
+                    {% endif %}
                 </div>
             {% endwith %}
 

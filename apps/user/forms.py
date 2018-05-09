@@ -42,6 +42,7 @@ class RegisterForm(forms.ModelForm):
         self.fields['email'].required = True
         self.fields['password'].required = True
         self.fields['mobile_number'].required = True
+        self.fields['is_dealer'].required = True
 
     def clean(self):
         cleaned_data = super().clean()

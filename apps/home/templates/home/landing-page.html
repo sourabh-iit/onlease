@@ -2,6 +2,7 @@
 {% load widget_tweaks %}
 {% block title %}OnLease{% endblock %}
 {% load static %}
+{% load i18n %}
 
 {% block home_active %}
     active
@@ -19,7 +20,7 @@
     <div class="container d-flex">
         <img src="{% static 'images/kari-shea-180802-unsplash_desktop.jpg' %}" alt="">
         <div class="business">
-            <div>Looking to expand your Lease Business?</div>
+            <div>{% trans "Looking to expand your Lease Business?" %}</div>
             <a href="{% url 'user:register' %}" class="btn btn-deep-orange text-capitalized">
                 <i class="fa fa-handshake-o"></i> Let's join
             </a>

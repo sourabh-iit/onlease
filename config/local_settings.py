@@ -49,12 +49,14 @@ INSTALLED_APPS = [
     'apps.home',
     'apps.transactions',
     'apps.locations',
-    'apps.legal'
+    'apps.legal',
+    'autofixture',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -214,3 +216,5 @@ EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_PASSWORD')
 EMAIL_USE_TLS = True
 
 BASE_URL = 'http://localhost:8000'
+
+LANGUAGE_CODE = 'hi-IN'

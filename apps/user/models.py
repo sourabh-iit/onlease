@@ -12,7 +12,7 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save()
         return user
-    def create_superuser(self,mobile_number,password):
+    def create_superuser(self,mobile_number,email,password):
         user = User.objects.create(mobile_number=mobile_number)
         user.set_password(password)
         user.save()
@@ -54,9 +54,9 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     no_times_refunded = models.PositiveIntegerField(default=0)
     no_times_took_commission = models.PositiveIntegerField(default=0)
-    is_dealer = models.BooleanField(
+    is_dealer = models.NullBooleanField(
         verbose_name="Are you a dealer?",
-        choices=STATE_CHOICES)
+        choices=STATE_CHOICES, default=False)
     mobile_number_alternate1 = models.CharField(max_length=16,
         validators=[RegexValidator(mobile_number_regex)],null=True)
     mobile_number_alternate2 = models.CharField(max_length=16,

@@ -230,3 +230,5 @@ LOGGING = {
 }
 
 BASE_URL = 'http://onlease.in'
+
+USE_I18N = False
