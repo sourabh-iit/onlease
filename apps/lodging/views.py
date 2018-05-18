@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import ImageModel, Lodging,CommonlyUsedLodgingModel
+from .models import ImageModel, Lodging,CommonlyUsedLodgingModel, image_upload_directory
 from django.http import HttpResponseRedirect
 from .forms import LodgingCreateForm, ImageForm, ImageFormset,\
                     CommonlyUsedLodgingCreateForm, CommonlyUsedLodgingUpdateForm
@@ -9,11 +9,13 @@ from apps.user.utils import ViewException
 from django.conf import settings
 from django.db import transaction
 import os
+import shutil
 from django.dispatch import receiver
 from django.db.models.signals import post_delete
 from django.contrib import messages
-from apps.locations.models import Location
 from django.db.models.query import Prefetch
+from apps.user.utils import maintain_cookie
+from apps.locations.models import Region
 
 def delete_files(*args):
     for file in args:
@@ -22,21 +24,29 @@ def delete_files(*args):
 
 @receiver(post_delete, sender=ImageModel)
 def delete_image(sender,instance,using,**kwargs):
-    delete_files(instance.image.name,instance.image_thumbnail.name)
+    image = os.path.splitext(instance.image.name)
+    delete_files(
+        instance.image.name,
+        instance.image_thumbnail.name,
+        image[0]+'.image'+image[1])
 
+@receiver(post_delete, sender=Lodging)
+def delete_lodging(sender,instance,using,**kwargs):
+    shutil.rmtree(settings.MEDIA_ROOT+'/'+image_upload_directory(instance))
+
+@maintain_cookie
 @login_required
 def lodging_create_view(request):
     if not request.user.is_verified:
         messages.error(request,'Verify mobile number to add business')
         return HttpResponseRedirect(reverse('dashboard:home'))
     if request.method=='POST':
+        import pdb; pdb.set_trace()
         form = LodgingCreateForm(request.POST)
         sub_form = CommonlyUsedLodgingCreateForm(request.POST)
         formset = ImageFormset(request.POST,request.FILES,
             instance=CommonlyUsedLodgingModel(), prefix="image")
         try:
-            if not request.session.test_cookie_worked():
-                raise ViewException('Cookies are not enabled')
             if sub_form.is_valid():
                 sublodging = sub_form.save(commit=False)
                 formset = ImageFormset(request.POST, request.FILES,
@@ -44,19 +54,20 @@ def lodging_create_view(request):
                 if form.is_valid() and formset.is_valid():
                     lodging = form.save(commit=False)
                     lodging.posted_by = request.user
-                    location = Location.objects.get(pk=sub_form.cleaned_data['id'])
                     with transaction.atomic():
                         lodging.save()
                         sublodging.lodging = lodging
-                        sublodging.location = location
                         sublodging.save()
                         formset.save()
                     messages.success(request,"Lodging created successfully")
-                    return HttpResponseRedirect(reverse('dashboard:home'))
+                    return HttpResponseRedirect(reverse('ads:list',kwargs={
+                        'state_id':sublodging.region.state.id,
+                        'state':sublodging.region.state.name,
+                        'district_id':sub_form.cleaned_data['district'],
+                        'district':sublodging.region.district.name
+                    }))
         except ViewException as e:
-            messages.error(request,e)
-        except Location.DoesNotExist:
-            messages.error(request,'Choose location only from given options')
+            formset.add_error(None,e)
     else:
         request.session.set_test_cookie()
         form = LodgingCreateForm()
@@ -102,7 +113,12 @@ def lodging_edit_view(request,ad_id):
                         sublodging_form.save()
                         formset.save()
                     messages.success(request,'Lodging updated successfully')
-                    return HttpResponseRedirect(reverse('dashboard:home'))
+                    return HttpResponseRedirect(reverse('ads:list',kwargs={
+                        'state': sublodging.region.state.name,
+                        'state_id': sublodging.region.state.id,
+                        'district': sublodging.region.district.name,
+                        'district_id': sublodging.region.district.id,
+                    }))
         else:
             messages.error(request,'Cookies are not enabled')
     else:

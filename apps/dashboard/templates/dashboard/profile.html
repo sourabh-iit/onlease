@@ -9,6 +9,12 @@
             <p class="h4 text-center mb-4 text-capitalize">PROFILE</p>
             
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+
+                <div class="md-form">
+                    <i class="fa fa-mobile prefix"></i>
+                    <input type="text" name="mobile" id="mobile" value="{{user.mobile_number}}" class="form-control" disabled>
+                    <label for="mobile">Mobile number</label>
+                </div>
                 
                 <div class="md-form">
                     <i class="fa fa-envelope prefix"></i>
@@ -20,7 +26,7 @@
                 </div>
 
                 <div class="md-form">
-                    <i class="fa fa-envelope prefix"></i>
+                    <i class="fa fa-phone prefix"></i>
                     {% render_field form.mobile_number_alternate1 class+="form-control" %}
                     <label for="id_mobile_number_alternate1">Alternate Mobile Number</label>
                     {% if form.mobile_number_alternate1.errors %}
@@ -29,7 +35,7 @@
                 </div>
                 
                 <div class="md-form">
-                    <i class="fa fa-envelope prefix"></i>
+                    <i class="fa fa-phone prefix"></i>
                     {% render_field form.mobile_number_alternate2 class+="form-control" %}
                     <label for="id_mobile_number_alternate2">Alternate Mobile Number</label>
                     {% if form.mobile_number_alternate2.errors %}

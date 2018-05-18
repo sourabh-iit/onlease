@@ -11,8 +11,8 @@ from apps.user.utils import ViewException
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 import datetime
-from apps.locations.models import Location
 from django.db.models.query import Prefetch
+from apps.locations.models import Region
 
 def reverse_location(location):
     for tup in CommonlyUsedLodgingModel.LOCATION_CHOICES:
@@ -21,16 +21,16 @@ def reverse_location(location):
     raise ViewException('Invalid location value.')
 
 @csrf_exempt
-def ads_list_view(request,state,district):
+def ads_list_view(request,state,state_id,district,district_id):
     try:
         q=Q(
-            location__state=state,
-            location__district=district,
+            region__state__id=state_id,
+            region__district__id=district_id,
             available_from__lte=datetime.date.today()+
                         datetime.timedelta(days=15)
         )
         if request.method=='POST':
-            form = AdsForm(state,district,request.POST)
+            form = AdsForm(state_id,district_id,request.POST)
             if form.is_valid():
                 data = form.cleaned_data
                 # min_rent, max_rent will always be available ensured by AdsForm
@@ -63,34 +63,37 @@ def ads_list_view(request,state,district):
                 if data['regions']:
                     q_ = Q()
                     for region in data['regions']:
-                        q_ |= Q(location__region=region)
+                        q_ |= Q(region__id=region)
                     q &= q_
-            print(form.errors)
         else:
-            form = AdsForm(state,district)
+            form = AdsForm(state_id,district_id)
     except KeyError:
         messages.error(request,"Bad request")
     except ViewException:
         messages.error(request,'Location is not provided')
         return HttpResponseRedirect(reverse('ads:choose-location'))
-    ads = CommonlyUsedLodgingModel.objects.select_related('location').prefetch_related(
-        Prefetch(
-            'lodging',queryset=Lodging.objects.select_related('posted_by')
-        ),'images'
-    ).filter(q)
+    ads = CommonlyUsedLodgingModel.objects.prefetch_related(
+            Prefetch(
+                'lodging',queryset=Lodging.objects.select_related('posted_by')
+            ),'images'
+        ).filter(q).order_by('lodging__posted_at')
     for ad in ads:
         try:
             ad.image = ad.images.all()[0]
         except:
             ad.image = None
     return render(request,'ads/ad_list.html',
-        {'form':form,'ads':ads,'state':state,'district':district})
+        {'form':form,'ads':ads,'state':state,'district':district,'state_id':state_id,'district_id':district_id})
 
 @csrf_exempt
-def ads_detail_view(request,state,district,ad_id,slug):
-    redirection_url = reverse('ads:list',kwargs={'state':state,'district':district})
+def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
+    redirection_url = reverse('ads:list',kwargs={
+        'state':state,
+        'state_id':state_id,
+        'district':district,
+        'district_id':district_id})
     try:
-        lodging = CommonlyUsedLodgingModel.objects.prefetch_related("images").get(pk=ad_id)
+        lodging = CommonlyUsedLodgingModel.objects.prefetch_related("images",'lodging').get(pk=ad_id)
     except CommonlyUsedLodgingModel.DoesNotExist:
         messages.error(request,'Lodging with id '+ad_id+' does not exist')
         return HttpResponseRedirect(redirection_url)
@@ -101,7 +104,10 @@ def ads_detail_view(request,state,district,ad_id,slug):
         'ad': lodging,
         'images': lodging.images.all(),
         'state': state,
+        'state_id': state_id,
         'district': district,
-        'ad_id': ad_id
+        'district_id': district_id,
+        'ad_id': ad_id,
+        'posted_by': lodging.lodging.posted_by
     }
     return render(request,'ads/detail.html',context)

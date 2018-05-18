@@ -1,112 +1,67 @@
-// left: 37, up: 38, right: 39, down: 40,
-// spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
-var keys = {37: 1, 38: 1, 39: 1, 40: 1};
-
-function preventDefault(e) {
-  e = e || window.event;
-  if (e.preventDefault)
-      e.preventDefault();
-  e.returnValue = false;  
-}
-
-function preventDefaultForScrollKeys(e) {
-    if (keys[e.keyCode]) {
-        preventDefault(e);
-        return false;
-    }
-}
-
-function disableScroll() {
-  if (window.addEventListener) // older FF
-      window.addEventListener('DOMMouseScroll', preventDefault, false);
-  window.onwheel = preventDefault; // modern standard
-  window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
-  window.ontouchmove  = preventDefault; // mobile
-  document.onkeydown  = preventDefaultForScrollKeys;
-}
-
-function enableScroll() {
-    if (window.removeEventListener)
-        window.removeEventListener('DOMMouseScroll', preventDefault, false);
-    window.onmousewheel = document.onmousewheel = null; 
-    window.onwheel = null; 
-    window.ontouchmove = null;  
-    document.onkeydown = null;  
-}
-
 function api_call(data){
-    $.getJSON('/api/locations',data).done(function(response){
-        console.log(response);
-        $.each(response.values,function(id,value){
-            var li = document.createElement('li');
-            li.innerHTML='<a href="#">'+value+'</a>';
-            li.style.display='none';
-            if(!data.hasOwnProperty('state')){
-                li.addEventListener('click',function(){
-                    $('#progress-bar').css({'display':'flex'});
-                    $('#stateInput').val(this.textContent);
-                    $('#stateUl li').css({'display':'none'});
-                    disableScroll();
-                    api_call({'state':this.textContent});
+    $('#id_state').change(function(){
+        $('#progress-bar').css({'display':'flex'});
+        var state=$(this).val();
+        $.getJSON('/api/locations',{'state':state}).done(function(response){
+            $('#id_district').children('option').remove();
+            var option = document.createElement('option');
+            option.innerHTML='Choose District';
+            option.value='';
+            $('#id_district').append(option);
+            $.each(response.values,function(id,value){
+                $('#id_region').children('option').remove();
+                var option = document.createElement('option');
+                option.innerHTML=value.name;
+                option.value=value.id;
+                $('#id_district').append(option);
+            });
+            $('#id_district').change(function(){
+                $('#progress-bar').css({'display':'flex'});
+                var district = $(this).val();
+                $.getJSON('/api/locations',{'state':state,'district':district}).done(function(response){
+                    var option = document.createElement('option');
+                    option.innerHTML='Choose Region';
+                    option.value='';
+                    $('#id_region').append(option);
+                    $.each(response.values,function(id,value){
+                        var option = document.createElement('option');
+                        option.innerHTML=value.name;
+                        option.value=value.id;
+                        $('#id_region').append(option);
+                    });
+                    $('#progress-bar').css({'display':'none'});
                 });
-                $('#stateUl').append(li);
-            }
-            else if(!data.hasOwnProperty('district')){
-                li.addEventListener('click',function(){
-                    $('#districtInput').val(this.textContent);
-                    $('#districtUl li').css({'display':'none'});
-                    $('#progress-bar').css({'display':'flex'});
-                    disableScroll();
-                    api_call({'state':$('#stateInput').val(),'district':this.textContent})
-                });
-                $('#districtUl').append(li);
-            }
-            else{
-                var li = document.createElement('li');
-                li.innerHTML='<a href="#">'+value[1]+'</a>';
-                li.style.display='none';
-                li.addEventListener('click',function(){
-                    $('#regionInput').val(this.textContent);
-                    $('#regionUl li').css({'display':'none'});
-                    $('#id').val(value[0]);
-                });
-                $('#regionUl').append(li);
-            }
+            });
+            $('#progress-bar').css({'display':'none'});
         });
-        if(!data.hasOwnProperty('state')){
-            $('#state').css({'visibility':'visible'});
-        }
-        else if(!data.hasOwnProperty('district')){
-            $('#district').css({'visibility':'visible'});
-        }
-        else{
-            $('#region').css({'visibility':'visible'});
-        }
-        $('#progress-bar').css({'display':'none'});
-        enableScroll();
     });
 }
-function myFunction(id1,id2) {
-    var input, filter, ul, li, a, i;
-    input = document.getElementById(id1);
-    filter = input.value.toUpperCase();
-    ul = document.getElementById(id2);
-    li = ul.getElementsByTagName("li");
-    for (i = 0; i < li.length; i++) {
-        a = li[i].getElementsByTagName("a")[0];
-        if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-            li[i].style.display = "";
-        } else {
-            li[i].style.display = "none";
-        }
-    }
-    if($('#'+id1).val()==''){
-        $('#'+id2+' li').css({'display':'none'});
-    }
-}
 $(document).ready(function(){
-    disableScroll();
+    $('input[length],textarea[length]').focusin(function(){
+        var length = $(this).attr('length');
+        var div = document.createElement('div');
+        $(div).addClass('character-counter');
+        var span = document.createElement('span');
+        span.innerText = '0/'+length;
+        $(div).append(span);
+        $(this).before(div);
+        $(this).keyup(function(){
+            var written = $(this).val().length;
+            $(this).prev('.character-counter').children()[0].innerText = written+'/'+length;
+        });
+    });
+    $('input[length],textarea[length]').focusout(function(){
+        $(this).prev('.character-counter').remove();
+    })
     api_call({});
+    $('#id_available_from').Zebra_DatePicker({
+        default_position: 'below',
+        show_icon: false,
+        open_on_focus: true,
+        format: 'd-m-Y',
+        direction: [1,15],
+        container: $('#datepicker-container')
+    });
 })
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
 (function(){

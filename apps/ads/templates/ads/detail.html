@@ -15,7 +15,7 @@
     <div class="col-12 mb-2">
         <span class="badge badge-pill blue">
             <i class="fa fa-map-marker" aria-hidden="true"></i> 
-            {{ad.location.region}}</span>
+            {{ad.region.name}}</span>
         <span class="badge badge-pill blue">
             <i class="fa fa-home" aria-hidden="true"></i> 
             {{ad.lodging_type | type_full_form}}</span>
@@ -53,9 +53,9 @@
         <ol class="carousel-indicators">
             {% for image in images %}
                 {% if forloop.first %}
-                    <li data-target="#carousel-ad" data-slide-to="{{forloop.first}}" class="active"></li>
+                    <li data-target="#carousel-ad" data-slide-to="0" class="active"></li>
                 {% else %}
-                    <li data-target="#carousel-ad" data-slide-to="{{forloop.counter}}"></li>
+                    <li data-target="#carousel-ad" data-slide-to="{{forloop.counter0}}"></li>
                 {% endif %}
             {% endfor %}
         </ol>
@@ -105,10 +105,24 @@
                 <p>{{ad.additional_details}}</p>
             </div>
         </div>
+        {% if posted_by.is_dealer is not True %}
         <div class="text-center d-flex align-items-center">
-            <a href="{% url 'transactions:lodging' state=state district=district ad_id=ad_id %}" class="btn btn-default d-block book font-weight-bold">
+            <a href="{% url 'transactions:lodging' state=state state_id=state_id district=district district_id=district_id ad_id=ad_id %}" class="btn btn-default d-block book font-weight-bold">
                     <i class="fa fa-credit-card"></i>&nbsp BOOK NOW</a>
         </div>
+        {% else %}
+        <div class="card mt-2">
+            <div class="card-body">
+                <h4><strong>Contact details</strong></h4>
+                <div class="card-text contact-details">
+                <i class="fa fa-phone"> {{posted_by.mobile_number}}</i>
+                </div>
+                <div class="card-text contact-details">
+                <i class="fa fa-address-card"> {{ad.lodging.address}}</i>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     <div style="clear:both"></div>
 {% endblock %}

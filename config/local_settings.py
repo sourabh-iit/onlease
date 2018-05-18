@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'apps.transactions',
     'apps.locations',
     'apps.legal',
-    'autofixture',
+    'stdimage'
 ]
 
 MIDDLEWARE = [
@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -107,21 +108,21 @@ DATABASES = {
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    # },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {
             'min_length': 8,
         }
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    # },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    # },
 ]
 
 
@@ -169,7 +170,7 @@ INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
 INSTAMOJO_SALT = '1d83a8d73aa84093857eb269fd825d67'
 INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
 
-RECIPIENTS = ['sourabh7singh@gmail.com']
+RECIPIENTS = ['feedback@onlease.in']
 
 # for custom widgets
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
@@ -209,11 +210,14 @@ LOGGING = {
     }
 }
 
-EMAIL_HOST = 'smtp.mailgun.org'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'postmaster@mg.onlease.in'
-EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_PASSWORD')
-EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# DEFAULT_FROM_EMAIL = 'feedback@onlease.in'
+# EMAIL_HOST = 'smtp.onlease.in'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'feedback@onlease.in'
+# EMAIL_HOST_PASSWORD = os.environ.get('BIGROCK_EMAIL_PASSWORD')
+# EMAIL_USE_TLS = True
 
 BASE_URL = 'http://localhost:8000'
 

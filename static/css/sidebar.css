@@ -1,43 +1,56 @@
 
 #sidebar {
     position: fixed;
-    top: 4.2rem;
-    left: 0;
-    width: 100%;
+    top: 0rem;
+    display: none;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
-    margin-left: -250px;
     z-index: 999;
-    min-width: 250px;
-    max-width: 250px;
+    float: left;
+    box-shadow: 1px 1px 2px rgba(202, 194, 194, 1), -1px -1px 2px rgba(202, 194, 194, 1);
+    margin-top: 0.5rem;
+    padding-top: 3.2rem;
+    overflow-y: scroll;
     height: 100%;
-    box-shadow: 4px 4px;
+    background: white;
+    max-width: 280px;
+}
+.container-box{
+    max-height: 200px;
+    overflow-y: hidden;
+}
+.container-box:hover{
     overflow-y: scroll;
 }
 #sidebar.active {
     margin-left: 0;
 }
 #sidebarCollapse{
-    position: fixed;
-    top: 3.3rem;
+    position: absolute;
+    top: 3.6rem;
     left: 0;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
     padding: 0.25rem 0.5rem;
     display: block;
 }
-#sidebarCollapse.active{
-    left: 250px;
-}
 #sidebar .sidebar-header {
     padding: 20px;
-    background: #2c2e38;
 }
-
+#sidebarCollapse span{
+    transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
+}
 .sub-heading {
-    padding: 5px 10px;
-    font-size: 16px;
-    background: #4b515d!important;
+    padding: 0px 10px;
+    font-size: smaller;
     display: block;
     margin-bottom: 0;
+    font-weight: 500;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+}
+#sidebar li{
+    padding-bottom: 5px;
+    font-size: 16px;
+    color: #6c757d;
 }
 .container-box ul{
     margin-bottom: 0;
@@ -46,7 +59,7 @@
     margin-left: 0;
 }
 .container-box{
-    padding: 10px 15px;
+    padding: 0 15px;
 }
 #sidebar label{
     margin-bottom: 0;
@@ -57,7 +70,8 @@
     padding-right: 5px;
 }
 .range-box{
-    padding: 20px 10px;
+    padding: 5px 10px;
+    padding-bottom: 5px;
 }
 .range-box input{
     padding: 0px 5px;
@@ -79,9 +93,21 @@
     cursor: pointer;
     box-shadow: -4px 4px 10px 0px rgba(0,0,0,.16), 4px 4px 10px 0px rgba(0,0,0,.12);
 }
+#sidebar-heading{
+    text-transform: uppercase;
+    padding: 15px;
+    padding-bottom: 0px;
+    font-weight: 500;
+}
 @media only screen and (min-width: 768px) {
     #sidebar{
         margin-left: 0;
+        position: inherit;
+        overflow-y: inherit;
+        height: auto;
+        display: block;
+        padding-top: 0;
+        margin-left: 0.4rem!important;
     }
     #sidebar.active{
         margin-left: -250px;
@@ -93,10 +119,6 @@
     }
     #sidebarCollapse.active{
         left: 0;
-    }
-    body{
-        padding-left: 250px;
-        overflow-x: hidden;
     }
     .card{
         max-width: 260px;

@@ -29,3 +29,9 @@
     background: #676060!important;
     box-shadow: 4px 4px rgba(132, 156, 132, 0.5);
 }
+.contact-details{
+    font-size: 20px!important;
+}
+.contact-details.title{
+    font-size: 30px!important;
+}

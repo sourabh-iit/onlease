@@ -8,11 +8,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <link rel="stylesheet" href="{% static 'lodging/create_lodging.css' %}">
     <link rel="stylesheet" href="{% static 'css/indeterminate_progress.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}">
 {% endblock head %}
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
     <script src="{% static 'lodging/create_lodging.js' %}"></script>
-    <script src="{% static 'js/zebra_datepicker.js' %}"></script>
     <script src="{% static 'lodging/image_field.js' %}"></script>
 {% endblock script %}
 
@@ -34,12 +35,13 @@
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="md-form">
                         <i class="fa fa-pencil prefix"></i>
-                    {% render_field sub_form.title|append_attr:"autofocus" id="title" class+="form-control" %}
+                    {% render_field sub_form.title|attr:"length:70" id="title" class+="form-control" %}
                     <label for="title">Title</label>
+                    <div class="form-text">
+                        <small class="text-muted">{{sub_form.title.help_text}}</small>
+                    </div>
                     {% if sub_form.title.errors %}
                         <div class="error"><small>{{sub_form.title.errors.0}}</small></div>
-                    {% else %}
-                        <div class="form-text"><small class="text-muted">A unique title consisting of letters, alphabets and space only.</small></div>
                     {% endif %}
                 </div>
 
@@ -47,33 +49,31 @@
                     <div class="md-form col-12 col-sm-6">
                         {% render_field sub_form.total_floors id="total_floors" class+="form-control" %}
                         <label for="total_floors">Total floors</label>
+                        <small class="text-muted">{{sub_form.total_floors.help_text}}</small>
                         {% if sub_form.total_floors.errors %}
                             <div class="error"><small>{{sub_form.total_floors.errors.0}}</small></div>
-                        {% else %}
-                            <small class="text-muted">{{sub_form.total_floors.help_text}}</small>
                         {% endif %}
                     </div>
 
                     <div class="md-form col-12 col-sm-6">
                         {% render_field sub_form.floor_no id="floor_no" class+="form-control" %}
                         <label for="floor_no">Floor number</label>
+                        <small class="text-muted">{{sub_form.floor_no.help_text}}</small>
                         {% if sub_form.floor_no.errors %}
                             <div class="error"><small>{{sub_form.floor_no.errors.0}}</small></div>
-                        {% else %}
-                            <small class="text-muted">{{sub_form.floor_no.help_text}}</small>
                         {% endif %}
                     </div>
-
-                    <div class="md-form col-12 col-sm-7" id="datepicker-container">
+                    
+                    <div class="md-form col-12 col-sm-7">
                         <i class="fa fa-calendar prefix"></i>
                         {% render_field sub_form.available_from class+="form-control"%}
                         <label for="id_available_from">Available from</label>
+                        <div id="datepicker-container"></div>
+                        <div class="form-text">
+                            <small class="text-muted">Date when lodging will be available for rent. Can be any future value.</small>
+                        </div>
                         {% if sub_form.available_from.errors %}
                             <div class="error"><small>{{sub_form.available_from.errors.0}}</small></div>
-                        {% else %}
-                            <div class="form-text">
-                                <small class="text-muted">Date when lodging will be available for rent. Can be any future value.</small>
-                            </div>
                         {% endif %}
                     </div>
 
@@ -85,32 +85,30 @@
                             <div class="error"><small>{{sub_form.rent.errors.0}}</small></div>
                         {% endif %}
                     </div>
-
-                    <div class="md-form col-12 col-sm-4" id="state">
-                        <input type="text" name="state" class="form-control" id="stateInput" onkeyup="myFunction('stateInput','stateUl')" autocomplete="off">
-                        <label for="stateInput">Choose state</label>
-                        <ul id="stateUl" class="ul text-white scrollbar-dusty-grass square thin">
-                        </ul>
+                    
+                    <div class="md-form col-12 col-sm-6" id="state">
+                        {% render_field sub_form.state class+="btn btn-default" %}
+                        {% if sub_form.state.errors %}
+                            <div class="error"><small>{{sub_form.state.errors.0}}</small></div>
+                        {% endif %}
                     </div>
 
-                    <div class="md-form col-12 col-sm-4" id="district">
-                        <input type="text" name="district" class="form-control" id="districtInput" onkeyup="myFunction('districtInput','districtUl')" autocomplete="off">
-                        <label for="districtInput">Choose district</label>
-                        <ul id="districtUl" class="ul text-white scrollbar-dusty-grass square thin">
-                        </ul>
+                    <div class="md-form col-12 col-sm-6" id="district">
+                        {% render_field sub_form.district class+="btn btn-default" %}
+                        {% if sub_form.district.errors %}
+                            <div class="error"><small>{{sub_form.district.errors.0}}</small></div>
+                        {% endif %}
                     </div>
 
-                    <div class="md-form col-12 col-sm-4" id="region">
-                        <input type="text" name="region" class="form-control" id="regionInput" onkeyup="myFunction('regionInput','regionUl')" autocomplete="off">
-                        <label for="regionInput">Choose region</label>
-                        <ul id="regionUl" class="ul text-white scrollbar-dusty-grass square thin">
-                        </ul>
+                    <div class="md-form col-12 col-sm-6" id="region">
+                        {% render_field sub_form.region class+="btn btn-default" %}
+                        {% if sub_form.region.errors %}
+                            <div class="error"><small>{{sub_form.region.errors.0}}</small></div>
+                        {% endif %}
                     </div>
-
-                    <input type="text" name="id" id="id">
 
                     <div class="md-form col-12 col-sm-6">
-                        {% render_field sub_form.lodging_type id="lodging_type" class+="form-control" %}
+                        {% render_field sub_form.lodging_type id="lodging_type" class+="btn btn-default" %}
                         {% if sub_form.lodging_type.errors %}
                             <div class="error"><small>{{sub_form.lodging_type.errors.0}}</small></div>
                         {% endif %}
@@ -120,6 +118,9 @@
                         <i class="fa fa-address-card prefix"></i>
                         {% render_field form.address id="address" class+="form-control" %}
                         <label for="address">Address</label>
+                        <div class="form-text">
+                            <small class="text-muted">{{sub_form.address.help_text}}</small>
+                        </div>
                         {% if form.address.errors %}
                             <div class="error"><small>{{form.address.errors.0}}</small></div>
                         {% endif %}
@@ -127,8 +128,11 @@
 
                     <div class="md-form col-12">
                         <i class="fa fa-pencil prefix"></i>
-                        {% render_field sub_form.additional_details id="additional_details" class+="md-textarea form-control" %}
+                        {% render_field sub_form.additional_details id="additional_details" length="500" class+="md-textarea form-control" %}
                         <label for="additional_details">Additional details</label>
+                        <div class="form-text">
+                            <small class="text-muted">{{sub_form.additional_details.help_text}}</small>
+                        </div>
                         {% if sub_form.additional_details.errors %}
                             <div class="error"><small>{{sub_form.additional_details.errors.0}}</small></div>
                         {% endif %}
@@ -139,18 +143,27 @@
                             <label for="id_is_furnished" class="label align-top">
                                 Furnished?
                             </label>
+                            {% if sub_form.is_furnished.errors %}
+                                <div class="error"><small>{{sub_form.is_furnished.errors.0}}</small></div>
+                            {% endif %}
                         </div>
                         <div class="col-12 col-sm-5">
                             {% render_field sub_form.is_parking_available class+="option-input checkbox" %}
                             <label for="id_is_parking_available" class="label align-top">
                                 Parking available?
                             </label>
+                            {% if sub_form.is_parking_available.errors %}
+                                <div class="error"><small>{{sub_form.is_parking_available.errors.0}}</small></div>
+                            {% endif %}
                         </div>
                         <div class="col-12 col-sm-4">
                             {% render_field sub_form.is_kitchen_available class+="option-input checkbox" %}
                             <label for="id_is_kitchen_available" class="label align-top">
                                 Kitchen available?
                             </label>
+                            {% if sub_form.is_kitchen_available.errors %}
+                                <div class="error"><small>{{sub_form.is_kitchen_available.errors.0}}</small></div>
+                            {% endif %}
                         </div>
                     </div>
                     <small class="help-text text-muted mt-2 col-12">Select which are available</small>
@@ -164,6 +177,9 @@
                             </label>
                             <input type="text" id='text_{{form.image.auto_id}}' class="form-control padding-0" placeholder="upload your image">
                         </div>
+                        {% if form.errors %}
+                            <div class="error"><small>{{form.image.errors.0}}</small></div>
+                        {% endif %}
                     {% endfor %}
                 </div>
                 <div style="clear:both"></div>
@@ -171,7 +187,7 @@
                     <span class='btn btn-sm btn-secondary' id="add_image">
                         <i class="fa fa-file-image-o icon"></i> Add image</span>
                     {% if formset.errors %}
-                        <div class="error"><small>{{formset.errors.0}}</small></div>
+                        <div class="error"><small>{{formset.non_form_errors.0}}</small></div>
                     {% endif %}
                 </div>
             {% endwith %}

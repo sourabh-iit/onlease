@@ -23,7 +23,8 @@ body{
     top: 30%;
     background-color: rgba(0,0,0,0.5);
     color: white;
-    font-size: 2rem;
+    font-size: 1.6rem;
+    text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -35,8 +36,9 @@ body{
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    font-size: 2rem;
-    padding: 2rem;
+    font-size: 1.6rem;
+    padding: 1.6rem;
+    text-shadow: 1px 1px rgb(1,1,1);
 }
 .rooms{
     position: absolute;
@@ -72,10 +74,48 @@ body{
     justify-content: center;
     height: 200px;
     padding: 1rem;
+    flex-direction: column;
+    text-shadow: 1px 1px rgb(177, 162, 162);
+    font-size: 18px;
+}
+.benefits-title{
+    width: 100%;
+    text-align: center;
 }
 .benefits .icon{
     font-size: 6rem;
 }
 h3{
     font-weight: 500;
+}
+.benefits{
+    padding-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.row{
+    width:100%;
+}
+.detail{
+    font-size: large;
+    text-align: center;
+}
+.desktop{
+    display: none;
+}
+.text-align-center{
+    text-align: center;
+}
+@media only screen and (min-width: 768px){
+    .business{
+        font-size: 2rem;
+    }
+    .desktop{
+        display: inline-flex;
+    }
+    .mobile{
+        display: none;
+    }
 }

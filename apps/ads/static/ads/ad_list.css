@@ -6,7 +6,11 @@
 }
 #sidebar label{
     display: flex;
-    align-items: center;
+    align-items: baseline;
+}
+.row{
+    margin-left: 0;
+    margin-top: 0!important;
 }
 h3{
     margin-bottom: 0;
@@ -16,6 +20,7 @@ h3{
     margin-left: 0rem;
     height: 15px;
     width: 15px;
+    min-width: 15px;
 }
 .option-input:checked::before{
     line-height: 15px;
@@ -23,12 +28,11 @@ h3{
     width: 15px;
     font-size: 15px;
 }
-.card-deck{
+#ads{
     margin-top: 2.4rem;
 }
 .card{
     max-width: 250px;
-    margin-top: 0.5rem;
     position: relative;
     overflow: hidden;
 }
@@ -64,6 +68,17 @@ p{
 }
 .card-title{
     margin-bottom: 0rem;
+}
+#ads{
+    box-shadow: 1px 1px 2px rgba(202, 194, 194, 1), -1px -1px 2px rgba(202, 194, 194, 1);
+    background: white;
+    padding: 10px;
+}
+body{
+    background: #e0e2de;
+}
+#datepicker-container{
+    position: relative;
 }
 @media screen and (min-width: 560px){
     .card-wrapper{

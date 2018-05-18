@@ -4,49 +4,17 @@
 #stateInput{
   display: none;
 }
-#district-progress{
-  display: none;
-}
 .progress-bar{
   width: 100%;
-}
-#districtInput{
-  display: none;
 }
 .sub-container{
   max-width: 250px;
   width: 100%;
 }
-.multiselect-search{
-  padding-left: 5px;
-  width: 90%;
-  padding-left: 25px;
-  padding-right: 20px;
-}
-.input-group-btn{
-  margin-left: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  right: 32px;
-}
-button.multiselect-clear-filter{
-  display: none;
-}
-.multiselect-clear-filter{
-  font-size: 20px;
-}
-.input-group{
-  position: relative;
-  align-items: center;
-  flex-wrap: inherit;
-}
-.input-group-addon{
-  position: absolute;
-  left: 5px;
-}
 .progress{
   width: 300px;
   margin: 0px!important;
+}
+#district-progress{
+  display: none;
 }

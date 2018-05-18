@@ -13,19 +13,17 @@ active
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
     <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">
     <link rel="stylesheet" href="{% static 'ads/ad_list.css' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}">
 {% endblock %}
 
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'ads/ad_list.js' %}"></script>
-    <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
 {% endblock script %}
 
 {% block content%}
 
-    <nav id="sidebar" class="bg-dark text-white scrollbar-dusty-grass square thin">
-        <form id="filterForm" action="{% url 'ads:list' state=state district=district %}" method="post">
+    <nav id="sidebar" class="scrollbar-dusty-grass square thin">
+        <form id="filterForm" action="{% url 'ads:list' state=state district=district state_id=state_id district_id=district_id %}" method="post">
 
             {% if form.non_field_errors %}
                 {% for error in form.non_field_errors %}
@@ -35,27 +33,42 @@ active
 
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
 
-                <label  class="sub-heading">Regions</label>
-                <div class="container-box">
-                    {% render_field form.regions multiple="multiple" %}
+                <div id="sidebar-heading">
+                    FILTERS
                 </div>
+                <hr>
 
-                <label  class="sub-heading">Types</label>
-                <div class="container-box">
-                    {% render_field form.lodging_types class+="list-unstyled option-input" %}
+                <div id="filter-container">
+                    <label  class="sub-heading">Regions</label>
+                    <div class="container-box scrollbar-dusty-grass square thin">
+                        {% render_field form.regions class+="list-unstyled option-input" %}
+                    </div>
                 </div>
+                <hr>
 
-                <label class="sub-heading">Floor</label>
-                <div class="container-box">
-                    {% render_field form.floor class+="list-unstyled option-input radio" %}
+                <div id="filter-container">
+                    <label  class="sub-heading">Types</label>
+                    <div class="container-box scrollbar-dusty-grass square thin">
+                        {% render_field form.lodging_types class+="list-unstyled option-input" %}
+                    </div>
                 </div>
+                <hr>
+
+                <div id="filter-container">
+                    <label class="sub-heading scrollbar-dusty-grass square thin">Floor</label>
+                    <div class="container-box scrollbar-dusty-grass square thin">
+                        {% render_field form.floor class+="list-unstyled option-input radio" %}
+                    </div>
+                </div>
+                <hr>
 
                 <script>
                     document.getElementById('id_floor').classList.remove('option-input');
                     document.getElementById('id_lodging_types').classList.remove('option-input');
+                    document.getElementById('id_regions').classList.remove('option-input');
                 </script>
                 <label class="sub-heading">Facilities</label>
-                <div class="container-box">
+                <div class="container-box scrollbar-dusty-grass square thin">
                     <ul class="list-unstyled">
                         <li>
                             <label for="id_furnished">
@@ -77,6 +90,7 @@ active
                         </li>
                     </ul>
                 </div>
+                <hr>
 
                 <label class="sub-heading">Rent</label>
                 <div class="range-box row">
@@ -84,6 +98,7 @@ active
                     <div class="separator">-</div>
                     {% render_field form.max_rent class+="form-control" %}
                 </div>
+                <hr>
 
                 <label class="sub-heading">Date of availability</label>
                 <div class="range-box row">
@@ -91,10 +106,13 @@ active
                     <div class="separator">-</div>
                     {% render_field form.upper_availability class+="form-control" %}
                 </div>
+                <div id="datepicker-container"></div>
+                <hr>
+
                 <div class="text-center">
                     <input type="submit" value="Submit" class="btn btn-default btn-md">
                 </div>
-                <br><br><br>
+                <br>
             {% endwith %}
             
 
@@ -106,11 +124,12 @@ active
         <span>filters</span>
     </button>
 
+    <div id="ads">
     {% if ads %}
     <div class="row">
         {% for ad in ads %}
         <div class="card-wrapper">
-            <a class="card z-depth-2" href="{% url 'ads:detail' state=state district=district ad_id=ad.id slug=ad.title %}">
+            <a class="card z-depth-2" href="{% url 'ads:detail' state=state district=district state_id=state_id district_id=district_id ad_id=ad.id slug=ad.title %}">
                 {% if ad.lodging.posted_by.is_dealer %}
                 <div class="tag-bottom-right">Dealer</div>
                 {% endif %}
@@ -140,7 +159,7 @@ active
                         <i class="fa fa-calendar red-text"></i> {{ad.available_from}}</p>
                     <p class="card-text text-muted">
                     <p class="card-text text-muted">
-                        <i class="fa fa-map-marker purple-text"></i> {{ad.location.region}}</p>
+                        <i class="fa fa-map-marker purple-text"></i> {{ad.region.name}}</p>
                 </div>
             </a>
         </div>
@@ -148,10 +167,12 @@ active
         {% endfor %}
     </div>
     {% else %}
-    <div class="d-flex align-items-center justify-content-center w-100" style="height: 20rem;">
+    <div class="d-flex align-items-center justify-content-center">
         No Ad available yet here
     </div>
     {% endif %}
+    </div>
+    <div style="clear:both"></div>
 <!-- 
 <div class="container">
     <div class="card">

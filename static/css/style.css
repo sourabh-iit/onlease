@@ -170,9 +170,9 @@
     color: #757575;
 }
 #mobile-number{
-    max-width: 140px;
+    max-width: 200px;
     padding-left: 15px; 
-    padding-right: 15px; 
+    padding-right: 15px;
 }
 .btn-secondary{
     background: #676060!important;
@@ -189,10 +189,12 @@ body{
 footer.page-footer{
     background: #4b515d!important;
 }
-.container-fluid{
-    margin-left: 6%;
-    margin-right: 6%;
-}
 .logo{
-    max-height: 2.6rem;
+    max-height: 2rem;
+}
+.footer-copyright{
+    background: rgba(0,0,0,.3)
+}
+.btn.btn-sm{
+    padding: 0.5rem 1rem;
 }

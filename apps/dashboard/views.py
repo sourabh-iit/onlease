@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models.query import Prefetch
 from .models import Refund
+from apps.locations.models import Region
 
 User = get_user_model()
 
@@ -41,15 +42,17 @@ def home_view(request):
     type=request.GET.get('type')
     lodgingtransactions=[]
     lodging_businesses=[]
+    transaction = False
     if type=='transactions':
+        transaction = True
         lodgings_bought = User.objects.raw("""
             SELECT
                 u.mobile_number,
                 t.created_at,
                 c.title,
-                ln.state,
-                ln.district,
-                ln.region,
+                s.name as state,
+                d.name as district,
+                r.name as region,
                 l.address,
                 t.payment_id,
                 t.id,
@@ -63,8 +66,12 @@ def home_view(request):
                 ON t.lodging_id=l.id
             INNER JOIN lodging_commonlyusedlodgingmodel c 
                 ON l.id=c.id
-            INNER JOIN locations_location ln
-                ON c.location_id=ln.id
+            INNER JOIN locations_region r
+                ON c.region_id=r.id
+            INNER JOIN locations_region d
+                ON r.district_id=d.id
+            INNER JOIN locations_region s
+                ON r.state_id=s.id
             WHERE
                 u.mobile_number=%s
             AND(
@@ -94,12 +101,15 @@ def home_view(request):
             })
     else:
         lodging_businesses = Lodging.objects.prefetch_related(
-            Prefetch('sublodging',
-            queryset=CommonlyUsedLodgingModel.objects.select_related('location'))).filter(posted_by=request.user)
+            Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related(
+                Prefetch('region',
+                queryset=Region.objects.prefetch_related('state','district')))
+            )).filter(posted_by=request.user)
     return render(
         request,'dashboard/home.html',
         {'lodging_businesses':lodging_businesses,
-        'lodgingtransactions':lodgingtransactions})
+        'lodgingtransactions':lodgingtransactions,
+        'transaction': transaction})
 
 @login_required
 def refund_view(request,transaction_id):

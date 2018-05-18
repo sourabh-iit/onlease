@@ -5,10 +5,18 @@ from django.forms import inlineformset_factory
 from .utils import clean_data, generate_random, create_thumbnail
 import datetime
 from django.forms.models import BaseInlineFormSet
+from PIL import Image
+import io
+import hashlib
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from apps.locations.models import State, District, Region
+from django.db.models.query import Prefetch
 
 allowed_image_formats = ['png','jpg','jpeg','gif']
 
-thumb_size = (128,128)
+thumb_size = (228,180)
+
+image_size = (800,500)
 
 class LodgingCreateForm(forms.ModelForm):
     class Meta:
@@ -20,21 +28,34 @@ class LodgingCreateForm(forms.ModelForm):
         return clean_data(data)
 
 class CommonlyUsedLodgingCreateForm(forms.ModelForm):
-    id = forms.CharField(max_length=20)
-    class Meta:
-        model = CommonlyUsedLodgingModel
-        fields = ('lodging_type','total_floors','floor_no','is_furnished',
-            'is_kitchen_available','is_parking_available','available_from',
-            'rent','additional_details','title','id')
-        widgets = {
-            'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15})
-        }
+    district = forms.ModelChoiceField(queryset=District.objects.none(),widget=forms.Select)
+    region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=forms.Select)
 
     def __init__(self, *args, **kwargs):
         super(CommonlyUsedLodgingCreateForm, self).__init__(*args, **kwargs)
         self.fields['is_furnished'].required = False
         self.fields['is_parking_available'].required = False
         self.fields['is_kitchen_available'].required = False
+        self.fields['state'] = forms.ChoiceField(
+            choices=[('','Choose State')]+[(state.id,state.name) for state in State.objects.all()],
+            widget=forms.Select
+        )
+        if 'state' in self.data and 'district' in self.data:
+            try:
+                districts = District.objects.prefetch_related('regions').filter(state__id=int(self.data['state']))
+                self.fields['district'].queryset = districts
+                self.fields['region'].queryset = districts.get(id=int(self.data['district'])).regions.all()
+            except:
+                pass
+
+    class Meta:
+        model = CommonlyUsedLodgingModel
+        fields = ('lodging_type','total_floors','floor_no','is_furnished',
+            'is_kitchen_available','is_parking_available','available_from',
+            'rent','additional_details','title','district','region')
+        widgets = {
+            'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15})
+        }
 
     def clean_available_from(self):
         date = self.cleaned_data.get('available_from')
@@ -72,6 +93,7 @@ class CommonlyUsedLodgingCreateForm(forms.ModelForm):
         if floor_no and total_floors and floor_no>=total_floors:
             raise ValidationError('Total floors value cannot be equal to or greater'+
             ' than total floors')
+        return cleaned_data
 
 
 class ImageForm(forms.ModelForm):
@@ -85,6 +107,8 @@ class ImageForm(forms.ModelForm):
 
     def clean_image(self):
         img = self.cleaned_data['image']
+        if not img:
+            raise ValidationError('This field is required')
         if img._size > 5000000:
             raise ValidationError('Upload a valid image. Only files with size less than 5mb are allowed.',code='invalidsize')
         if img.content_type.split('/')[-1] not in allowed_image_formats:
@@ -106,7 +130,7 @@ class ImageForm(forms.ModelForm):
         return im
 
 ImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
-    can_delete=True,form=ImageForm,extra=3)
+    can_delete=True,form=ImageForm,extra=0,min_num=3,validate_min=True)
 
 class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
     class Meta:
@@ -143,21 +167,18 @@ class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
 
     def clean_floor_no(self):
         floor_no = self.cleaned_data.get('floor_no')
-        if floor_no and floor_no<0:
-            raise ValidationError('Floor number cannot be negative',
-            code='less_than_0')
+        total_floors = self.cleaned_data.get('total_floors')
+        if floor_no:
+            if floor_no<0:
+                raise ValidationError('Floor number cannot be negative',
+                code='less_than_0')
+            elif total_floors and floor_no>=total_floors:
+                raise ValidationError('Total floors cannot be equal to or greater'+
+                ' than total floors')
         return floor_no
 
     def clean_total_floors(self):
         total_floors = self.cleaned_data.get('total_floors')
         if total_floors and total_floors<=0:
-            raise ValidationError('Total floors value can be negative',code='less_than_0')
+            raise ValidationError('Total floors value cannot be negative',code='less_than_0')
         return total_floors
-
-    def clean(self):
-        cleaned_data = super().clean()
-        floor_no = cleaned_data.get('floor_no')
-        total_floors = cleaned_data.get('total_floors')
-        if floor_no and total_floors and floor_no>=total_floors:
-            raise ValidationError('Total floors cannot be equal to or greater'+
-            ' than total floors')

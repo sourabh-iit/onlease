@@ -1,7 +1,10 @@
 $(document).ready(function(){
     $("#delete").click(function(){
-        $("form").prepend('<input type="hidden" name="delete">');
-        $("form").submit();
+        var del = confirm("Are you sure?");
+        if(del==true){
+            $("form").prepend('<input type="hidden" name="delete">');
+            $("form").submit();
+        }
     });
 });
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();

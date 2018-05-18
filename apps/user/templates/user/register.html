@@ -82,10 +82,17 @@
 
                 <div class="custom-form">
                     <div><label for="label id_is_dealer1">Are you a dealer?</label></div>
-                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True">
+                    {% if form.is_dealer.value == "True" %}
+                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True" checked>
                     <label for="label id_is_dealer">Yes</label>
                     <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False">
                     <label for="label id_is_dealer2">No</label>
+                    {% else %}
+                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True">
+                    <label for="label id_is_dealer">Yes</label>
+                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False" checked>
+                    <label for="label id_is_dealer2">No</label>
+                    {% endif %}
                     {% if form.is_dealer.errors %}
                         <div class="error"><small>{{form.is_dealer.errors.0}}</small></div>
                     {% endif %}

@@ -4,3 +4,4 @@ media/**
 **.tar.xz
 venv
 *.log
+.vscode

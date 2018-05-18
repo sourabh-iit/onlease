@@ -28,20 +28,18 @@
                     <div class="md-form col-12 col-sm-6">
                         {% render_field sublodging_form.total_floors|append_attr:"autofocus" id="total_floors" class+="form-control" %}
                         <label for="total_floors">Total floors</label>
+                        <small class="text-muted">{{sublodging_form.total_floors.help_text}}</small>
                         {% if sublodging_form.total_floors.errors %}
                             <div class="error"><small>{{sublodging_form.total_floors.errors.0}}</small></div>
-                        {% else %}
-                            <small class="text-muted">{{sublodging_form.total_floors.help_text}}</small>
                         {% endif %}
                     </div>
 
                     <div class="md-form col-12 col-sm-6">
                         {% render_field sublodging_form.floor_no id="floor_no" class+="form-control" %}
                         <label for="floor_no">Floor number</label>
+                        <small class="text-muted">{{sublodging_form.floor_no.help_text}}</small>
                         {% if sublodging_form.floor_no.errors %}
                             <div class="error"><small>{{sublodging_form.floor_no.errors.0}}</small></div>
-                        {% else %}
-                            <small class="text-muted">{{sublodging_form.floor_no.help_text}}</small>
                         {% endif %}
                     </div>
 
@@ -49,12 +47,11 @@
                         <i class="fa fa-calendar prefix"></i>
                         {% render_field sublodging_form.available_from class+="form-control datepicker"%}
                         <label for="id_available_from">Available from</label>
+                        <div class="form-text">
+                            <small class="text-muted">Date when lodging will be available for rent. Can be any future value.</small>
+                        </div>
                         {% if sublodging_form.available_from.errors %}
                             <div class="error"><small>{{sublodging_form.available_from.errors.0}}</small></div>
-                        {% else %}
-                            <div class="form-text">
-                                <small class="text-muted">Date when lodging will be available for rent. Can be any future value.</small>
-                            </div>
                         {% endif %}
                     </div>
 
@@ -81,18 +78,27 @@
                         <label for="id_is_furnished" class="label align-top">
                             Furnished?
                         </label>
+                        {% if sublodging_form.is_furnished.errors %}
+                            <div class="error"><small>{{sublodging_form.is_furnished.errors.0}}</small></div>
+                        {% endif %}
                     </div>
                     <div class="col-12 col-sm-4 mt-2">
                         {% render_field sublodging_form.is_parking_available class+="option-input checkbox" %}
                         <label for="id_is_parking_available" class="label align-top">
                             Parking available?
                         </label>
+                        {% if sublodging_form.is_parking_available.errors %}
+                            <div class="error"><small>{{sublodging_form.is_parking_available.errors.0}}</small></div>
+                        {% endif %}
                     </div>
                     <div class="col-12 col-sm-4 mt-2">
                         {% render_field sublodging_form.is_kitchen_available class+="option-input checkbox" %}
                         <label for="id_is_kitchen_available" class="label align-top">
                             Kitchen available?
                         </label>
+                        {% if sublodging_form.is_kitchen_available.errors %}
+                            <div class="error"><small>{{sublodging_form.is_kitchen_available.errors.0}}</small></div>
+                        {% endif %}
                     </div>
                     <small class="text-muted col-12">Select which are available</small>
                 </div>
@@ -103,6 +109,9 @@
                         <i class="fa fa-file-image"></i>
                     <span class='btn btn-sm btn-secondary ml-0' id="add_image">
                         <i class="fa fa-file-image-o icon"></i> Add image</span>
+                    {% if formset.non_form_errors %}
+                        <div class="error"><small>{{formset.non_form_errors.0}}</small></div>
+                    {% endif %}
                 </div>
             {% endwith %}
             {{formset.management_form}}

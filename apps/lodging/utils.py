@@ -12,7 +12,7 @@ from django.core.exceptions import PermissionDenied
 def create_thumbnail(img,size,thumb_name):
     img = img.file
     thumbnail = Image.open(img)
-    thumbnail.thumbnail(size)
+    thumbnail.thumbnail(size, Image.ANTIALIAS)
     thumbnail.name = thumb_name
     # save thumbnail to memory
     thumb_io = io.BytesIO()

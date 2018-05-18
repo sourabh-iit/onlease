@@ -7,14 +7,21 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator, validate_slug
-from apps.locations.models import Location
+from stdimage import StdImageField
+from apps.locations.models import Region
 
 User = get_user_model()
 
+def image_upload_directory(instance):
+    return '{0}/{1}/{2}'.format(
+        instance.posted_by.mobile_number,
+        instance.__doc__,
+        instance.id
+    )
+
 def image_upload_path(instance, filename):
-    return '{0}/{1}/{2}/{3}'.format(
-        instance.sublodging.lodging.posted_by.mobile_number,
-        instance.sublodging.lodging.__doc__,
+    return '{0}/{1}'.format(
+        image_upload_directory(instance.sublodging.lodging),
         instance.sublodging.id,filename)
 
 class Lodging(models.Model):
@@ -42,7 +49,7 @@ class CommonlyUsedLodgingModel(models.Model):
         (PAYING_GUEST, "Paying guest"),
         (ROOM, "Rooms"),
     )
-    location = models.ForeignKey(Location,on_delete=models.CASCADE)
+    region = models.ForeignKey(Region,related_name="lodgings",on_delete=models.CASCADE)
     lodging = models.OneToOneField(Lodging,on_delete=models.CASCADE,related_name='sublodging')
     lodging_type = models.CharField(max_length=1,choices=TYPE_CHOICES,
                 verbose_name="type")
@@ -58,13 +65,13 @@ class CommonlyUsedLodgingModel(models.Model):
     rent = models.PositiveIntegerField(db_index=True)
     # land_area = models.CharField(max_length=12,
     #     validators=[RegexValidator('^[1-9][0-9]*x[1-9][0-9]*$')])
-    additional_details = models.TextField(max_length=1000,null=True,blank=True,
-        validators=[RegexValidator('^[0-9a-zA-Z .]*$')],
-        help_text='Valid characters are alphabets, digits, period and hyphen.'+
-        ' Valid length is under 200 characters.')
-    title = models.CharField(max_length=70, unique=True, validators=\
+    additional_details = models.TextField(max_length=500,null=True,blank=True,
+        validators=[RegexValidator('^[0-9a-zA-Z ,-/.]*$')],
+        help_text='Valid characters are alphabets, digits, and "-,./." only'+
+        ' Valid length is under 500 characters.')
+    title = models.CharField(max_length=70, validators=\
         [RegexValidator('^[0-9A-Za-z _-]{10,}')],
-        help_text="Valid characters are alphabets, digits, hyphen and underscore only."+
+        help_text='Valid characters are alphabets, digits and "-_" only.'+
         " Valid length is under 70 characters.")
     slug = models.SlugField(max_length=70,editable=False,validators=[validate_slug])
     is_blocked = models.BooleanField(default=False)
@@ -84,10 +91,11 @@ class CommonlyUsedLodgingModel(models.Model):
 
 class ImageModel(models.Model):
     sublodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,related_name='images')
-    image = models.ImageField(upload_to=image_upload_path,
-    help_text="Maximum image size allowed is 5mb.")
+    image = StdImageField(upload_to=image_upload_path,
+        variations = {'image':(900,500)},
+        help_text="Maximum image size allowed is 5mb.")
     image_thumbnail = models.ImageField(upload_to=image_upload_path,
-    help_text="Maximum image size allowed is 5mb.")
+        help_text="Maximum image size allowed is 5mb.")
 
     def __str__(self):
         return self.image.name

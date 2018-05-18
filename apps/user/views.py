@@ -222,15 +222,15 @@ def contact_view(request):
             form.save()
             try:
                 mails = send_mail(
-                    subject=form.cleaned_data['subject']+form.cleaned_data['name'],
+                    subject=form.cleaned_data['subject']+' '+form.cleaned_data['name'],
                     message=form.cleaned_data['message'],
                     from_email=form.cleaned_data['email'],
                     recipient_list=settings.RECIPIENTS,
-                    fail_silently=True
                 )
+                print(mails)
             except BadHeaderError:
                 messages.error(request,'Invalid header found.')
-            if mails==0:
+            if mails>0:
                 messages.success(request, "Your message has been saved with us. We will contact you soon")
             else:
                 messages.error(request,"Unable to send message. Please try again later")

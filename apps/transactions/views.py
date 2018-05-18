@@ -20,13 +20,18 @@ from django.db.models.query import Prefetch
 from apps.user.utils import ViewException
 from django.views.decorators.csrf import csrf_exempt
 from requests.exceptions import ConnectionError
+from json.decoder import JSONDecodeError
 
 api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
         auth_token=settings.INSTAMOJO_AUTH_KEY,
         endpoint=settings.INSTAMOJO_ENDPOINT)
 
 @login_required
-def redirect_to_instamojo_view(request,state,district,ad_id):
+def redirect_to_instamojo_view(request,state,state_id,district,district_id,ad_id):
+    transactions_lodging = reverse('transactions:lodging', kwargs={
+        'state':state,'state_id':state_id,'district':district,'district_id':district_id,'ad_id':ad_id})
+    ads_list = reverse('ads:list', kwargs={
+        'state':state,'state_id':state_id,'district':district,'district_id':district_id})
     try:
         lodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
         if lodging.sublodging.is_booked or lodging.sublodging.no_times_refunded>=2:
@@ -34,8 +39,7 @@ def redirect_to_instamojo_view(request,state,district,ad_id):
                 messages.error(request,'This lodging is already booked')
             else:
                 messages.error(request,'This is lodging is not available for booking anymore')
-            return HttpResponseRedirect(reverse('ads:list',
-                kwargs={'state':state,'district':district}))
+            return HttpResponseRedirect(ads_list)
         if lodging.sublodging.is_blocked:
             raise ViewException('This lodging is under process of booking by another user')
         try:
@@ -72,16 +76,20 @@ def redirect_to_instamojo_view(request,state,district,ad_id):
             return HttpResponseRedirect(
                 response['payment_request']['longurl']+'?embed=form')
         messages.error(request,'Failed to process request')
-        return HttpResponseRedirect(reverse('transactions:lodging',kwargs={'state':state,'district':district,'ad_id':ad_id}))
+        return HttpResponseRedirect(transactions_lodging)
     except Lodging.DoesNotExist:
         messages.error(request,'Lodging with id '+ad_id+' does not exist.')
-        return HttpResponseRedirect(reverse('ads:list',kwargs={'state':state,'district':district}))
+        return HttpResponseRedirect(ads_list)
     except (ValidationError,ViewException) as e:
         messages.error(request,e)
-        return HttpResponseRedirect(reverse('ads:list',kwargs={'state':state,'district':district}))
+        return HttpResponseRedirect(ads_list)
     except ConnectionError as e:
         messages.error(request,'Connection could not be made. Please check your internet connection')
-        return HttpResponseRedirect(reverse('transactions:lodging', kwargs={'state':state,'district':district,'ad_id':ad_id}))
+        return HttpResponseRedirect(transactions_lodging)
+    except JSONDecodeError as e:
+        messages.error(require,'Currently payment gateway server is not responding correctly')
+        return HttpResponseRedirect(transactions_lodging)
+
 
 @login_required
 def lodging_post_redirection_view(request):
@@ -91,14 +99,14 @@ def lodging_post_redirection_view(request):
         response = api.payment_request_payment_status(payment_request_id,payment_id)
         transaction_ = LodgingTransaction.objects.prefetch_related(
             Prefetch('lodging',queryset=Lodging.objects.prefetch_related(
-                Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('location'))
+                Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region'))
                 )
             )
         ).get(id=response['payment_request']['purpose'])
         transaction_.payment_id=payment_id
         lodging = transaction_.lodging
         sublodging = lodging.sublodging
-        location = sublodging.location
+        region = sublodging.region
         if response['success']:
             data = response['payment_request']
             if float(data['amount'])==float(transaction_.amount):
@@ -114,20 +122,22 @@ def lodging_post_redirection_view(request):
         with transaction.atomic():
             sublodging.save()
             transaction_.save()
-        return render(request,'transactions/success.html',{'location':location,
-                    'lodging':lodging,'transaction':transaction_,'sublodging':sublodging})
     except LodgingTransaction.DoesNotExist:
         messages.error(request,'Invalid transaction')
         return HttpResponseRedirect(reverse('ads:choose-location'))
+    return render(request,'transactions/success.html',{'region':region,
+                'lodging':lodging,'transaction':transaction_,'sublodging':sublodging})
 
 @login_required
-def confirm_order_view(request,state,district,ad_id):
+def confirm_order_view(request,state,state_id,district,district_id,ad_id):
     try:
         sublodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id).sublodging
         return render(request,'transactions/confirm_order.html',{
             'amount':sublodging.rent//10,
             'state': state,
+            'state_id': state_id,
             'district': district,
+            'district_id': district_id,
             'ad_id': ad_id,
             'slug': sublodging.slug
         })
@@ -151,7 +161,7 @@ def lodging_webhook_view(request):
                     )
                 ).get(id=purpose)
             except LodgingTransaction.DoesNotExist:
-                return HttpResponse('Received')
+                return HttpResponse('ok',status=200)
             status = request.POST.get('status')
             if transaction_.payment_id!=request.POST.get('payment_id'):
                 transaction_.payment_id=request.POST.get('payment_id')
@@ -178,5 +188,5 @@ def lodging_webhook_view(request):
                     sublodging.save()
                     transaction_.save()
                     request.user.save()
-        return HttpResponse('Received')
+        return HttpResponse('ok',status=200)
 
