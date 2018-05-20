@@ -6,3 +6,4 @@ venv
 *.log
 .vscode
 staticfiles
+db.sqlite3
