@@ -43,7 +43,7 @@ body{
 .rooms{
     position: absolute;
     bottom: 10%;
-    font-size: 1rem;
+    font-size: 1.4em;
     color: white;
     display: flex;
     align-items: center;
@@ -85,7 +85,7 @@ body{
 .benefits .icon{
     font-size: 6rem;
 }
-h3{
+h3, h2, h4{
     font-weight: 500;
 }
 .benefits{
@@ -108,10 +108,10 @@ h3{
 .text-align-center{
     text-align: center;
 }
+.h2{
+    font-weight: 600!important;
+}
 @media only screen and (min-width: 768px){
-    .business{
-        font-size: 2rem;
-    }
     .desktop{
         display: inline-flex;
     }

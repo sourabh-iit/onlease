@@ -13,6 +13,11 @@ from django.contrib import messages
 import datetime
 from django.db.models.query import Prefetch
 from apps.locations.models import Region
+import os
+from django.conf import settings
+from django.core.paginator import Paginator
+
+num_ads = 12
 
 def reverse_location(location):
     for tup in CommonlyUsedLodgingModel.LOCATION_CHOICES:
@@ -82,8 +87,13 @@ def ads_list_view(request,state,state_id,district,district_id):
             ad.image = ad.images.all()[0]
         except:
             ad.image = None
+    page_no = 1
+    if request.GET.get('page'):
+        page_no = int(request.GET['page'])
+    page = Paginator(ads,num_ads).page(page_no)
     return render(request,'ads/ad_list.html',
-        {'form':form,'ads':ads,'state':state,'district':district,'state_id':state_id,'district_id':district_id})
+        {'form':form,'ads':page.object_list,'state':state,'district':district,
+        'state_id':state_id,'district_id':district_id,'page':page})
 
 @csrf_exempt
 def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
@@ -100,9 +110,13 @@ def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
     if lodging.is_booked:
         messages.error(request,'Lodging is already booked')
         return HttpResponseRedirect(redirection_url)
+    images=[]
+    for image in lodging.images.all():
+        name_and_ext = os.path.splitext(image.image.url)
+        images.append(name_and_ext[0]+'.large'+name_and_ext[1])
     context = {
         'ad': lodging,
-        'images': lodging.images.all(),
+        'images': images,
         'state': state,
         'state_id': state_id,
         'district': district,

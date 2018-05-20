@@ -22,7 +22,7 @@ def image_upload_directory(instance):
 def image_upload_path(instance, filename):
     return '{0}/{1}'.format(
         image_upload_directory(instance.sublodging.lodging),
-        instance.sublodging.id,filename)
+        filename)
 
 class Lodging(models.Model):
     '''Lodging'''
@@ -92,10 +92,11 @@ class CommonlyUsedLodgingModel(models.Model):
 class ImageModel(models.Model):
     sublodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,related_name='images')
     image = StdImageField(upload_to=image_upload_path,
-        variations = {'image':(900,500)},
+        variations = {'large':(900,500)},
         help_text="Maximum image size allowed is 5mb.")
     image_thumbnail = models.ImageField(upload_to=image_upload_path,
         help_text="Maximum image size allowed is 5mb.")
+    image_large = models.CharField(max_length=150,editable=False,null=True)
 
     def __str__(self):
         return self.image.name

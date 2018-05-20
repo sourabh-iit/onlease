@@ -25,9 +25,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost','127.0.0.1']
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'localhost:8000','127.0.0.1']
 
 # Application definition
 
@@ -170,7 +170,7 @@ INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
 INSTAMOJO_SALT = '1d83a8d73aa84093857eb269fd825d67'
 INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
 
-RECIPIENTS = ['feedback@onlease.in']
+RECIPIENTS = ['feedback@onlease.in','sourabh7singh@gmail.com']
 
 # for custom widgets
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
@@ -219,6 +219,15 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST_PASSWORD = os.environ.get('BIGROCK_EMAIL_PASSWORD')
 # EMAIL_USE_TLS = True
 
+DEFAULT_FROM_EMAIL = 'feedback@onlease.in'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'sourabh7singh@gmail.com'
+EMAIL_HOST_PASSWORD = 'SRsvs11631'
+EMAIL_USE_TLS = True
+
 BASE_URL = 'http://localhost:8000'
 
 LANGUAGE_CODE = 'hi-IN'
+
+DATE_INPUT_FORMATS = ['%d-%m-%Y']

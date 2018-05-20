@@ -34,15 +34,6 @@ class LodgingTransaction(models.Model):
     amount_paid = models.CharField(max_length=10,default=0)
     reason = models.TextField(null=True)
 
-    def save(self, *args, **kwargs):
-        super(LodgingTransaction, self).save(*args, **kwargs)
-        if(self.status==self.SUCCESS):
-            # send message of successfull transaction
-            print("transaction successfull")
-        elif(self.status==self.FAIL):
-            # send message of fail transaction
-            print("transaction fail")
-
     class Meta:
         ordering=['updated_at']
 

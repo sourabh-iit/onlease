@@ -11,6 +11,9 @@ import hashlib
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from apps.locations.models import State, District, Region
 from django.db.models.query import Prefetch
+from django.conf import settings
+import os
+import stdimage
 
 allowed_image_formats = ['png','jpg','jpeg','gif']
 
@@ -30,6 +33,7 @@ class LodgingCreateForm(forms.ModelForm):
 class CommonlyUsedLodgingCreateForm(forms.ModelForm):
     district = forms.ModelChoiceField(queryset=District.objects.none(),widget=forms.Select)
     region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=forms.Select)
+    available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
 
     def __init__(self, *args, **kwargs):
         super(CommonlyUsedLodgingCreateForm, self).__init__(*args, **kwargs)
@@ -107,30 +111,31 @@ class ImageForm(forms.ModelForm):
 
     def clean_image(self):
         img = self.cleaned_data['image']
-        if not img:
-            raise ValidationError('This field is required')
-        if img._size > 5000000:
-            raise ValidationError('Upload a valid image. Only files with size less than 5mb are allowed.',code='invalidsize')
-        if img.content_type.split('/')[-1] not in allowed_image_formats:
-            raise ValidationError('Upload a valid image. Only files with extensions png, jpg, jpeg and gif are allowed.',code='invalidformat')
+        if type(img)!=stdimage.models.StdImageFieldFile:
+            if not img:
+                raise ValidationError('This field is required')
+            if img._size > 5000000:
+                raise ValidationError('Upload a valid image. Only files with size less than 5mb are allowed.',code='invalidsize')
+            if img.content_type.split('/')[-1] not in allowed_image_formats:
+                raise ValidationError('Upload a valid image. Only files with extensions png, jpg, jpeg and gif are allowed.',code='invalidformat')
         return img
 
     def save(self,commit=True):
         im = super(ImageForm,self).save(commit=False)
         img = im.image
-        ext = img.name.split('.')[-1]
-        img_name = ''.join(img.name.split('.')[:-1])
-        random_suffix = generate_random(16)
-        img.name = img_name+"_"+random_suffix+'.'+ext
-        thumb_name = img_name+"_"+random_suffix+'.thumbnail.'+ext
-        thumbnail = create_thumbnail(img,thumb_size,thumb_name)
-        im.image_thumbnail = thumbnail
+        name_and_ext = os.path.splitext(img.name)
+        random_suffix = generate_random(32)
+        img.name = name_and_ext[0]+"_"+random_suffix+name_and_ext[1]
+        thumb_name = name_and_ext[0]+"_"+random_suffix+'.thumbnail'+name_and_ext[1]
         if commit:
             im.save()
         return im
 
 ImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
-    can_delete=True,form=ImageForm,extra=0,min_num=3,validate_min=True)
+    form=ImageForm,extra=0,min_num=3,validate_min=True)
+
+UpdateImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
+    can_delete=True,form=ImageForm,extra=0)
 
 class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
     class Meta:

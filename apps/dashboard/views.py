@@ -39,25 +39,25 @@ def get_refund_amount(transaction):
 @login_required
 def home_view(request):
     # Add businesses as they are made
-    type=request.GET.get('type')
+    type_=request.GET.get('type')
     lodgingtransactions=[]
     lodging_businesses=[]
     transaction = False
-    if type=='transactions':
+    if type_=='transactions':
         transaction = True
         lodgings_bought = User.objects.raw("""
             SELECT
                 u.mobile_number,
                 t.created_at,
+                t.payment_id,
+                t.id,
+                t.status, 
+                t.amount_paid,
                 c.title,
                 s.name as state,
                 d.name as district,
                 r.name as region,
-                l.address,
-                t.payment_id,
-                t.id,
-                t.status, 
-                t.amount_paid
+                l.address
             FROM
                 user_user u 
             INNER JOIN transactions_lodgingtransaction t
@@ -68,9 +68,9 @@ def home_view(request):
                 ON l.id=c.id
             INNER JOIN locations_region r
                 ON c.region_id=r.id
-            INNER JOIN locations_region d
+            INNER JOIN locations_district d
                 ON r.district_id=d.id
-            INNER JOIN locations_region s
+            INNER JOIN locations_state s
                 ON r.state_id=s.id
             WHERE
                 u.mobile_number=%s

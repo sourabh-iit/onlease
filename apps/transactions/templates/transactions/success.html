@@ -10,21 +10,52 @@
 {% block content %}
 
 <div class="container-fluid d-flex justify-content-center mt-5">
+    {% if success %}
     <div class="sub-container">
-        <div class="success-message text-capitalize alert alert-success">
-            <i class="fa fa-check-circle text-green"></i>
-            Transaction successfull
+        <div class="success-message text-capitalize">
+            Thank You.
         </div>
-        <div class="card mt-1">
+        <div class="card mt-3">
             <div class="card-body">
-                <p class="card-text">
-                    Transaction Id: {{transaction.id}}
+                <p class="card-text successfull-transaction">
+                    <i class="fa fa-check-circle"></i> You transaction was successfull.
                 </p>
-                <p class="card-text">Contact details has been sent to your registered 
-                    email. These are also accessible through your 
-                    <a href="{% url 'dashboard:home' %}">Dashboard</a></p>
+                <p class="card-text">Transation id: 
+                    <strong>{{transaction.id}}</strong>
+                </p>
+                <p class="card-text">Merchant id: 
+                    <strong>{{transaction.payment_id}}</strong>
+                </p>
+                <p class="card-text">
+                    Contact details are available in 
+                    <a href="{% url 'dashboard:home' %}">Dashboard</a>
+                </p>
+            </div>
+            <div class="card-footer">
+                <small>
+                    We will soon send you confirmation message and contact details to your 
+                registered mobile number.
+                </small>
+                
+            </div>
+        </div>
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="card-text">
+                    <strong>Note:</strong>
+                </div>
+                <div class="card-text text-muted">
+                    <ol>
+                        <li>Request for refund is now available in your dashboard.</li>
+                        <li>This option will be available for limited time period only.</li>
+                        <li>Keep in mind that some amount will be deducted from total amount as service charge.</li>
+                    </ol>
+                </div>
             </div>
         </div>
     </div>
+    {% else %}
+    
+    {% endif %}
 </div>
 {% endblock %}

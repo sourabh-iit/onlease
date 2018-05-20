@@ -1,12 +1,25 @@
-.sub-container{
-    max-width: 400px;
-}
 .success-message{
-    font-size: 1.5rem;
-    color: #28a745;
+    font-size: 2rem;
+    color: #5b268a;
+    font-weight: 600;
 }
 .container-fluid{
     margin-left: 0;
     margin-right: 0;
     flex-wrap: wrap;
+}
+.fa-check-circle{
+    color: chartreuse;
+}
+.successfull-transaction{
+    font-size: larger!important;
+}
+.note{
+    font-weight: 600;
+    color: darkslategrey;
+    font-size: small;
+    margin-top: 2rem;
+}
+.notes-container{
+    font-size: small;
 }

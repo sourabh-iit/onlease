@@ -227,7 +227,6 @@ def contact_view(request):
                     from_email=form.cleaned_data['email'],
                     recipient_list=settings.RECIPIENTS,
                 )
-                print(mails)
             except BadHeaderError:
                 messages.error(request,'Invalid header found.')
             if mails>0:

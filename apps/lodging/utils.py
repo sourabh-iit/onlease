@@ -28,8 +28,8 @@ def create_thumbnail(img,size,thumb_name):
     return file
 
 def generate_random(size):
-    # generate random number sof given size
-    char_arr = string.ascii_letters + string.digits + '#@!$%&'
+    # generate random number of given size
+    char_arr = string.ascii_letters + string.digits
     return ''.join([random.SystemRandom().choice(char_arr) for _ in range(size)])
 
 def clean_data(data):

@@ -1,6 +1,7 @@
 $(document).ready(function(){
     $("#delete").click(function(){
         var del = confirm("Are you sure?");
+        console.log(del);
         if(del==true){
             $("form").prepend('<input type="hidden" name="delete">');
             $("form").submit();

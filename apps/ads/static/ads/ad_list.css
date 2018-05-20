@@ -80,6 +80,11 @@ body{
 #datepicker-container{
     position: relative;
 }
+nav[aria-label="pagination example"]{
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
 @media screen and (min-width: 560px){
     .card-wrapper{
         width: 50%;
@@ -97,6 +102,9 @@ body{
     .card-wrapper{
         width: 50%;
     }
+    #ads{
+        margin-top: 0;
+    }
 }
 @media screen and (min-width: 980px){
     .card-wrapper{
@@ -107,44 +115,4 @@ body{
     .card-wrapper{
         width: 25%;
     }
-}
-#id_regions{
-    padding: 5px!important;
-}
-
-
-.multiselect-search{
-    padding-left: 5px;
-    width: 90%;
-    padding-left: 25px;
-    padding-right: 20px;
-}
-.input-group-btn{
-    margin-left: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    right: 32px;
-}
-button.multiselect-clear-filter{
-    display: none;
-}
-.multiselect-clear-filter{
-    font-size: 20px;
-}
-.input-group{
-    position: relative;
-    align-items: center;
-    flex-wrap: inherit;
-}
-.input-group-addon{
-    position: absolute;
-    left: 5px;
-}
-.dropdown-menu{
-    z-index: 1200;
-}
-.multiselect-container label{
-    padding: 3px 5px 3px 5px!important;
 }

@@ -21,7 +21,7 @@ $(document).ready(function () {
     var windowWidth = $(window).width();
     var sidebarWidth = $('#sidebar').width();
     if($(window).width()>768){
-        $('#ads').css({
+        $('#ads-wrapper').css({
             'width': windowWidth-sidebarWidth-25,
             'margin-left': sidebarWidth+15,
             'margin-right': 5,

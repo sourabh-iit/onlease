@@ -21,6 +21,7 @@ from apps.user.utils import ViewException
 from django.views.decorators.csrf import csrf_exempt
 from requests.exceptions import ConnectionError
 from json.decoder import JSONDecodeError
+from .utils import send_message, successfull_transaction_message, lodging_booked_message
 
 api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
         auth_token=settings.INSTAMOJO_AUTH_KEY,
@@ -94,11 +95,12 @@ def redirect_to_instamojo_view(request,state,state_id,district,district_id,ad_id
 @login_required
 def lodging_post_redirection_view(request):
     try:
+        transaction_success = False
         payment_id = request.GET.get('payment_id')
         payment_request_id = request.GET.get('payment_request_id')
         response = api.payment_request_payment_status(payment_request_id,payment_id)
         transaction_ = LodgingTransaction.objects.prefetch_related(
-            Prefetch('lodging',queryset=Lodging.objects.prefetch_related(
+            Prefetch('lodging',queryset=Lodging.objects.prefetch_related('posted_by',
                 Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region'))
                 )
             )
@@ -110,11 +112,12 @@ def lodging_post_redirection_view(request):
         if response['success']:
             data = response['payment_request']
             if float(data['amount'])==float(transaction_.amount):
+                transaction_success = True
                 transaction_.amount_paid=float(data['amount'])
                 transaction_.payment_gateway_fees=data['payment']['fees']
                 transaction_.status=LodgingTransaction.SUCCESS
                 sublodging.is_booked=True
-                messages.success(request,'Your order was successful')
+                messages.success(request,'Your transaction was successful')
             else:
                 messages.error(request,'An invalid amount was paid')
         else:
@@ -122,16 +125,28 @@ def lodging_post_redirection_view(request):
         with transaction.atomic():
             sublodging.save()
             transaction_.save()
+        send_message(request.user.mobile_number,
+            successfull_transaction_message(
+                lodging.posted_by,request.user,
+                lodging,transaction_))
+        send_message(lodging.posted_by.mobile_number,
+            lodging_booked_message(lodging.posted_by,request.user,
+            lodging,transaction_))
     except LodgingTransaction.DoesNotExist:
         messages.error(request,'Invalid transaction')
         return HttpResponseRedirect(reverse('ads:choose-location'))
     return render(request,'transactions/success.html',{'region':region,
-                'lodging':lodging,'transaction':transaction_,'sublodging':sublodging})
+                'lodging':lodging,'transaction':transaction_,'sublodging':sublodging,
+                'success': transaction_success})
 
 @login_required
 def confirm_order_view(request,state,state_id,district,district_id,ad_id):
     try:
-        sublodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id).sublodging
+        lodging = Lodging.objects.prefetch_related(Prefetch(
+            'sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('images'))
+        ).get(id=ad_id)
+        sublodging = lodging.sublodging
+        sublodging.image = sublodging.images.all()[0]
         return render(request,'transactions/confirm_order.html',{
             'amount':sublodging.rent//10,
             'state': state,
@@ -139,7 +154,9 @@ def confirm_order_view(request,state,state_id,district,district_id,ad_id):
             'district': district,
             'district_id': district_id,
             'ad_id': ad_id,
-            'slug': sublodging.slug
+            'slug': sublodging.slug,
+            'ad': sublodging,
+            'lodging': lodging
         })
     except Lodging.DoesNotExist:
         messages.error(request,'Lodging does not exist')

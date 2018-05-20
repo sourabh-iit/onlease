@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import ImageModel, Lodging,CommonlyUsedLodgingModel, image_upload_directory
 from django.http import HttpResponseRedirect
-from .forms import LodgingCreateForm, ImageForm, ImageFormset,\
+from .forms import LodgingCreateForm, ImageForm, ImageFormset, UpdateImageFormset,\
                     CommonlyUsedLodgingCreateForm, CommonlyUsedLodgingUpdateForm
 from django.urls import reverse
 from apps.user.utils import ViewException
@@ -11,7 +11,7 @@ from django.db import transaction
 import os
 import shutil
 from django.dispatch import receiver
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
 from django.contrib import messages
 from django.db.models.query import Prefetch
 from apps.user.utils import maintain_cookie
@@ -28,11 +28,12 @@ def delete_image(sender,instance,using,**kwargs):
     delete_files(
         instance.image.name,
         instance.image_thumbnail.name,
-        image[0]+'.image'+image[1])
+        image[0]+'.large'+image[1])
 
 @receiver(post_delete, sender=Lodging)
 def delete_lodging(sender,instance,using,**kwargs):
     shutil.rmtree(settings.MEDIA_ROOT+'/'+image_upload_directory(instance))
+
 
 @maintain_cookie
 @login_required
@@ -41,7 +42,6 @@ def lodging_create_view(request):
         messages.error(request,'Verify mobile number to add business')
         return HttpResponseRedirect(reverse('dashboard:home'))
     if request.method=='POST':
-        import pdb; pdb.set_trace()
         form = LodgingCreateForm(request.POST)
         sub_form = CommonlyUsedLodgingCreateForm(request.POST)
         formset = ImageFormset(request.POST,request.FILES,
@@ -63,7 +63,7 @@ def lodging_create_view(request):
                     return HttpResponseRedirect(reverse('ads:list',kwargs={
                         'state_id':sublodging.region.state.id,
                         'state':sublodging.region.state.name,
-                        'district_id':sub_form.cleaned_data['district'],
+                        'district_id':sub_form.cleaned_data['district'].id,
                         'district':sublodging.region.district.name
                     }))
         except ViewException as e:
@@ -94,7 +94,7 @@ def lodging_edit_view(request,ad_id):
         messages.error('Bad request')
         return HttpResponseRedirect(reverse('dashboard:home'))
     sublodging_form = CommonlyUsedLodgingUpdateForm(instance=sublodging)
-    formset = ImageFormset(instance=CommonlyUsedLodgingModel(),prefix='image')
+    formset = UpdateImageFormset(instance=sublodging,prefix='image')
     if request.method=='POST':
         if request.session.test_cookie_worked():
             if 'delete' in request.POST:
@@ -106,7 +106,7 @@ def lodging_edit_view(request,ad_id):
             elif 'update' in request.POST:
                 sublodging_form = CommonlyUsedLodgingUpdateForm(request.POST,
                     instance=sublodging)
-                formset = ImageFormset(request.POST,request.FILES,instance=sublodging,
+                formset = UpdateImageFormset(request.POST,request.FILES,instance=sublodging,
                     prefix='image')
                 if sublodging_form.is_valid() and formset.is_valid():
                     with transaction.atomic():
