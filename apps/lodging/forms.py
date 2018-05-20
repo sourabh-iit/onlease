@@ -127,6 +127,7 @@ class ImageForm(forms.ModelForm):
         random_suffix = generate_random(32)
         img.name = name_and_ext[0]+"_"+random_suffix+name_and_ext[1]
         thumb_name = name_and_ext[0]+"_"+random_suffix+'.thumbnail'+name_and_ext[1]
+        im.image_thumbnail = create_thumbnail(img,thumb_size,thumb_name)
         if commit:
             im.save()
         return im
