@@ -19,8 +19,6 @@ def add_data(apps, schema_editor):
     for row in file_data:
         count+=1
         print(count)
-        if count<100000:
-            continue
         state=row['statename']
         district=row['districtname']
         region=row['officename'].split(' '+row['officetype'])[0]
