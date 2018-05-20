@@ -227,6 +227,12 @@ LOGGING = {
     }
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 BASE_URL = 'http://staging.onlease.in'
+
+LANGUAGE_CODE = 'hi-IN'
+
+DATE_INPUT_FORMATS = ['%d-%m-%Y']
 
 USE_I18N = False
