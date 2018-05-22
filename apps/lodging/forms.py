@@ -49,8 +49,8 @@ class CommonlyUsedLodgingCreateForm(forms.ModelForm):
             choices=[('','Choose State')]+[(state.id,state.name) for state in State.objects.all()],
             widget=forms.Select
         )
-        self.fields['images'] = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.filter(
-            created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=15)))
+        # self.fields['images'] = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.filter(
+        #     created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=15)))
         if 'state' in self.data and 'district' in self.data:
             try:
                 districts = District.objects.prefetch_related('regions').filter(state__id=int(self.data['state']))
