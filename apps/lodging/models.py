@@ -90,13 +90,15 @@ class CommonlyUsedLodgingModel(models.Model):
         # TODO indexing
 
 class ImageModel(models.Model):
-    sublodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,related_name='images')
+    sublodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,
+        related_name='images',null=True)
     image = StdImageField(upload_to=image_upload_path,
         variations = {'large':(900,500)},
-        help_text="Maximum image size allowed is 5mb.")
+        help_text="Maximum image size allowed is 2mb.")
     image_thumbnail = models.ImageField(upload_to=image_upload_path,
-        help_text="Maximum image size allowed is 5mb.")
+        help_text="Maximum image size allowed is 2mb.")
     image_large = models.CharField(max_length=150,editable=False,null=True)
+    created_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.image.name

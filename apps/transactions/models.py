@@ -2,6 +2,7 @@ from django.db import models
 from apps.lodging.models import Lodging
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+from apps.lodging.utils import generate_random
 
 User = get_user_model()
 
@@ -33,6 +34,7 @@ class LodgingTransaction(models.Model):
     payment_gateway_fees = models.CharField(max_length=12,default=0)
     amount_paid = models.CharField(max_length=10,default=0)
     reason = models.TextField(null=True)
+    trans_id = models.CharField(max_length=40, default=generate_random(16), editable=False, unique =True)
 
     class Meta:
         ordering=['updated_at']

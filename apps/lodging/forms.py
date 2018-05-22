@@ -21,6 +21,11 @@ thumb_size = (228,180)
 
 image_size = (800,500)
 
+max_size = 2 # size in mb
+
+def mb_to_bytes(size):
+    return size*1024*1024
+
 class LodgingCreateForm(forms.ModelForm):
     class Meta:
         model = Lodging
@@ -44,6 +49,8 @@ class CommonlyUsedLodgingCreateForm(forms.ModelForm):
             choices=[('','Choose State')]+[(state.id,state.name) for state in State.objects.all()],
             widget=forms.Select
         )
+        self.fields['images'] = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.filter(
+            created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=15)))
         if 'state' in self.data and 'district' in self.data:
             try:
                 districts = District.objects.prefetch_related('regions').filter(state__id=int(self.data['state']))
@@ -114,7 +121,7 @@ class ImageForm(forms.ModelForm):
         if type(img)!=stdimage.models.StdImageFieldFile:
             if not img:
                 raise ValidationError('This field is required')
-            if img._size > 5000000:
+            if img._size > mb_to_bytes(2):
                 raise ValidationError('Upload a valid image. Only files with size less than 5mb are allowed.',code='invalidsize')
             if img.content_type.split('/')[-1] not in allowed_image_formats:
                 raise ValidationError('Upload a valid image. Only files with extensions png, jpg, jpeg and gif are allowed.',code='invalidformat')

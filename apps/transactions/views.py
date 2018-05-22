@@ -59,18 +59,33 @@ def redirect_to_instamojo_view(request,state,state_id,district,district_id,ad_id
             user = request.user,
             lodging = lodging
         )
-        response = api.payment_request_create(
-            amount=amount,
-            purpose=transaction_.id,
-            buyer_name=request.user.first_name,
-            send_sms=True,
-            phone=request.user.mobile_number,
-            send_email=True,
-            email=request.user.email,
-            allow_repeated_payments=False,
-            redirect_url=settings.BASE_URL+reverse('transactions:lodging-post-redirection')
-            # webhook will be added here   
-        )
+        if settings.DEBUG:
+            response = api.payment_request_create(
+                amount=amount,
+                purpose=transaction_.id,
+                buyer_name=request.user.first_name,
+                send_sms=True,
+                phone=request.user.mobile_number,
+                send_email=True,
+                email=request.user.email,
+                allow_repeated_payments=False,
+                redirect_url=settings.BASE_URL+reverse('transactions:lodging-post-redirection')
+                # webhook will be added here   
+            )
+        else:
+            response = api.payment_request_create(
+                amount=amount,
+                purpose=transaction_.id,
+                buyer_name=request.user.first_name,
+                send_sms=True,
+                phone=request.user.mobile_number,
+                send_email=True,
+                email=request.user.email,
+                allow_repeated_payments=False,
+                redirect_url=settings.BASE_URL+reverse('transactions:lodging-post-redirection'),
+                webhook=settings.BASE_URL+reverse('transactions:lodging-webhook',
+                    kwargs={'trans_id':str(transaction_.id)})  
+            )
         if response['success']:
             transaction_.payment_request_id = response['payment_request']['id']
             transaction_.save()
@@ -163,47 +178,47 @@ def confirm_order_view(request,state,state_id,district,district_id,ad_id):
         return HttpResponse(reverse('ads:list',kwargs={'state': state,'district': district}))
 
 @csrf_exempt
-def lodging_webhook_view(request):
+def lodging_webhook_view(request,trans_id):
     if request.method=='POST':
+        try:
+            transaction_ = LodgingTransaction.objects.prefetch_related('user',
+                Prefetch('lodging',queryset=Lodging.objects.prefetch_related(
+                    Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related(
+                        Prefetch(
+                        'region',queryset=Region.objects.prefetch_related('district','state')
+                        )
+                    ))
+                ))
+            ).get(id=purpose)
+        except LodgingTransaction.DoesNotExist:
+            return HttpResponse('ok',status=200)
         mac_provided = request.POST.pop('mac')
         message = "|".join(v for k, v in sorted(request.POST.items(), key=lambda x: x[0].lower()))
         mac_calculated = hmac.new(settings.INSTAMOJO_SALT, message, hashlib.sha1).hexdigest
         if mac_provided == mac_calculated:
             purpose = request.POST.get('purpose')
-            try:
-                transaction_ = LodgingTransaction.objects.prefetch_related(
-                    Prefetch('lodging',queryset=Lodging.objects.prefetch_related(
-                        Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('location'))
-                        )
-                    )
-                ).get(id=purpose)
-            except LodgingTransaction.DoesNotExist:
+            if purpose!=transaction_.user.mobile_number:
                 return HttpResponse('ok',status=200)
             status = request.POST.get('status')
-            if transaction_.payment_id!=request.POST.get('payment_id'):
+            if not transaction_.payment_id:
                 transaction_.payment_id=request.POST.get('payment_id')
                 lodging = transaction_.lodging
                 sublodging = lodging.sublodging
-                location = sublodging.location
+                region = sublodging.region
                 if status=='Credit':
+                    transaction_.amount_paid=float(request.POST.get('amount'))
+                    transaction_.payment_gateway_fees=request.POST.get('fees')
+                    transaction_.status=LodgingTransaction.FAIL
                     if float(request.POST.get('amount'))==float(transaction_.amount):
-                        transaction_.amount_paid=float(request.POST.get('amount'))
-                        transaction_.payment_gateway_fees=request.POST.get('fees')
                         transaction_.status=LodgingTransaction.SUCCESS
                         sublodging.is_booked=True
-                        messages.success(request,'Your order was successful')
-                    else:
-                        messages.error(request,'An invalid amount was paid')
-                else:
-                    messages.error(request,'Transaction was failed')
                 if LodgingTransaction.objects.count()>1:
                     transaction_prev = LodgingTransaction.objects.order_by('-updated_at')[1]
                     if transaction_prev.status==LodgingTransaction.SUCCESS:
-                        request.user.no_times_refunded=0
-                sublodging.is_blocked=False
+                        transaction_.user.no_times_refunded=0
                 with transaction.atomic():
                     sublodging.save()
                     transaction_.save()
-                    request.user.save()
+                    transaction_.user.save()
         return HttpResponse('ok',status=200)
 

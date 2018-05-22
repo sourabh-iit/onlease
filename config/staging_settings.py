@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'apps.home',
     'apps.transactions',
     'apps.locations',
-    'apps.legal'
+    'apps.legal',
+    'stdimage'
 ]
 
 MIDDLEWARE = [

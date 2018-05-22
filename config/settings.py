@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost','onlease.com','stage-onlease.herokuapp.com','onlease.herokuapp.com','103.95.13.160']
+ALLOWED_HOSTS = ['onlease.in','www.onlease.in','103.95.13.160']
 
 # Application definition
 
@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'apps.home',
     'apps.transactions',
     'apps.locations',
-    'apps.legal'
+    'apps.legal',
+    'stdimage'
 ]
 
 MIDDLEWARE = [
@@ -105,21 +106,21 @@ DATABASES = {
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    # },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {
             'min_length': 8,
         }
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    # },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    # },
 ]
 
 
@@ -212,7 +213,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'mysite.log',
+            'filename': 'onlease.log',
             'formatter': 'verbose'
         },
     },
@@ -229,6 +230,12 @@ LOGGING = {
     }
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 BASE_URL = 'http://onlease.in'
+
+LANGUAGE_CODE = 'hi-IN'
+
+DATE_INPUT_FORMATS = ['%d-%m-%Y']
 
 USE_I18N = False
