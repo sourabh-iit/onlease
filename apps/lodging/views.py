@@ -44,13 +44,13 @@ def lodging_create_view(request):
     if request.method=='POST':
         form = LodgingCreateForm(request.POST)
         sub_form = CommonlyUsedLodgingCreateForm(request.POST)
-        # formset = ImageFormset(request.POST,request.FILES,
-        #     instance=CommonlyUsedLodgingModel(), prefix="image")
+        formset = ImageFormset(request.POST,request.FILES,
+            instance=CommonlyUsedLodgingModel(), prefix="image")
         # try:
         if sub_form.is_valid():
             sublodging = sub_form.save(commit=False)
-            # formset = ImageFormset(request.POST, request.FILES,
-            #         instance=sublodging,prefix="image")
+            formset = ImageFormset(request.POST, request.FILES,
+                    instance=sublodging,prefix="image")
             if form.is_valid() and formset.is_valid():
                 lodging = form.save(commit=False)
                 lodging.posted_by = request.user
@@ -58,7 +58,7 @@ def lodging_create_view(request):
                     lodging.save()
                     sublodging.lodging = lodging
                     sublodging.save()
-                    # formset.save()
+                    formset.save()
                 messages.success(request,"Lodging created successfully")
                 return HttpResponseRedirect(reverse('ads:list',kwargs={
                     'state_id':sublodging.region.state.id,
@@ -72,10 +72,10 @@ def lodging_create_view(request):
         request.session.set_test_cookie()
         form = LodgingCreateForm()
         sub_form = CommonlyUsedLodgingCreateForm()
-        # formset = ImageFormset(instance=CommonlyUsedLodgingModel(),prefix="image")
+        formset = ImageFormset(instance=CommonlyUsedLodgingModel(),prefix="image")
     return render(request,'lodging/create_lodging.html',{'form': form,
-        'sub_form': sub_form})
-        # 'sub_form': sub_form, 'formset': formset})
+        # 'sub_form': sub_form})
+        'sub_form': sub_form, 'formset': formset})
 
 @login_required
 def lodging_edit_view(request,ad_id):
