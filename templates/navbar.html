@@ -1,50 +1,91 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    
-    <title>{% block title %}{% endblock %}</title>
-    
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="{% static 'MDB Free/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'MDB Free/css/mdb.min.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    {% block head %}{% endblock %}
-    <style>
-      .dropdown-menu-right { 
-        right: 0; 
-        left: auto; 
-      }
-    </style>
-  </head>
-  <body class="padding-top-3">
-    <nav class="mb-1 fixed-top navbar navbar-expand-md navbar-dark stylish-color">
-        <a class="navbar-brand" href="{% url 'home:front-page' %}">
-            <img src="{% static 'images/logo.png' %}" alt="onlease logo" class="logo">
-            OnLease
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        
+        <title>{% block title %}{% endblock %}</title>
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link href="{% static 'MDB Free/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'MDB Free/css/mdb.min.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+        {% block head %}{% endblock %}
+        <style>
+        .dropdown-menu-right { 
+            right: 0; 
+            left: auto; 
+        }
+        </style>
+    </head>
+    <body class="padding-top-3">
+
+        <nav class="mobile mb-1 fixed-top navbar navbar-dark stylish-color">
+            <div>
+                <span class="navbar-toggler-icon" id="sidebar-toggler"></span>
+                <a class="navbar-brand ml-1" href="{% url 'home:front-page' %}">
+                    <img src="{% static 'images/logo.png' %}" alt="onlease logo" class="logo">
+                    OnLease
+                </a>
+            </div>            
+            <div id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto flex-direction-row">
+                    <li class="nav-item {% block mobile_login_active %}{% endblock %}">
+                        <a href="{% url 'user:login' %}" class="nav-link waves-effect waves-light">
+                            <i class="fa fa-sign-in"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item {% block mobile_register_active %}{% endblock %}">
+                        <a href="{% url 'user:register' %}" class="nav-link waves-effect waves-light">
+                            <i class="fa fa-user-plus"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="cover">
+            <nav id="sidebar" class="scrollbar-dusty-grass square thin width-1">
+                <div id="sidebar-heading" class="line-height-1 padding-left-1 border-bottom-1 width-1">
+                    <i class="fa fa-arrow-left"></i> Go Back
+                </div>
+                <div class="sidebar=item line-height-1 padding-left-1 border-bottom-1">
+                    View all dealers
+                </div>
+                <div class="sidebar=item line-height-1 padding-left-1 border-bottom-1">
+                    View all owners
+                </div>
+                <div class="sidebar=item line-height-1 padding-left-1 border-bottom-1">
+                    View all roommates
+                </div>
+                <div class="sidebar-item line-height-1 padding-left-1 border-bottom-1">
+                    Register
+                    <ul>
+                        <li>As customer</li>
+                        <li>As owner</li>
+                        <li>As dealer</li>
+                    </ul>
+                </div>
+                <div class="sidebar-item line-height-1 padding-left-1 border-bottom-1">
+                    <a href="{% url 'user:login' %}">Login</a>
+                </div>
+            </nav>
+        </div>
+
+        <nav class="desktop mb-1 fixed-top navbar navbar-dark stylish-color">
+            <a class="navbar-brand" href="{% url 'home:front-page' %}">
+                <img src="{% static 'images/logo.png' %}" alt="onlease logo" class="logo">
+                OnLease
+            </a>
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item {% block home_active %}{% endblock %}">
-                    <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'home:front-page' %}">
-                        <i class="fa fa-home"></i> Home
-                    </a>
-                </li>
-                <li class="nav-item {% block ads_active %}{% endblock %}">
-                    <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'ads:choose-location' %}">
-                        <i class="fa fa-search"></i> Search Ads
-                    </a>
-                </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item {% block dashboard_active %}{% endblock %}">
                         <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'dashboard:home' %}">
-                            <i class="fa fa-dashboard"></i> Dashboard</a>
+                            <i class="fa fa-dashboard"></i> Dashboard
+                        </a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -59,7 +100,9 @@
                                 Verify mobile number</a>
                             {% endif %}
                             <a class="dropdown-item text-capitalized waves-effect waves-light{% if not user.is_verified %} disabled{% endif %}" href="{% url 'lodging:create'%}">
-                                Add new business</a>
+                                New business</a>
+                            <a class="dropdown-item text-capitalized waves-effect waves-light{% if not user.is_verified %} disabled{% endif %}" href="{% url 'roommate:create'%}">
+                                New Roomie Post</a>
                             <div class="dropdown-dividerx"></div>
                             <a class="dropdown-item text-capitalized waves-effect waves-light" href="{% url 'user:logout' %}">
                                 Log out</a>
@@ -75,150 +118,149 @@
                 {% else %}
                 <li class="nav-item {% block login_active %}{% endblock %}">
                     <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'user:login' %}">
-                      <i class="fa fa-sign-in"></i> Log In</a>
+                    <i class="fa fa-sign-in"></i> Log In</a>
                 </li>
                 <li class="nav-item {% block register_active %}{% endblock %}">
-                  <a class="nav-link waves-effect waves-light btn btn-sm btn-default text-capitalized" href="{% url 'user:register' %}">
+                <a class="nav-link waves-effect waves-light btn btn-sm btn-default text-capitalized" href="{% url 'user:register' %}">
                     <i class="fa fa-user-plus"></i> Register</a>
                 </li>
                 {% endif %}
             </ul>
-        </div>
-    </nav>
+        </nav>
 
-    {% if messages %}
-    <div class="messages-container">
-        {% for message in messages %}
-            <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
-                {{message}}
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
+                    {{message}}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+
+        <footer class="page-footer font-small blue pt-4 mt-4">
+
+            <!--Footer Links-->
+            <div class="container-fluid text-center text-md-left">
+                <div class="row wow">
+        
+                    <div class="col-md-2">
+                        <p class="column-title white-text">
+                            <strong>USEFUL LINKS</strong></p>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="{% url 'dashboard:home' %}">Dashboard</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'ads:choose-location' %}">Search Ads</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'user:login' %}">Log in</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'user:register' %}">Register</a>
+                            </li>
+                        </ul>
+                    </div>
+        
+                    <div class="col-md-2">
+                        <p class="column-title white-text">
+                            <strong>IMPORTANT LINKS</strong></p>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="{% url 'legal:privacy' %}">Terms</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'legal:terms' %}">Privacy</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'user:contact' %}">Contact Us</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-2">
+                        <p class="column-title white-text text-uppercase">
+                            <strong>Add your business</strong></p>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="{% url 'lodging:create' %}">Lodging</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-2">
+                        <p class="column-title white-text text-uppercase">
+                            <strong>Sponsor</strong></p>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="https://msg91.com/startups/?utm_source=startup-banner"><img src="https://msg91.com/images/startups/msg91Badge.png" width="120" height="90" title="MSG91 - SMS for Startups" alt="Bulk SMS - MSG91"></a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-2">
+                        <p class="column-title white-text text-uppercase">
+                            <strong>contact</strong></p>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="{% url 'user:contact' %}">
+                                <i class="fa fa-envelope"></i>
+                                Send Email
+                                </a>
+                            </li>
+                            <li>
+                                <i class="fa fa-whatsapp"></i>
+                                9050183280
+                            </li>
+                            <li>
+                                <i class="fa fa-phone"></i>
+                                9050183280
+                            </li>
+                            <li>
+                                <a target="_blank" href="https://tawk.to/chat/5adef5845f7cdf4f05338e80/default/?$_tawk_popout=true" class="btn btn-deep-orange btn-sm">
+                                    <i class="fa fa-comments"></i>    Chat with us
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-2">
+                        <p class="column-title white-text text-uppercase">
+                            <strong>ADDRESS</strong></p>
+                        <ul class="list-unstyled">
+                            <li>
+                                Behind shiv mandir, shiv mandir colony
+                            </li>
+                            <li>
+                                Safiabad, Sonipat, Haryana
+                            </li>
+                            <li>
+                                131029
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    
-    {% block content %}{% endblock %}
-
-    <footer class="page-footer font-small blue pt-4 mt-4">
-
-        <!--Footer Links-->
-        <div class="container-fluid text-center text-md-left">
-            <div class="row wow">
-    
-                <div class="col-md-2">
-                    <p class="column-title white-text">
-                        <strong>USEFUL LINKS</strong></p>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a href="{% url 'dashboard:home' %}">Dashboard</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'ads:choose-location' %}">Search Ads</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'user:login' %}">Log in</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'user:register' %}">Register</a>
-                        </li>
-                    </ul>
-                </div>
-    
-                <div class="col-md-2">
-                    <p class="column-title white-text">
-                        <strong>IMPORTANT LINKS</strong></p>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a href="{% url 'legal:privacy' %}">Terms</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'legal:terms' %}">Privacy</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'user:contact' %}">Contact Us</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-md-2">
-                    <p class="column-title white-text text-uppercase">
-                        <strong>Add your business</strong></p>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a href="{% url 'lodging:create' %}">Lodging</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-md-2">
-                    <p class="column-title white-text text-uppercase">
-                        <strong>Sponsor</strong></p>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a href="https://msg91.com/startups/?utm_source=startup-banner"><img src="https://msg91.com/images/startups/msg91Badge.png" width="120" height="90" title="MSG91 - SMS for Startups" alt="Bulk SMS - MSG91"></a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-md-2">
-                    <p class="column-title white-text text-uppercase">
-                        <strong>contact</strong></p>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a href="{% url 'user:contact' %}">
-                            <i class="fa fa-envelope"></i>
-                            Send Email
-                            </a>
-                        </li>
-                        <li>
-                            <i class="fa fa-whatsapp"></i>
-                            9050183280
-                        </li>
-                        <li>
-                            <i class="fa fa-phone"></i>
-                            9050183280
-                        </li>
-                        <li>
-                            <a target="_blank" href="https://tawk.to/chat/5adef5845f7cdf4f05338e80/default/?$_tawk_popout=true" class="btn btn-deep-orange btn-sm">
-                                <i class="fa fa-comments"></i>    Chat with us
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-md-2">
-                    <p class="column-title white-text text-uppercase">
-                        <strong>ADDRESS</strong></p>
-                    <ul class="list-unstyled">
-                        <li>
-                            Behind shiv mandir, shiv mandir colony
-                        </li>
-                        <li>
-                            Safiabad, Sonipat, Haryana
-                        </li>
-                        <li>
-                            131029
-                        </li>
-                    </ul>
-                </div>
+            <!--/.Footer Links-->
+        
+            <!--Copyright-->
+            <div class="footer-copyright py-3 text-center">
+                © 2018 Copyright:
+                <a href="/"> OnLease.in </a>
             </div>
-        </div>
-        <!--/.Footer Links-->
-    
-        <!--Copyright-->
-        <div class="footer-copyright py-3 text-center">
-            © 2018 Copyright:
-            <a href="/"> OnLease.in </a>
-        </div>
-        <!--/.Copyright-->
-    
-    </footer>
-    <script type="text/javascript" src="{% static 'js/jquery-3.3.1.js' %}"></script>
-    <script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'MDB Free/js/bootstrap.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'MDB Free/js/mdb.min.js' %}"></script>
-    <script src="{% static 'js/script.js' %}"></script>
-    
-    {% block script %}{% endblock %}
+            <!--/.Copyright-->
+        
+        </footer>
+        <script type="text/javascript" src="{% static 'js/jquery-3.3.1.js' %}"></script>
+        <script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'MDB Free/js/bootstrap.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'MDB Free/js/mdb.min.js' %}"></script>
+        <script src="{% static 'js/script.js' %}"></script>
+        <script src="{% static 'js/sidebar.js' %}"></script>
+        {% block script %}{% endblock %}
 
-</body>
+    </body>
 </html>

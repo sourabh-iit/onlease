@@ -1,3 +1,9 @@
+.desktop{
+    display: none;
+}
+.mobile{
+    display: flex;
+}
 .alert{
     width: 100%;
     padding: 5px;
@@ -104,8 +110,7 @@
     }
 }
 .custom-form{
-    margin-top: 1rem;
-    margin-left: 2.5rem;
+    margin-top: 1.5rem;
 } 
 .option-input {
     vertical-align: super;
@@ -197,4 +202,26 @@ footer.page-footer{
 }
 .btn.btn-sm{
     padding: 0.5rem 1rem;
+}
+.character-counter{
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    display: flex;
+    justify-content: flex-end;
+    font-size: small;
+}
+select.btn.btn-default{
+    width: 100%!important;
+    padding: 0.8rem!important;
+}
+.navbar-nav{
+    flex-direction: row!important;
+}
+@media only screen and (min-width: 768px){
+    .desktop{
+        display: flex;
+    }
+    .mobile{
+        display: none;
+    }
 }

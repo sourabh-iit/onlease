@@ -1,6 +1,6 @@
 {% extends 'navbar.html' %}
 {% load widget_tweaks %}
-{% block title %}Lodging {{state}} {{district}}{% endblock %}
+{% block title %}Roomie {{state}} {{district}}{% endblock %}
 {% load static %}
 {% load ads_filters %}
 
@@ -23,7 +23,7 @@ active
 {% block content%}
 
     <nav id="sidebar" class="scrollbar-dusty-grass square thin">
-        <form id="filterForm" action="{% url 'ads:list' state=state district=district state_id=state_id district_id=district_id %}" method="post">
+        <form id="filterForm" action="{% url 'ads:roomie-list' state=state district=district state_id=state_id district_id=district_id %}" method="post">
             {% csrf_token %}
             {% if form.non_field_errors %}
                 {% for error in form.non_field_errors %}
@@ -49,64 +49,22 @@ active
                 <div id="filter-container">
                     <label  class="sub-heading">Types</label>
                     <div class="container-box scrollbar-dusty-grass square thin">
-                        {% render_field form.lodging_types class+="list-unstyled option-input" %}
-                    </div>
-                </div>
-                <hr>
-
-                <div id="filter-container">
-                    <label class="sub-heading scrollbar-dusty-grass square thin">Floor</label>
-                    <div class="container-box scrollbar-dusty-grass square thin">
-                        {% render_field form.floor class+="list-unstyled option-input radio" %}
+                        {% render_field form.types class+="list-unstyled option-input" %}
                     </div>
                 </div>
                 <hr>
 
                 <script>
-                    document.getElementById('id_floor').classList.remove('option-input');
-                    document.getElementById('id_lodging_types').classList.remove('option-input');
+                    document.getElementById('id_types').classList.remove('option-input');
                     document.getElementById('id_regions').classList.remove('option-input');
                 </script>
-                <label class="sub-heading">Facilities</label>
-                <div class="container-box scrollbar-dusty-grass square thin">
-                    <ul class="list-unstyled">
-                        <li>
-                            <label for="id_furnished">
-                                {% render_field form.furnished class+=" option-input" %}
-                                Furnished
-                            </label>
-                        </li>
-                        <li>
-                            <label for="id_parking">
-                                {% render_field form.parking class+=" option-input" %}
-                                Parking
-                            </label>
-                        </li>
-                        <li>
-                            <label for="id_kitchen">
-                                {% render_field form.kitchen class+=" option-input" %}
-                                Kitchen
-                            </label>
-                        </li>
-                    </ul>
-                </div>
-                <hr>
 
-                <label class="sub-heading">Rent</label>
+                <label class="sub-heading">Rent budget</label>
                 <div class="range-box row">
                     {% render_field form.min_rent class+="form-control" %}
                     <div class="separator">-</div>
                     {% render_field form.max_rent class+="form-control" %}
                 </div>
-                <hr>
-
-                <label class="sub-heading">Date of availability</label>
-                <div class="range-box row">
-                    {% render_field form.lower_availability class+="form-control" %}
-                    <div class="separator">-</div>
-                    {% render_field form.upper_availability class+="form-control" %}
-                </div>
-                <div id="datepicker-container"></div>
                 <hr>
 
                 <div class="text-center">
@@ -129,36 +87,39 @@ active
     {% if ads %}
     <div class="row">
         {% for ad in ads %}
-        <div class="card-wrapper">
-            <a class="card z-depth-2" href="{% url 'ads:detail' state=state district=district state_id=state_id district_id=district_id ad_id=ad.id slug=ad.title %}">
-                {% if ad.lodging.posted_by.is_dealer %}
-                <div class="tag-bottom-right">Dealer</div>
-                {% endif %}
+        <div class="card-wrapper mb-3">
+            <a class="card z-depth-2" href="{% url 'ads:roomie-detail' state=state district=district state_id=state_id district_id=district_id ad_id=ad.id %}">
+                <div class="tag-bottom-right">{{ad.user.gender|gender_type_full_form}}</div>
                 {% if ad.image %}
                 <img class="card-img-top" src="{{ad.image.image_thumbnail.url}}" alt="{{ad.title}}">
                 {% else %}
                 <img class="card-img-top" src="/media/no_image_available.jpeg" alt="{{ad.title}}">
                 {% endif %}
                 <div class="card-body">
-                    <div class="card-title">
-                        {{ad.title}}
-                    </div>
                     <div style="display: flow-root">
                         {% if ad.is_booked %}
                         <div class="badge badge-danger mb-2 float-right">Booked</div>
                         {% endif %}
+                        {% if ad.rent != '-1' %}
                         <div class="float-left">
-                                <i class="fa fa-inr green-text"></i> {{ad.rent}}
+                            <i class="fa fa-inr green-text"></i> {{ad.rent}}
                         </div>
-                        
+                        {% else %}
+                        <div class="float-left">
+                            <i class="fa fa-inr green-text"></i> {{ad.budget}}
+                        </div>
+                        {% endif %}
                     </div>
                     <p class="card-text">
                         <i class="fa fa-home orange-text"></i> 
-                        {{ad.lodging_type | type_full_form}}
+                        {{ad.type | ad_type_full_form}}
                     </p>
+                    {% if ad.lodging_description %}
                     <p class="card-text">
-                        <i class="fa fa-calendar red-text"></i> {{ad.available_from}}</p>
-                    <p class="card-text text-muted">
+                        <i class="fa fa-info-circle blue-text"></i> 
+                        {{ad.lodging_description}}
+                    </p>
+                    {% endif %}
                     <p class="card-text text-muted">
                         <i class="fa fa-map-marker purple-text"></i> {{ad.region.name}}</p>
                 </div>

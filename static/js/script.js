@@ -19,4 +19,20 @@ $('document').ready(function(){
         s1.setAttribute('crossorigin','*');
         s0.parentNode.insertBefore(s1,s0);
     })();
+    $('input[length],textarea[length]').focusin(function(){
+        var length = $(this).attr('length');
+        var div = document.createElement('div');
+        $(div).addClass('character-counter');
+        var span = document.createElement('span');
+        span.innerText = '0/'+length;
+        $(div).append(span);
+        $(this).before(div);
+        $(this).keyup(function(){
+            var written = $(this).val().length;
+            $(this).prev('.character-counter').children()[0].innerText = written+'/'+length;
+        });
+    });
+    $('input[length],textarea[length]').focusout(function(){
+        $(this).prev('.character-counter').remove();
+    });
 })

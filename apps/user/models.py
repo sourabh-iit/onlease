@@ -21,6 +21,13 @@ class CustomUserManager(BaseUserManager):
         return user
 
 class User(AbstractUser):
+    MALE = 'M'
+    FEMALE = 'F'
+    GENDER_CHOICES = (
+        (None,'Choose gender'),
+        (MALE,'Male'),
+        (FEMALE,'Female'),
+    )
     BLOCKED = 'B'
     WARNED = 'W'
     REGULAR = 'R'
@@ -63,6 +70,7 @@ class User(AbstractUser):
         validators=[RegexValidator(mobile_number_regex)],null=True)
     mobile_number_alternate2 = models.CharField(max_length=16,
         validators=[RegexValidator(mobile_number_regex)],null=True)
+    gender = models.CharField(choices=GENDER_CHOICES,max_length=1)
 
     USERNAME_FIELD = 'mobile_number'
     objects = CustomUserManager()

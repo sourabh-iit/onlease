@@ -1,0 +1,32 @@
+.uploader{
+    width: 100%;
+    margin-top: 1.5rem;
+    display: flex;
+}
+.fileContainer [type=file] {
+    cursor: inherit;
+    position: absolute;
+    opacity: 0;
+}
+.uploader .btn-default:focus{
+    background-color: #2bbbad!important;
+}
+.fileContainer{
+    margin: 0;
+    width: 30%;
+    align-self: flex-end;
+}
+.uploader input{
+    border: none;
+    border-bottom: 1px solid #ced4da;
+    width: 200px;
+    border-radius: 0;
+    margin: 0;
+    width: 65%;
+    margin-left: 5%;
+}
+.uploader input:focus{
+    border: none;
+    box-shadow: 0 1px 0 0 #4285f4;
+    border-bottom: 1px solid #4285f4;
+}

@@ -10,6 +10,16 @@ from django.core.validators import RegexValidator, validate_slug
 from stdimage import StdImageField
 from apps.locations.models import Region
 
+allowed_image_formats = ['png','jpg','jpeg','gif']
+
+thumbnail_size = (228,180)
+
+large_image_size = (900,500)
+
+max_size = 2 # size in mb
+
+image_help_text = "Maximum image size allowed is 2mb."
+
 User = get_user_model()
 
 def image_upload_directory(instance):
@@ -35,6 +45,12 @@ class Lodging(models.Model):
     posted_at = models.DateField(auto_now=True, editable=False, blank=True)
     updated_at = models.DateField(auto_now_add=True, editable=False, blank=True)
     no_times_booked = models.PositiveIntegerField(default=0,editable=False)
+
+    def __str__(self):
+        return self.address
+
+    class Meta:
+        ordering = ('posted_at',)
 
 
 class CommonlyUsedLodgingModel(models.Model):
@@ -93,10 +109,10 @@ class ImageModel(models.Model):
     sublodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,
         related_name='images',null=True)
     image = StdImageField(upload_to=image_upload_path,
-        variations = {'large':(900,500)},
-        help_text="Maximum image size allowed is 2mb.")
+        variations = {'large':large_image_size},
+        help_text=image_help_text)
     image_thumbnail = models.ImageField(upload_to=image_upload_path,
-        help_text="Maximum image size allowed is 2mb.")
+        help_text=image_help_text)
     image_large = models.CharField(max_length=150,editable=False,null=True)
     created_at = models.DateTimeField(auto_now=True)
 

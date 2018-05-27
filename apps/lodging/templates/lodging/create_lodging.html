@@ -9,12 +9,15 @@
     <link rel="stylesheet" href="{% static 'lodging/create_lodging.css' %}">
     <link rel="stylesheet" href="{% static 'css/indeterminate_progress.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}">
+    <link rel="stylesheet" href="{% static 'css/progress.css' %}">
+    <link rel="stylesheet" href="{% static 'css/file_uploader.css' %}">
 {% endblock head %}
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
     <script src="{% static 'lodging/create_lodging.js' %}"></script>
     <script src="{% static 'lodging/image_field.js' %}"></script>
+    <script src="{% static 'js/location_render.js' %}"></script>
 {% endblock script %}
 
 {% block content %}
@@ -34,7 +37,7 @@
             {{formset.management_form}}
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="md-form">
-                        <i class="fa fa-pencil prefix"></i>
+                    <i class="fa fa-pencil prefix"></i>
                     {% render_field sub_form.title|attr:"length:70" id="title" class+="form-control" %}
                     <label for="title">Title</label>
                     <div class="form-text">

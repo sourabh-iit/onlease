@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .forms import AdsForm
+from .forms import AdsForm, RoomieAdsForm
 from django.db.models import Q
 from apps.lodging.models import Lodging, CommonlyUsedLodgingModel, ImageModel
 from django.utils.http import urlencode
@@ -16,6 +16,7 @@ from apps.locations.models import Region
 import os
 from django.conf import settings
 from django.core.paginator import Paginator
+from apps.roommate.models import RoomieAd
 
 num_ads = 12
 
@@ -25,7 +26,6 @@ def reverse_location(location):
             return tup[0]
     raise ViewException('Invalid location value.')
 
-@csrf_exempt
 def ads_list_view(request,state,state_id,district,district_id):
     try:
         q=Q(
@@ -78,9 +78,10 @@ def ads_list_view(request,state,state_id,district,district_id):
         messages.error(request,'Location is not provided')
         return HttpResponseRedirect(reverse('ads:choose-location'))
     ads = CommonlyUsedLodgingModel.objects.prefetch_related(
+            'region','images',
             Prefetch(
                 'lodging',queryset=Lodging.objects.select_related('posted_by')
-            ),'images'
+            )
         ).filter(q).order_by('lodging__posted_at')
     for ad in ads:
         try:
@@ -95,7 +96,58 @@ def ads_list_view(request,state,state_id,district,district_id):
         {'form':form,'ads':page.object_list,'state':state,'district':district,
         'state_id':state_id,'district_id':district_id,'page':page})
 
-@csrf_exempt
+
+def roomie_ads_list_view(request,state,state_id,district,district_id):
+    try:
+        q=Q(
+            region__state__id=state_id,
+            region__district__id=district_id
+        )
+        if request.method=='POST':
+            form = RoomieAdsForm(state_id,district_id,request.POST)
+            if form.is_valid():
+                data = form.cleaned_data
+                q &= (Q(
+                    rent__gte=int(data['min_rent']),
+                    rent__lte=int(data['max_rent']),
+                ) | Q(
+                    budget__gte=int(data['min_rent']),
+                    budget__lte=int(data['max_rent']),
+                ))
+                if data['types']:
+                    q_ = Q()
+                    for type in data['types']:
+                        q_ |= Q(type=type)
+                    q &= q_
+                if data['regions']:
+                    q_ = Q()
+                    for region in data['regions']:
+                        q_ |= Q(region__id=region)
+                    q &= q_
+        else:
+            form = RoomieAdsForm(state_id,district_id)
+    except KeyError:
+        messages.error(request,"Bad request")
+    except ViewException:
+        messages.error(request,'Location is not provided')
+        return HttpResponseRedirect(reverse('ads:choose-location')+'?type=roomie')
+    ads = RoomieAd.objects.prefetch_related(
+            'region','images','user'
+        ).filter(q).order_by('created_at')
+    for ad in ads:
+        try:
+            ad.image = ad.images.all()[0]
+        except:
+            ad.image = None
+    page_no = 1
+    if request.GET.get('page'):
+        page_no = int(request.GET['page'])
+    page = Paginator(ads,num_ads).page(page_no)
+    return render(request,'ads/roomie_ad_list.html',
+        {'form':form,'ads':page.object_list,'state':state,'district':district,
+        'state_id':state_id,'district_id':district_id,'page':page})
+
+
 def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
     redirection_url = reverse('ads:list',kwargs={
         'state':state,
@@ -125,3 +177,34 @@ def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
         'posted_by': lodging.lodging.posted_by
     }
     return render(request,'ads/detail.html',context)
+
+
+def roomie_ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
+    redirection_url = reverse('ads:roomie-list',kwargs={
+        'state':state,
+        'state_id':state_id,
+        'district':district,
+        'district_id':district_id})
+    try:
+        ad = RoomieAd.objects.prefetch_related("images",'region','user').get(pk=ad_id)
+    except RoomieAd.DoesNotExist:
+        messages.error(request,'Ad with id '+ad_id+' does not exist')
+        return HttpResponseRedirect(redirection_url)
+    if ad.is_booked:
+        messages.error(request,'Ad is no more available')
+        return HttpResponseRedirect(redirection_url)
+    images=[]
+    for image in ad.images.all():
+        name_and_ext = os.path.splitext(image.image.url)
+        images.append(name_and_ext[0]+'.large'+name_and_ext[1])
+    context = {
+        'ad': ad,
+        'images': images,
+        'state': state,
+        'state_id': state_id,
+        'district': district,
+        'district_id': district_id,
+        'ad_id': ad_id,
+        'posted_by': ad.user
+    }
+    return render(request,'ads/roomie-detail.html',context)

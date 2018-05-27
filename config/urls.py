@@ -23,6 +23,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/', include('apps.user.urls')),
+    path('roomie/', include('apps.roommate.urls')),
     path('lodging/', include('apps.lodging.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
     path('ads/', include('apps.ads.urls')),

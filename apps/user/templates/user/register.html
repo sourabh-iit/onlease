@@ -8,16 +8,6 @@
         <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5">
             {% csrf_token %}
             <p class="h4 text-center mb-4">REGISTER</p>
-
-            {% if messages %}
-                <div class="messages-container">
-                    {% for message in messages %}
-                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
-                            {{message}}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
             
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="row">

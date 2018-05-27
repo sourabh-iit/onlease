@@ -1,0 +1,20 @@
+$(document).ready(function(){
+    if($('#sidebar').hasClass('display')){
+        alert("sdf");
+        $('body:not(#sidebar)').click(function(){
+            $("#sidebar").removeClass('display');
+            $('.cover').removeClass('display');
+        });
+    }
+    $('#sidebar-toggler').click(function(){
+        $('#sidebar').addClass('display');
+        $('.cover').addClass('display');
+    });
+    $('#sidebar-heading').click(function(){
+        $('#sidebar').removeClass('display');
+        $('.cover').removeClass('display');
+    });
+    $(window).on('swipe',function(){
+        alert("Sdf")
+    })
+})

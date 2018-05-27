@@ -17,6 +17,12 @@ active
 {% block script %}
     <script>
         $('document').ready(function(){
+            $.urlParam = function (name) {
+                var results = new RegExp('[\?&]' + name + '=([^&#]*)')
+                                  .exec(window.location.search);
+            
+                return (results !== null) ? results[1] || 0 : false;
+            }
             $.getJSON('/api/locations').done(function(data1){
                 $.each(data1.values,function(id,value){
                     var option = document.createElement('option');
@@ -53,7 +59,11 @@ active
                 var district_id = $(this).val();
                 var state = $('#stateInput option:selected').html();
                 var state_id = $('#stateInput').val();
-                var url = "{% url 'ads:list' state='state' state_id='state_id' district='district' district_id='district_id' %}";
+                if($.urlParam('type')=='roomie'){
+                    var url = "{% url 'ads:roomie-list' state='state' state_id='state_id' district='district' district_id='district_id' %}";
+                } else {
+                    var url = "{% url 'ads:list' state='state' state_id='state_id' district='district' district_id='district_id' %}";
+                }
                 window.location.href=url.replace('state',state).replace('state_id',state_id).replace('district',district).replace('district_id',district_id);
             });
         });
