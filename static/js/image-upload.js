@@ -37,6 +37,7 @@ fileReader.onload = function (event) {
                 'X-CSRFToken': window.csrf_token
             }
         }).done(function(res){
+            $(file).val("");
             var div = document.createElement('div');
             div.className = 'flex';
             var i = document.createElement('i');
