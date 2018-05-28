@@ -11,6 +11,9 @@
   max-width: 250px;
   width: 100%;
 }
+.sub-container select{
+  width: 250px;
+}
 .progress{
   width: 300px;
   margin: 0px!important;

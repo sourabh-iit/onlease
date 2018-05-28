@@ -198,3 +198,6 @@ footer.page-footer{
 .btn.btn-sm{
     padding: 0.5rem 1rem;
 }
+#carousel-ad{
+    height: 500px;
+}

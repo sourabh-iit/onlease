@@ -16,13 +16,13 @@ def create_thumbnail(img,size,thumb_name):
     thumbnail.name = thumb_name
     # save thumbnail to memory
     thumb_io = io.BytesIO()
-    thumbnail.save(thumb_io,img.content_type.split('/')[-1].upper())
+    thumbnail.save(thumb_io,'JPEG')
     # new InMemoryUploadedFile object based on thumbnail
     file = InMemoryUploadedFile(
         thumb_io,
         'thumbnail',
         thumb_name,
-        img.content_type,
+        None,
         None, None
     )
     return file

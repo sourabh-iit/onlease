@@ -52,10 +52,3 @@ select.btn.btn-default{
     width: 100%!important;
     padding: 0.8rem!important;
 }
-.character-counter{
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
-    display: flex;
-    justify-content: flex-end;
-    font-size: small;
-}

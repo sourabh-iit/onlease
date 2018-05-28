@@ -39,6 +39,7 @@ class CommonlyUsedLodgingCreateForm(forms.ModelForm):
     district = forms.ModelChoiceField(queryset=District.objects.none(),widget=forms.Select)
     region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=forms.Select)
     available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none())
 
     def __init__(self, *args, **kwargs):
         super(CommonlyUsedLodgingCreateForm, self).__init__(*args, **kwargs)
@@ -49,8 +50,9 @@ class CommonlyUsedLodgingCreateForm(forms.ModelForm):
             choices=[('','Choose State')]+[(state.id,state.name) for state in State.objects.all()],
             widget=forms.Select
         )
-        # self.fields['images'] = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.filter(
-        #     created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=15)))
+        if 'images' in self.data:    
+            self.fields['images'].queryset = ImageModel.objects.filter(
+                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
         if 'state' in self.data and 'district' in self.data:
             try:
                 districts = District.objects.prefetch_related('regions').filter(state__id=int(self.data['state']))
@@ -139,13 +141,12 @@ class ImageForm(forms.ModelForm):
             im.save()
         return im
 
-ImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
-    form=ImageForm,extra=0,min_num=3,validate_min=True)
-
 UpdateImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
     can_delete=True,form=ImageForm,extra=0)
 
 class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
+    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
+    delete_images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
     class Meta:
         model = CommonlyUsedLodgingModel
         fields = ('is_furnished','is_kitchen_available','is_parking_available',
@@ -155,7 +156,7 @@ class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
             'additional_details': forms.Textarea(attrs={'rows':4,'cols':15}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, images, *args, **kwargs):
         super(CommonlyUsedLodgingUpdateForm, self).__init__(*args, **kwargs)
         self.fields['is_furnished'].required = False
         self.fields['is_booked'].required = False
@@ -164,6 +165,11 @@ class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
         self.fields['additional_details'].required = False
         self.fields['floor_no'].required = False
         self.fields['total_floors'].required = False
+        if images:
+            self.fields['delete_images'].queryset = images
+        if 'images' in self.data:    
+            self.fields['images'].queryset = ImageModel.objects.filter(
+                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
 
     def clean_available_from(self):
         date = self.cleaned_data.get('available_from')
