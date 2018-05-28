@@ -30,9 +30,7 @@ def image_upload_directory(instance):
     )
 
 def image_upload_path(instance, filename):
-    return '{0}/{1}'.format(
-        image_upload_directory(instance.sublodging.lodging),
-        filename)
+    return '{0}/{1}/{2}'.format('lodging','images',filename)
 
 class Lodging(models.Model):
     '''Lodging'''
@@ -82,8 +80,8 @@ class CommonlyUsedLodgingModel(models.Model):
     # land_area = models.CharField(max_length=12,
     #     validators=[RegexValidator('^[1-9][0-9]*x[1-9][0-9]*$')])
     additional_details = models.TextField(max_length=500,null=True,blank=True,
-        validators=[RegexValidator('^[0-9a-zA-Z ,-/.]*$')],
-        help_text='Valid characters are alphabets, digits, and "-,./." only'+
+        validators=[RegexValidator('^[0-9a-zA-Z ,-/.&$%?\'\"]*$')],
+        help_text='Valid characters are alphabets, digits, and "-,./.&$%?\'\" only'+
         ' Valid length is under 500 characters.')
     title = models.CharField(max_length=70, validators=\
         [RegexValidator('^[0-9A-Za-z _-]{10,}')],
@@ -108,13 +106,11 @@ class CommonlyUsedLodgingModel(models.Model):
 class ImageModel(models.Model):
     sublodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,
         related_name='images',null=True)
-    image = StdImageField(upload_to=image_upload_path,
-        variations = {'large':large_image_size},
-        help_text=image_help_text)
+    image = models.ImageField(upload_to=image_upload_path,
+        help_text="Maximum image size allowed is 2mb.")
     image_thumbnail = models.ImageField(upload_to=image_upload_path,
-        help_text=image_help_text)
-    image_large = models.CharField(max_length=150,editable=False,null=True)
+        help_text="Maximum image size allowed is 2mb.")
     created_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.image.name
+        return self.image_thumbnail.url

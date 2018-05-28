@@ -31,38 +31,14 @@ INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
 
 RECIPIENTS = ['sourabh7singh@gmail.com']
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'onlease.log',
-            'formatter': 'verbose'
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers':['file'],
-            'propagate': True,
-            'level':'DEBUG',
-        },
-        'MYAPP': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-        },
-    }
-}
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# DEFAULT_FROM_EMAIL = 'feedback@onlease.in'
+# EMAIL_HOST = 'smtp.onlease.in'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'feedback@onlease.in'
+# EMAIL_HOST_PASSWORD = os.environ.get('BIGROCK_EMAIL_PASSWORD')
+# EMAIL_USE_TLS = True
 
 DEFAULT_FROM_EMAIL = 'feedback@onlease.in'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -72,3 +48,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')
 EMAIL_USE_TLS = True
 
 BASE_URL = 'http://localhost:8000'
+
+LANGUAGE_CODE = 'hi-IN'
+
+DATE_INPUT_FORMATS = ['%d-%m-%Y','%Y-%m-%d']

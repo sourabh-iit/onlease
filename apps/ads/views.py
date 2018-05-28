@@ -162,13 +162,9 @@ def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
     if lodging.is_booked:
         messages.error(request,'Lodging is already booked')
         return HttpResponseRedirect(redirection_url)
-    images=[]
-    for image in lodging.images.all():
-        name_and_ext = os.path.splitext(image.image.url)
-        images.append(name_and_ext[0]+'.large'+name_and_ext[1])
     context = {
         'ad': lodging,
-        'images': images,
+        'images': lodging.images.all(),
         'state': state,
         'state_id': state_id,
         'district': district,

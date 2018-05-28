@@ -30,9 +30,28 @@
     box-shadow: 0 1px 0 0 #4285f4;
     border-bottom: 1px solid #4285f4;
 }
-.md-form label{
+.md-form .label{
     display: contents;
 }
 img:hover{
     cursor: pointer;
+}
+.md-form .label img{
+    max-width: 120px;
+    max-height: 100px;
+}
+.md-form.div-delete {
+    width: fit-content;
+    float: left;
+    margin-top: 0.5rem;
+    height: 100px;
+}
+.checkbox-container {
+    float: left;
+}
+.delete_images_container{
+    float: left;
+}
+#datepicker-container{
+    position: relative;
 }

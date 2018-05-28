@@ -8,16 +8,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <link rel="stylesheet" href="{% static 'lodging/create_lodging.css' %}">
     <link rel="stylesheet" href="{% static 'css/indeterminate_progress.css' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}">
-    <link rel="stylesheet" href="{% static 'css/progress.css' %}">
-    <link rel="stylesheet" href="{% static 'css/file_uploader.css' %}">
+    <link rel="stylesheet" href="{% static 'css/image-upload.css' %}">
 {% endblock head %}
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
-    <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
     <script src="{% static 'lodging/create_lodging.js' %}"></script>
     <script src="{% static 'lodging/image_field.js' %}"></script>
-    <script src="{% static 'js/location_render.js' %}"></script>
+    <script src="{% static 'js/image-upload.js' %}"></script>
 {% endblock script %}
 
 {% block content %}
@@ -34,12 +31,11 @@
             {% csrf_token %}
             <p class="h4 text-center mb-4">Add lodging business</p>
 
-            {{formset.management_form}}
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="md-form">
                     <i class="fa fa-pencil prefix"></i>
-                    {% render_field sub_form.title|attr:"length:70" id="title" class+="form-control" %}
-                    <label for="title">Title</label>
+                    {% render_field sub_form.title|attr:"length:70" class+="form-control" %}
+                    <label for="id_title">Title</label>
                     <div class="form-text">
                         <small class="text-muted">{{sub_form.title.help_text}}</small>
                     </div>
@@ -50,6 +46,7 @@
 
                 <div class="form-row">
                     <div class="md-form col-12 col-sm-6">
+                        <i class="fa fa-building prefix"></i>
                         {% render_field sub_form.total_floors id="total_floors" class+="form-control" %}
                         <label for="total_floors">Total floors</label>
                         <small class="text-muted">{{sub_form.total_floors.help_text}}</small>
@@ -59,6 +56,7 @@
                     </div>
 
                     <div class="md-form col-12 col-sm-6">
+                        <i class="fa fa-building prefix"></i>
                         {% render_field sub_form.floor_no id="floor_no" class+="form-control" %}
                         <label for="floor_no">Floor number</label>
                         <small class="text-muted">{{sub_form.floor_no.help_text}}</small>
@@ -172,29 +170,22 @@
                     </div>
                     <small class="help-text text-muted mt-2 col-12">Select which are available</small>
                 </div>
+                <div id="uploaded_images_container">
+                    <div class="uploaded">Uploaded Images</div>
+                </div>
                 <div id="images_container">
-                    {% for form in formset %}
-                        <div class="uploader">
-                            <label class="fileContainer btn btn-default pd-1 btn-sm">
-                                Choose files
-                                {{form.image}}
-                            </label>
-                            <input type="text" id='text_{{form.image.auto_id}}' class="form-control padding-0" placeholder="upload your image">
-                        </div>
-                        {% if form.errors %}
-                            <div class="error"><small>{{form.image.errors.0}}</small></div>
-                        {% endif %}
-                    {% endfor %}
+                    
                 </div>
                 <div style="clear:both"></div>
                 <div class="md-form">
                     <span class='btn btn-sm btn-secondary' id="add_image">
                         <i class="fa fa-file-image-o icon"></i> Add image</span>
-                    {% if formset.errors %}
-                        <div class="error"><small>{{formset.non_form_errors.0}}</small></div>
+                    {% if sub_form.images.errors %}
+                        <div class="error"><small>{{sub_form.images.errors.0}}</small></div>
                     {% endif %}
                 </div>
             {% endwith %}
+            {{sub_form.images}}
 
             <div class="text-center mt-4">
                 <button class="btn btn-primary btn-md" type="submit">
@@ -202,5 +193,12 @@
             </div>
 
         </form>
+        <form action="{% url 'lodging:image-upload' %}" method="post" id='image-upload-form'>
+            {% csrf_token %}
+            <input type="file" name="image" id="hidden_image">
+        </form>
     </div>
+    <script>
+        var csrf_token = "{{csrf_token}}";
+    </script>
 {% endblock %}

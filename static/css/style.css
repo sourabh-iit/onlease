@@ -225,3 +225,6 @@ select.btn.btn-default{
         display: none;
     }
 }
+#carousel-ad{
+    height: 500px;
+}

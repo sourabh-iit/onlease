@@ -7,12 +7,13 @@
 {% block head %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <link rel="stylesheet" href="{% static 'lodging/edit_lodging.css' %}">
+    <link rel="stylesheet" href="{% static 'css/image-upload.css' %}">
 {% endblock head %}
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'lodging/edit_lodging.js' %}"></script>
-    <script src="{% static 'js/zebra_datepicker.js' %}"></script>
     <script src="{% static 'lodging/image_field.js' %}"></script>
+    <script src="{% static 'js/image-upload.js' %}"></script>
 {% endblock script %}
 
 {% block content %}
@@ -26,15 +27,19 @@
 
                 <div class="form-row">
                     <div class="md-form col-12 col-sm-6">
-                        {% render_field sublodging_form.total_floors|append_attr:"autofocus" id="total_floors" class+="form-control" %}
-                        <label for="total_floors">Total floors</label>
-                        <small class="text-muted">{{sublodging_form.total_floors.help_text}}</small>
+                        <i class="fa fa-building prefix"></i>
+                        {% render_field sublodging_form.total_floors|append_attr:"autofocus" class+="form-control" %}
+                        <label for="id_total_floors">Total floors</label>
+                        <div class="form-text">
+                            <small class="text-muted">{{sublodging_form.total_floors.help_text}}</small>
+                        </div>
                         {% if sublodging_form.total_floors.errors %}
                             <div class="error"><small>{{sublodging_form.total_floors.errors.0}}</small></div>
                         {% endif %}
                     </div>
 
                     <div class="md-form col-12 col-sm-6">
+                        <i class="fa fa-building prefix"></i>
                         {% render_field sublodging_form.floor_no id="floor_no" class+="form-control" %}
                         <label for="floor_no">Floor number</label>
                         <small class="text-muted">{{sublodging_form.floor_no.help_text}}</small>
@@ -45,8 +50,9 @@
 
                     <div class="md-form col-12 col-sm-7">
                         <i class="fa fa-calendar prefix"></i>
-                        {% render_field sublodging_form.available_from class+="form-control datepicker"%}
+                        {% render_field sublodging_form.available_from class+="form-control"%}
                         <label for="id_available_from">Available from</label>
+                        <div id="datepicker-container"></div>
                         <div class="form-text">
                             <small class="text-muted">Date when lodging will be available for rent. Can be any future value.</small>
                         </div>
@@ -66,7 +72,7 @@
 
                     <div class="md-form col-12">
                             <i class="fa fa-pencil prefix"></i>
-                        {% render_field sublodging_form.additional_details id="additional_details" class+="form-control" %}
+                        {% render_field sublodging_form.additional_details id="additional_details" class+="form-control md-textarea" %}
                         <label for="additional_details">Additional details</label>
                         {% if sublodging_form.additional_details.errors %}
                             <div class="error"><small>{{sublodging_form.additional_details.errors.0}}</small></div>
@@ -102,30 +108,37 @@
                     </div>
                     <small class="text-muted col-12">Select which are available</small>
                 </div>
+                <div class="delete_images_container">
+                    <h6 class="mt-3"><strong>Click images to delete</strong></h6>
+                    {% for image in images %}
+                    <div class="md-form div-delete">
+                        <div class="checkbox-container">
+                            <input type="checkbox" name="delete_images" value="{{image.id}}" id="{{image.id}}" class="option-input checkbox">
+                        </div>
+                        <label for="{{image.id}}" class="label">
+                            <img src={{image.image_thumbnail.url}}>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="clear:both"></div>
+                <div id="uploaded_images_container">
+                    <div class="uploaded"><strong>Uploaded Images</strong></div>
+                </div>
                 <div id="images_container">
 
                 </div>
-                <h6 class="mt-3"><strong>Click images to delete</strong></h6>
+                <div style="clear:both"></div>
                 <div class="form-row">
-                    {% for form in formset %}
-                    <div class="md-form col-12 col-md-6 col-4">
-                        {% render_field form.DELETE class="option-input checkbox" %}
-                        <label for="id_image-{{forloop.counter0}}-DELETE">
-                            <img src={{form.instance.image_thumbnail.url}}>
-                        </label>
-                        {{form.id}}
-                    </div>
-                    {% endfor %}
-                    <div class="col-12 d-flex justify-content-center">
+                    <div class="col-12">
                         <span class='btn btn-sm btn-secondary ml-0 mt-3' id="add_image">
                             <i class="fa fa-file-image-o icon"></i> Add image</span>
-                        {% if formset.non_form_errors %}
-                            <div class="error"><small>{{formset.non_form_errors.0}}</small></div>
+                        {% if sublodging_form.errors %}
+                            <div class="error"><small>{{sublodging_form.errors.0}}</small></div>
                         {% endif %}
                     </div>
                 </div>
             {% endwith %}
-            {{formset.management_form}}
             <div class="text-center mt-4">
                 <button class="btn btn-primary btn-md" type="submit">
                     <i class="fa fa-edit icon"></i> Update</button>
@@ -133,6 +146,11 @@
                     <i class="fa fa-remove icon"></i> Delete</a>
             </div>
 
+            {{sublodging_form.images}}
+
         </form>
     </div>
+    <script>
+        var csrf_token="{{csrf_token}}";
+    </script>
 {% endblock %}

@@ -25,7 +25,7 @@ class AdCommonFieldsForm(forms.Form):
     district = forms.ModelChoiceField(queryset=District.objects.none(),widget=forms.Select)
     region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=forms.Select)
     state = forms.ChoiceField(choices=[(None,'Choose state')]+[(state.id,state.name) for state in State.objects.all()],widget=forms.Select)
-    
+    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none())
 
 # only clean and init methods in this
 class AdCommonFieldsMixinForm(object):
@@ -79,24 +79,6 @@ class LodgingCommonFieldsMixinForm(object):
         return date
 
 
-class ImageCommonFieldsMixinForm(object):
-    
-    def __init__(self, *args, **kwargs):
-        super(ImageCommonFieldsMixinForm,self).__init__(*args, **kwargs)
-        self.fields['image'].required = False
-
-    def clean_image(self):
-        img = self.cleaned_data['image']
-        if type(img)!=stdimage.models.StdImageFieldFile:
-            if not img:
-                raise ValidationError('This field is required')
-            if img._size > mb_to_bytes(max_size):
-                raise ValidationError('Upload a valid image. Only files with size less than 5mb are allowed.',code='invalidsize')
-            if img.content_type.split('/')[-1] not in allowed_image_formats:
-                raise ValidationError('Upload a valid image. Only files with extensions png, jpg, jpeg and gif are allowed.',code='invalidformat')
-        return img
-
-
 class LodgingCreateForm(forms.ModelForm):
     class Meta:
         model = Lodging
@@ -145,7 +127,7 @@ class CommonlyUsedLodgingUpdateForm(LodgingCommonFieldsMixinForm,forms.ModelForm
             'additional_details': forms.Textarea(attrs={'rows':4,'cols':15}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, images, *args, **kwargs):
         super(CommonlyUsedLodgingUpdateForm, self).__init__(*args, **kwargs)
         self.fields['is_furnished'].required = False
         self.fields['is_booked'].required = False
@@ -154,31 +136,11 @@ class CommonlyUsedLodgingUpdateForm(LodgingCommonFieldsMixinForm,forms.ModelForm
         self.fields['additional_details'].required = False
         self.fields['floor_no'].required = False
         self.fields['total_floors'].required = False
+        if images:
+            self.fields['delete_images'].queryset = images
+        if 'images' in self.data:    
+            self.fields['images'].queryset = ImageModel.objects.filter(
+                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
 
 
 CommonlyUsedLodgingUpdateForm.base_fields.update(LodgingCommonFieldsForm.base_fields)
-
-
-class ImageForm(ImageCommonFieldsMixinForm,forms.ModelForm):
-    class Meta:
-        model = ImageModel
-        fields = ('image',)
-
-    def save(self,commit=True):
-        im = super(ImageForm,self).save(commit=False)
-        img = im.image
-        name_and_ext = os.path.splitext(img.name)
-        random_suffix = generate_random(32)
-        img.name = name_and_ext[0]+"_"+random_suffix+name_and_ext[1]
-        thumb_name = name_and_ext[0]+"_"+random_suffix+'.thumbnail'+name_and_ext[1]
-        im.image_thumbnail = create_thumbnail(img,thumbnail_size,thumb_name)
-        if commit:
-            im.save()
-        return im
-
-
-ImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
-    form=ImageForm,extra=0,min_num=3,validate_min=True)
-
-UpdateImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,fields=('image',),
-    can_delete=True,form=ImageForm,extra=0)

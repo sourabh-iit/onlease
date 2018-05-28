@@ -7,4 +7,4 @@ $(document).ready(function(){
         direction: [1,15],
         container: $('#datepicker-container')
     });
-})
+});
