@@ -9,12 +9,12 @@ fileReader.onload = function (event) {
     image.onload=function(){
         var canvas=document.createElement("canvas");
         var context=canvas.getContext("2d");
-        if(image.height/image.width>max_height/max_width){
-            canvas.height = 500;
-            canvas.width = (max_height/max_width)*image.width;
+        if(max_width/max_height>image.width/image.height){
+            canvas.height = max_height;
+            canvas.width = (image.width/image.height)*max_height;
         } else {
-            canvas.width = 900;
-            canvas.height = (max_width/max_height)*image.height;
+            canvas.width = max_width;
+            canvas.height = (image.height/image.width)*max_width;
         }
         context.drawImage(image,
             0,

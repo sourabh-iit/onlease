@@ -30,7 +30,6 @@ def delete_files(*args):
 
 @receiver(post_delete, sender=ImageModel)
 def delete_image(sender,instance,using,**kwargs):
-    import pdb; pdb.set_trace()
     delete_files(
         instance.image.url,
         instance.image_thumbnail.url)

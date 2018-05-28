@@ -197,4 +197,4 @@ BASE_URL = 'http://localhost:8000'
 
 LANGUAGE_CODE = 'hi-IN'
 
-DATE_INPUT_FORMATS = ['%d-%m-%Y']
+DATE_INPUT_FORMATS = ['%d-%m-%Y','%Y-%m-%d']

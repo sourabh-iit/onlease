@@ -27,6 +27,7 @@
 
                 <div class="form-row">
                     <div class="md-form col-12 col-sm-6">
+                        <i class="fa fa-building prefix"></i>
                         {% render_field sublodging_form.total_floors|append_attr:"autofocus" class+="form-control" %}
                         <label for="id_total_floors">Total floors</label>
                         <div class="form-text">
@@ -38,6 +39,7 @@
                     </div>
 
                     <div class="md-form col-12 col-sm-6">
+                        <i class="fa fa-building prefix"></i>
                         {% render_field sublodging_form.floor_no id="floor_no" class+="form-control" %}
                         <label for="floor_no">Floor number</label>
                         <small class="text-muted">{{sublodging_form.floor_no.help_text}}</small>
@@ -48,8 +50,9 @@
 
                     <div class="md-form col-12 col-sm-7">
                         <i class="fa fa-calendar prefix"></i>
-                        {% render_field sublodging_form.available_from class+="form-control datepicker"%}
+                        {% render_field sublodging_form.available_from class+="form-control"%}
                         <label for="id_available_from">Available from</label>
+                        <div id="datepicker-container"></div>
                         <div class="form-text">
                             <small class="text-muted">Date when lodging will be available for rent. Can be any future value.</small>
                         </div>
@@ -118,6 +121,7 @@
                     </div>
                     {% endfor %}
                 </div>
+                <div style="clear:both"></div>
                 <div id="uploaded_images_container">
                     <div class="uploaded"><strong>Uploaded Images</strong></div>
                 </div>

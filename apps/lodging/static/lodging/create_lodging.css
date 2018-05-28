@@ -52,3 +52,6 @@ select.btn.btn-default{
     width: 100%!important;
     padding: 0.8rem!important;
 }
+#datepicker-container{
+    position: relative;
+}

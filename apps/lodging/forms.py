@@ -147,6 +147,8 @@ UpdateImageFormset = inlineformset_factory(CommonlyUsedLodgingModel,ImageModel,f
 class CommonlyUsedLodgingUpdateForm(forms.ModelForm):
     images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
     delete_images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
+    available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS,widget=forms.widgets.DateInput(format="%d-%m-%Y"))
+
     class Meta:
         model = CommonlyUsedLodgingModel
         fields = ('is_furnished','is_kitchen_available','is_parking_available',

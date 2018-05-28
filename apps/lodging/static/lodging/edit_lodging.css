@@ -38,16 +38,20 @@ img:hover{
 }
 .md-form .label img{
     max-width: 120px;
+    max-height: 100px;
 }
 .md-form.div-delete {
     width: fit-content;
     float: left;
     margin-top: 0.5rem;
+    height: 100px;
 }
 .checkbox-container {
     float: left;
 }
 .delete_images_container{
-    margin-bottom: 1.5rem;
     float: left;
+}
+#datepicker-container{
+    position: relative;
 }
