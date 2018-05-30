@@ -3,10 +3,10 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-    <div class="container col-10 col-sm-8 col-md-6 col-xl-4">
-        <form action="{% url 'dashboard:profile' %}" method="post" novalidate class="mt-5">
+    <div class="container col-12 col-sm-10 col-md-8 col-lg-7 col-xl-5">
+        <form action="{% url 'dashboard:profile' %}" method="post" novalidate class="mt-5 custom-main-form">
             {% csrf_token %}
-            <p class="h4 text-center mb-4 text-capitalize">PROFILE</p>
+            <p class="h4 text-center text-capitalize custom-main-form-heading">PROFILE</p>
             
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
 
@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="md-form">
-                    <i class="fa fa-phone prefix"></i>
+                    <i class="fa fa-mobile prefix"></i>
                     {% render_field form.mobile_number_alternate1 class+="form-control" %}
                     <label for="id_mobile_number_alternate1">Alternate Mobile Number</label>
                     {% if form.mobile_number_alternate1.errors %}
@@ -35,7 +35,7 @@
                 </div>
                 
                 <div class="md-form">
-                    <i class="fa fa-phone prefix"></i>
+                    <i class="fa fa-mobile prefix"></i>
                     {% render_field form.mobile_number_alternate2 class+="form-control" %}
                     <label for="id_mobile_number_alternate2">Alternate Mobile Number</label>
                     {% if form.mobile_number_alternate2.errors %}

@@ -48,10 +48,19 @@ img:hover{
 }
 .checkbox-container {
     float: left;
+    align-self: flex-start;
 }
 .delete_images_container{
     float: left;
+    align-self: auto;
+    width: 90%;
 }
 #datepicker-container{
     position: relative;
+}
+#uploaded_images_container{
+    width: 90%;
+}
+#images_container{
+    width: 90%;
 }

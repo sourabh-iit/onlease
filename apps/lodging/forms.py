@@ -25,13 +25,14 @@ class AdCommonFieldsForm(forms.Form):
     district = forms.ModelChoiceField(queryset=District.objects.none(),widget=forms.Select)
     region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=forms.Select)
     state = forms.ChoiceField(choices=[(None,'Choose state')]+[(state.id,state.name) for state in State.objects.all()],widget=forms.Select)
-    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none())
+    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
 
 # only clean and init methods in this
 class AdCommonFieldsMixinForm(object):
     
     def __init__(self, *args, **kwargs):
         super(AdCommonFieldsMixinForm,self).__init__(*args,**kwargs)
+
         if 'state' in self.data and 'district' in self.data:
             try:
                 districts = District.objects.prefetch_related('regions').filter(state__id=int(self.data['state']))
@@ -39,6 +40,9 @@ class AdCommonFieldsMixinForm(object):
                 self.fields['region'].queryset = districts.get(id=int(self.data['district'])).regions.all()
             except:
                 pass
+        if 'images' in self.data:    
+            self.fields['images'].queryset = ImageModel.objects.filter(
+                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
 
 
 class LodgingCommonFieldsForm(forms.Form):
@@ -117,7 +121,10 @@ CommonlyUsedLodgingCreateForm.base_fields.update(AdCommonFieldsForm.base_fields)
 CommonlyUsedLodgingCreateForm.base_fields.update(LodgingCommonFieldsForm.base_fields)
 
 
-class CommonlyUsedLodgingUpdateForm(LodgingCommonFieldsMixinForm,forms.ModelForm):
+class CommonlyUsedLodgingUpdateForm(LodgingCommonFieldsMixinForm,AdCommonFieldsMixinForm,forms.ModelForm):
+    delete_images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),
+                required=False)
+    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
     class Meta:
         model = CommonlyUsedLodgingModel
         fields = ('is_furnished','is_kitchen_available','is_parking_available',

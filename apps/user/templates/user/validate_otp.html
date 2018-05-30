@@ -17,10 +17,10 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container col-sm-8 col-md-6 col-lg-4">
-        <form action="{% url 'user:verify-number' %}" method="post" novalidate class="mt-5">
+    <div class="container col-12 col-sm-10 col-md-8 col-lg-7 col-xl-5">
+        <form action="{% url 'user:verify-number' %}" method="post" novalidate class="mt-5 custom-main-form">
             {% csrf_token %}
-            <p class="h4 text-center mb-4">VALIDATE OTP</p>
+            <p class="h4 text-center custom-main-form-heading">VALIDATE OTP</p>
 
             {% if messages %}
                 <div class="messages-container">

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .forms import RoomieAdForm, ImageFormset
+from .forms import RoomieAdForm
 from .models import RoomieAd
 from django.http import HttpResponseRedirect
 from django.db import transaction

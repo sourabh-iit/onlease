@@ -13,8 +13,9 @@
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'lodging/create_lodging.js' %}"></script>
-    <script src="{% static 'lodging/image_field.js' %}"></script>
+    <script src="{% static 'js/image_field.js' %}"></script>
     <script src="{% static 'js/image-upload.js' %}"></script>
+    <script src="{% static 'js/location_render.js' %}"></script>
 {% endblock script %}
 
 {% block content %}
@@ -26,14 +27,15 @@
         </div>
     </div>
     
-    <div class="container col-12 col-md-9 col-lg-7 col-xl-6">
-        <form action="{% url 'lodging:create' %}" enctype="multipart/form-data" method="post" novalidate class="mt-5">
+    <div class="container col-12 col-sm-10 col-md-9 col-lg-8 col-xl-7">
+        <form action="{% url 'lodging:create' %}" enctype="multipart/form-data" method="post" novalidate class="mt-5 custom-main-form">
             {% csrf_token %}
-            <p class="h4 text-center mb-4">Add lodging business</p>
+            <p class="h4 text-center custom-main-form-heading">
+                <i class="fa fa-plus"></i> Add lodging business</p>
 
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="md-form">
-                    <i class="fa fa-pencil prefix"></i>
+                    <i class="fa fa-tag prefix"></i>
                     {% render_field sub_form.title|attr:"length:70" class+="form-control" %}
                     <label for="id_title">Title</label>
                     <div class="form-text">
@@ -88,28 +90,28 @@
                     </div>
                     
                     <div class="md-form col-12 col-sm-6" id="state">
-                        {% render_field sub_form.state class+="btn btn-default" %}
+                        {% render_field sub_form.state class+="btn btn-outline-primary w-100" %}
                         {% if sub_form.state.errors %}
                             <div class="error"><small>{{sub_form.state.errors.0}}</small></div>
                         {% endif %}
                     </div>
 
                     <div class="md-form col-12 col-sm-6" id="district">
-                        {% render_field sub_form.district class+="btn btn-default" %}
+                        {% render_field sub_form.district class+="btn btn-outline-primary w-100" %}
                         {% if sub_form.district.errors %}
                             <div class="error"><small>{{sub_form.district.errors.0}}</small></div>
                         {% endif %}
                     </div>
 
                     <div class="md-form col-12 col-sm-6" id="region">
-                        {% render_field sub_form.region class+="btn btn-default" %}
+                        {% render_field sub_form.region class+="btn btn-outline-primary w-100" %}
                         {% if sub_form.region.errors %}
                             <div class="error"><small>{{sub_form.region.errors.0}}</small></div>
                         {% endif %}
                     </div>
 
                     <div class="md-form col-12 col-sm-6">
-                        {% render_field sub_form.lodging_type id="lodging_type" class+="btn btn-default" %}
+                        {% render_field sub_form.lodging_type id="lodging_type" class+="btn btn-outline-primary w-100" %}
                         {% if sub_form.lodging_type.errors %}
                             <div class="error"><small>{{sub_form.lodging_type.errors.0}}</small></div>
                         {% endif %}
@@ -120,7 +122,7 @@
                         {% render_field form.address id="address" class+="form-control" %}
                         <label for="address">Address</label>
                         <div class="form-text">
-                            <small class="text-muted">{{sub_form.address.help_text}}</small>
+                            <small class="text-muted">{{form.address.help_text}}</small>
                         </div>
                         {% if form.address.errors %}
                             <div class="error"><small>{{form.address.errors.0}}</small></div>
@@ -129,7 +131,7 @@
                     <!-- {{images}} -->
 
                     <div class="md-form col-12">
-                        <i class="fa fa-pencil prefix"></i>
+                        <i class="fa fa-info-circle prefix"></i>
                         {% render_field sub_form.additional_details id="additional_details" length="500" class+="md-textarea form-control" %}
                         <label for="additional_details">Additional details</label>
                         <div class="form-text">
@@ -139,7 +141,9 @@
                             <div class="error"><small>{{sub_form.additional_details.errors.0}}</small></div>
                         {% endif %}
                     </div>
-                    <div class="col-12 form-row mt-4">
+                    <div class="help-text text-muted mb-2 mt-4 col-12">
+                        <small>Select those are available</small></div>
+                    <div class="col-12 form-row">
                         <div class="col-12 col-sm-3">
                             {% render_field sub_form.is_furnished class+="option-input checkbox ml-0" %}
                             <label for="id_is_furnished" class="label align-top">
@@ -168,17 +172,16 @@
                             {% endif %}
                         </div>
                     </div>
-                    <small class="help-text text-muted mt-2 col-12">Select which are available</small>
                 </div>
                 <div id="uploaded_images_container">
-                    <div class="uploaded">Uploaded Images</div>
+                    <div>Currently Uploaded Images</div>
                 </div>
                 <div id="images_container">
                     
                 </div>
                 <div style="clear:both"></div>
                 <div class="md-form">
-                    <span class='btn btn-sm btn-secondary' id="add_image">
+                    <span class='btn btn-md btn-outline-primary' id="add_image">
                         <i class="fa fa-file-image-o icon"></i> Add image</span>
                     {% if sub_form.images.errors %}
                         <div class="error"><small>{{sub_form.images.errors.0}}</small></div>
@@ -192,10 +195,6 @@
                     <i class="fa fa-plus icon"></i> Add</button>
             </div>
 
-        </form>
-        <form action="{% url 'lodging:image-upload' %}" method="post" id='image-upload-form'>
-            {% csrf_token %}
-            <input type="file" name="image" id="hidden_image">
         </form>
     </div>
     <script>

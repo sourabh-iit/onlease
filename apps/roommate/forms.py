@@ -1,7 +1,6 @@
 from django import forms
 from .models import RoomieAd, Image
-from apps.lodging.forms import AdCommonFieldsForm, AdCommonFieldsMixinForm, \
-    ImageCommonFieldsMixinForm
+from apps.lodging.forms import AdCommonFieldsForm, AdCommonFieldsMixinForm
 from django.forms import inlineformset_factory
 
 
@@ -18,12 +17,3 @@ class RoomieAdForm(AdCommonFieldsMixinForm,forms.ModelForm):
 
 
 RoomieAdForm.base_fields.update(AdCommonFieldsForm.base_fields)
-
-    
-class ImageForm(ImageCommonFieldsMixinForm,forms.ModelForm):
-    class Meta:
-        models = Image
-        fields = ('image',)
- 
-ImageFormset = inlineformset_factory(RoomieAd,Image,fields=('image',),
-    form=ImageForm,extra=0)

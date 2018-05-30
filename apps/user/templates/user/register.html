@@ -4,10 +4,11 @@
 {% block register_active %}active{% endblock %}
 
 {% block content %}
-    <div class="container col-11 col-sm-10 col-md-9 col-lg-7 col-xl-5">
-        <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5">
+    <div class="container col-11 col-sm-10 col-md-9 col-lg-8 col-xl-6">
+        <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5 custom-main-form">
             {% csrf_token %}
-            <p class="h4 text-center mb-4">REGISTER</p>
+            <p class="h4 text-center custom-main-form-heading">
+                <i class="fa fa-user-plus"></i> REGISTER</p>
             
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="row">
@@ -41,7 +42,7 @@
                     </div>
                     
                     <div class="md-form col-12 col-md-6">
-                        <i class="fa fa-envelope prefix"></i>
+                        <i class="fa fa-mobile prefix"></i>
                         {% render_field form.mobile_number id="mobile_number" class+="form-control" %}
                         <label for="mobile_number">Mobile number</label>
                         {% if form.mobile_number.errors %}

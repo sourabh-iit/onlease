@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import ImageModel, Lodging,CommonlyUsedLodgingModel, image_upload_directory
+from .models import ImageModel, Lodging,CommonlyUsedLodgingModel, image_upload_directory\
+    , thumbnail_size
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
 from .forms import LodgingCreateForm, CommonlyUsedLodgingCreateForm, \
-                    CommonlyUsedLodgingUpdateForm, thumb_size
+                    CommonlyUsedLodgingUpdateForm
 from django.urls import reverse
 from apps.user.utils import ViewException
 from django.conf import settings
@@ -24,14 +25,14 @@ import io
 
 def delete_files(*args):
     for file in args:
-        if os.path.isfile(file):
-            os.remove(file)
+        if os.path.isfile(settings.MEDIA_ROOT+'/'+file):
+            os.remove(settings.MEDIA_ROOT+'/'+file)
 
 @receiver(post_delete, sender=ImageModel)
 def delete_image(sender,instance,using,**kwargs):
     delete_files(
-        instance.image.url,
-        instance.image_thumbnail.url)
+        instance.image.name,
+        instance.image_thumbnail.name)
 
 @maintain_cookie
 @login_required
@@ -62,6 +63,8 @@ def lodging_create_view(request):
                     'district_id':sub_form.cleaned_data['district'].id,
                     'district':sublodging.region.district.name
                 }))
+        else:
+            messages.error(request,'Error occurred while processing input')
     else:
         request.session.set_test_cookie()
         form = LodgingCreateForm()
@@ -72,6 +75,7 @@ def lodging_create_view(request):
 @maintain_cookie
 @login_required
 def lodging_edit_view(request,ad_id):
+    uploaded=False
     try:
         lodging=Lodging.objects.prefetch_related(
             Prefetch(
@@ -110,12 +114,17 @@ def lodging_edit_view(request,ad_id):
                         image.sublodging = sublodging
                         image.save()
                 messages.success(request,'Lodging updated successfully')
-                return HttpResponseRedirect(reverse('ads:list',kwargs={
-                    'state': sublodging.region.state.name,
-                    'state_id': sublodging.region.state.id,
-                    'district': sublodging.region.district.name,
-                    'district_id': sublodging.region.district.id,
+                return HttpResponseRedirect(reverse('lodging:edit',kwargs={
+                    'ad_id':ad_id
                 }))
+                # return HttpResponseRedirect(reverse('ads:list',kwargs={
+                #     'state': sublodging.region.state.name,
+                #     'state_id': sublodging.region.state.id,
+                #     'district': sublodging.region.district.name,
+                #     'district_id': sublodging.region.district.id,
+                # }))
+            else:
+                messages.error(request,'Error occurred while processing input')
     return render(request,'lodging/edit_lodging.html',
         {'sublodging_form': sublodging_form,'images':images})
 
@@ -130,7 +139,7 @@ def image_upload_view(request):
             image_name = generate_random(32)
             file = InMemoryUploadedFile(io.BytesIO(image_data),
                 'image',image_name+'.jpeg',None,None,None)
-            thumb_file = create_thumbnail(file,thumb_size,
+            thumb_file = create_thumbnail(file,thumbnail_size,
                 image_name+'.thumbnail.jpeg')
             im = ImageModel.objects.create(image=file,image_thumbnail=thumb_file)
             return JsonResponse({

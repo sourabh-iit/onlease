@@ -2,85 +2,115 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         
         <title>{% block title %}{% endblock %}</title>
         
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
         <link href="{% static 'MDB Free/css/bootstrap.min.css' %}" rel="stylesheet">
         <link href="{% static 'MDB Free/css/mdb.min.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+        <link rel="stylesheet" href="{% static 'css/scrollbar.css' %}">
         {% block head %}{% endblock %}
-        <style>
-        .dropdown-menu-right { 
-            right: 0; 
-            left: auto; 
-        }
-        </style>
     </head>
     <body class="padding-top-3">
 
-        <nav class="mobile mb-1 fixed-top navbar navbar-dark stylish-color">
-            <div>
-                <span class="navbar-toggler-icon" id="sidebar-toggler"></span>
-                <a class="navbar-brand ml-1" href="{% url 'home:front-page' %}">
-                    <img src="{% static 'images/logo.png' %}" alt="onlease logo" class="logo">
-                    OnLease
+        <div id="mySidenav" class="sidenav scrollbar-dusty-grass square thin">
+            <a class="closebtn" onclick="closeNav()">&times;</a>
+            <a href="{% url 'home:front-page' %}">
+                <i class="fa fa-home"></i> Home</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard:home' %}">
+                <i class="fa fa-dashboard"></i> Dashboard
+            </a>
+            {% endif %}
+            <div data-toggle="#view">
+                <i class="fa fa-eye"></i> View All</div>
+            <ul id="view" class="toggle">
+                <a href="{% url 'ads:choose-location' %}">
+                    <li>Dealer's Ad</li>
                 </a>
-            </div>            
-            <div id="navbarSupportedContent">
-                <ul class="navbar-nav ml-auto flex-direction-row">
-                    <li class="nav-item {% block mobile_login_active %}{% endblock %}">
-                        <a href="{% url 'user:login' %}" class="nav-link waves-effect waves-light">
-                            <i class="fa fa-sign-in"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item {% block mobile_register_active %}{% endblock %}">
-                        <a href="{% url 'user:register' %}" class="nav-link waves-effect waves-light">
-                            <i class="fa fa-user-plus"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-
-        <div class="cover">
-            <nav id="sidebar" class="scrollbar-dusty-grass square thin width-1">
-                <div id="sidebar-heading" class="line-height-1 padding-left-1 border-bottom-1 width-1">
-                    <i class="fa fa-arrow-left"></i> Go Back
-                </div>
-                <div class="sidebar=item line-height-1 padding-left-1 border-bottom-1">
-                    View all dealers
-                </div>
-                <div class="sidebar=item line-height-1 padding-left-1 border-bottom-1">
-                    View all owners
-                </div>
-                <div class="sidebar=item line-height-1 padding-left-1 border-bottom-1">
-                    View all roommates
-                </div>
-                <div class="sidebar-item line-height-1 padding-left-1 border-bottom-1">
-                    Register
-                    <ul>
-                        <li>As customer</li>
-                        <li>As owner</li>
-                        <li>As dealer</li>
-                    </ul>
-                </div>
-                <div class="sidebar-item line-height-1 padding-left-1 border-bottom-1">
-                    <a href="{% url 'user:login' %}">Login</a>
-                </div>
-            </nav>
+                <a href="{% url 'ads:choose-location' %}">
+                    <li>Owner's Ad</li>
+                </a>
+            </ul>
+            <div data-toggle="#add">
+                <i class="fa fa-plus"></i> Add New</div>
+            <ul id="add" class="toggle">
+                <a href="{% url 'lodging:create' %}"><li>Property</li></a>
+                <a href="{% url 'lodging:create' %}"><li>Roommate Ad</li></a>
+            </ul>
+            {% if user.is_authenticated %}
+            <div data-toggle="#account">
+                <i class="fa fa-user"></i> My Account</div>
+            <ul id="account" class="toggle">
+                <li>
+                    <a href="{% url 'dashboard:profile' %}">My Profile</a>
+                </li>
+                <li>
+                    <a href="{% url 'user:change-password' %}">Change Password</a>
+                </li>
+                <li>
+                    <a href="{% url 'user:logout' %}">Logout</a>
+                </li>
+            </ul>
+            {% else %}
+            <a href="{% url 'user:register' %}">Register</a>
+            <a href="{% url 'user:login' %}">Log In</a>
+            {% endif %}
         </div>
 
-        <nav class="desktop mb-1 fixed-top navbar navbar-dark stylish-color">
+        <nav class="mb-1 fixed-top navbar navbar-dark stylish-color">
             <a class="navbar-brand" href="{% url 'home:front-page' %}">
                 <img src="{% static 'images/logo.png' %}" alt="onlease logo" class="logo">
                 OnLease
             </a>
-            <ul class="navbar-nav ml-auto">
+            <ul class="mobile navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a href="{% url 'user:login' %}" class="nav-link waves-effect waves-light">
+                        <i class="fa fa-user"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'user:register' %}" class="nav-link waves-effect waves-light">
+                        <i class="fa fa-user-plus"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <span class="sidenav-opener" onclick="openNav()">
+                    &#9776;</span>
+                </li>
+            </ul>
+            <ul class="desktop navbar-nav ml-auto">
+                <li class="nav-item {% block home_active %}{% endblock %}">
+                    <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'home:front-page' %}">
+                        <i class="fa fa-home"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="view_all" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <i class="fa fa-eye"></i> View all</a>
+                    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="view_all">
+                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="#">
+                            Dealer's Ad</a>
+                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'ads:choose-location' %}">
+                            Owner's Ad</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="view_all" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <i class="fa fa-plus"></i> Add new</a>
+                    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="view_all">
+                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'lodging:create' %}">
+                            Property Ad</a>
+                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'ads:choose-location' %}">
+                            Roommate Ad</a>
+                    </div>
+                </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item {% block dashboard_active %}{% endblock %}">
                         <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'dashboard:home' %}">
@@ -92,18 +122,14 @@
                             <i class="fa fa-user"></i> {{user.first_name | lower}} </a>
                         <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
                             <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'dashboard:profile'%}">
-                                Profile</a>
+                                Change Profile</a>
                             <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'user:change-password'%}">
                                 Change password</a>
                             {% if not user.is_verified %}
                             <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'user:verify-number'%}">
                                 Verify mobile number</a>
                             {% endif %}
-                            <a class="dropdown-item text-capitalized waves-effect waves-light{% if not user.is_verified %} disabled{% endif %}" href="{% url 'lodging:create'%}">
-                                New business</a>
-                            <a class="dropdown-item text-capitalized waves-effect waves-light{% if not user.is_verified %} disabled{% endif %}" href="{% url 'roommate:create'%}">
-                                New Roomie Post</a>
-                            <div class="dropdown-dividerx"></div>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-capitalized waves-effect waves-light" href="{% url 'user:logout' %}">
                                 Log out</a>
                         </div>
@@ -111,9 +137,6 @@
                     {% if not user.is_verified %}
                         <a id="mobile-number" class="btn btn-deep-orange btn-sm text-capitalized" href="{% url 'user:verify-number'%}">
                             Verify your number</a>
-                    {% else %}
-                        <a class="btn btn-deep-orange btn-sm text-capitalized" href="{% url 'lodging:create'%}">
-                                Add new business</a>
                     {% endif %}
                 {% else %}
                 <li class="nav-item {% block login_active %}{% endblock %}">
@@ -137,6 +160,7 @@
             {% endfor %}
         </div>
         {% endif %}
+                      
         
         {% block content %}{% endblock %}
 
@@ -258,8 +282,8 @@
         <script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'MDB Free/js/bootstrap.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'MDB Free/js/mdb.min.js' %}"></script>
-        <script src="{% static 'js/script.js' %}"></script>
         <script src="{% static 'js/sidebar.js' %}"></script>
+        <script src="{% static 'js/script.js' %}"></script>
         {% block script %}{% endblock %}
 
     </body>

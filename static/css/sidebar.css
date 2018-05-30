@@ -1,157 +1,81 @@
+body {
+    font-family: "Lato", sans-serif;
+}
 
-#sidebar {
-    position: fixed;
-    top: 0rem;
-    display: none;
-    transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
-    z-index: 1200;
-    float: left;
-    box-shadow: 1px 1px 2px rgba(202, 194, 194, 1), -1px -1px 2px rgba(202, 194, 194, 1);
-    overflow-y: scroll;
+.sidenav {
     height: 100%;
-    background: white;
-}
-.width-1{
-    width: 250px;
-}
-#sidebar ul{
-    list-style-type: none;
-}
-#sidebar a{
-    color: inherit;
-}
-#sidebar li{
-    line-height: 2rem;
-}
-.display{
-    display: block!important;
-}
-.container-box{
-    max-height: 200px;
-    overflow-y: hidden;
-}
-.container-box:hover{
-    overflow-y: scroll;
-}
-#sidebar.active {
-    margin-left: 0;
-}
-#sidebarCollapse{
-    position: absolute;
-    top: 3.6rem;
-    left: 0;
-    transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
-    padding: 0.25rem 0.5rem;
-    display: block;
-}
-#sidebar .sidebar-header {
-    padding: 20px;
-}
-#sidebarCollapse span{
-    transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
-}
-.sub-heading {
-    line-height: 3rem;
-    font-size: smaller;
-    display: block;
-    margin-bottom: 0;
-    font-weight: 500;
-    padding-bottom: 5px;
-    text-transform: uppercase;
-}
-#sidebar li{
-    padding-bottom: 5px;
-    font-size: 16px;
-    color: #6c757d;
-}
-.container-box ul{
-    margin-bottom: 0;
-}
-.container-box ul {
-    margin-left: 0;
-}
-.container-box{
-    padding: 0 15px;
-}
-#sidebar label{
-    margin-bottom: 0;
-}
-#sidebar .form-control{
-    border-radius: 0.1rem;
-    padding-left: 5px;
-    padding-right: 5px;
-}
-.range-box{
-    padding: 5px 10px;
-    padding-bottom: 5px;
-}
-.range-box input{
-    padding: 0px 5px;
-    border-radius: 2px;
-    min-width: 100px;
-    max-width: 100px;
-}
-#sidebar .row{
-    margin: 0;
-}
-.separator{
-    padding: 0 5px;
-    max-width: 15px;
-}
-.card-body{
-    padding: 0.75rem;
-}
-.card:hover{
-    cursor: pointer;
-    box-shadow: -4px 4px 10px 0px rgba(0,0,0,.16), 4px 4px 10px 0px rgba(0,0,0,.12);
-}
-#sidebar-heading{
-    text-transform: uppercase;
-    font-weight: 500;
-    background: rgb(75,81,93);
-    color: white;
-    font-size: 1rem;
-}
-.line-height-1{
-    line-height: 3.5rem;
-}
-.padding-left-1{
-    padding-left: 0.5rem;
-}
-.border-bottom-1{
-    border-bottom: 1px solid rgba(0,0,0,.3);
-}
-.cover{
+    width: 0;
     position: fixed;
+    z-index: 1;
     top: 0;
-    height: 100%;
-    width: 100%;
-    z-index: 1199;
-    display: none;
-    background: rgba(75,81,93,0.9);
+    left: 0;
+    background-color: #4b515d!important;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    overflow-y: scroll;
+    z-index: 1031;
 }
-/* @media only screen and (min-width: 768px) {
-    #sidebar{
-        margin-left: 0;
-        position: inherit;
-        overflow-y: inherit;
-        height: auto;
-        display: block;
-        padding-top: 0;
-        margin-left: 0.4rem!important;
-    }
-    #sidebar.active{
-        margin-left: -250px;
-    }
-    #sidebarCollapse{
-        left: 250px;
-        padding: .5rem 1.6rem;
-        display: none;
-    }
-    #sidebarCollapse.active{
-        left: 0;
-    }
-    .card{
-        max-width: 260px;
-    }
-} */
+
+.sidenav a,.sidenav div {
+    padding: 12px 8px 12px 15px;
+    text-decoration: none;
+    font-size: 16px;
+    color: white;
+    display: block;
+    transition: 0.3s;
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.sidenav:nth-child(2){
+	border-top: 2px solid rgba(255,255,255,0.2);
+}
+
+.sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    font-size: 40px;
+    padding: 0;
+    width: 50px;
+    text-align: center;
+    border-bottom: none;
+    color: white!important;
+    font-weight: 600;
+}
+.toggle{
+	display: none;
+}
+.sidenav ul {
+    list-style-type: none;
+    margin: 0;
+    width: 100%!important;
+    /* display: block; */
+    padding: 0;
+}
+.sidenav ul a {
+    background: rgba(67, 65, 74, 0.5);
+    padding: 10px 0 10px 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    font-size: 22px;
+    color: #f5f5f5;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+.sidenav-opener{
+    cursor: pointer;
+    font-size: 30px;
+    color: white;
+}
+.sidenav a i,.sidenav div i{
+    font-size: 25px!important;
+    display: inline-block;
+    margin-right: 0.3rem;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}

@@ -12,15 +12,16 @@
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="{% static 'lodging/edit_lodging.js' %}"></script>
-    <script src="{% static 'lodging/image_field.js' %}"></script>
+    <script src="{% static 'js/image_field.js' %}"></script>
     <script src="{% static 'js/image-upload.js' %}"></script>
 {% endblock script %}
 
 {% block content %}
-    <div class="container col-sm-10 col-md-9 col-lg-7 col-xl-6">
-        <form action="{{ request.path }}" enctype="multipart/form-data" method="post" novalidate class="mt-5">
+    <div class="container col-sm-10 col-md-9 col-lg-8 col-xl-7">
+        <form action="{{ request.path }}" enctype="multipart/form-data" method="post" novalidate class="mt-5 custom-main-form">
             {% csrf_token %}
-            <p class="h4 text-center mb-4">Update lodging business</p>
+            <p class="h4 text-center custom-main-form-heading">
+                <i class="fa fa-pencil"></i> Update lodging business</p>
 
             <input name="update" type="hidden" value="0">
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
@@ -71,14 +72,19 @@
                     </div>
 
                     <div class="md-form col-12">
-                            <i class="fa fa-pencil prefix"></i>
+                            <i class="fa fa-info-circle prefix"></i>
                         {% render_field sublodging_form.additional_details id="additional_details" class+="form-control md-textarea" %}
                         <label for="additional_details">Additional details</label>
+                        <div class="form-text">
+                            <small class="text-muted">{{sublodging_form.additional_details.help_text}}</small>
+                        </div>
                         {% if sublodging_form.additional_details.errors %}
                             <div class="error"><small>{{sublodging_form.additional_details.errors.0}}</small></div>
                         {% endif %}
                     </div>
 
+                    <div class="help-text text-muted mb-2 mt-4 col-12">
+                            <small>Select those are available</small></div>
                     <div class="col-12 col-sm-4 mt-2">
                         {% render_field sublodging_form.is_furnished class+="option-input checkbox ml-0" %}
                         <label for="id_is_furnished" class="label align-top">
@@ -106,10 +112,10 @@
                             <div class="error"><small>{{sublodging_form.is_kitchen_available.errors.0}}</small></div>
                         {% endif %}
                     </div>
-                    <small class="text-muted col-12">Select which are available</small>
                 </div>
+                {% if images %}
                 <div class="delete_images_container">
-                    <h6 class="mt-3"><strong>Click images to delete</strong></h6>
+                    <h6 class="mt-3"><strong>Images</strong> (select to delete)</h6>
                     {% for image in images %}
                     <div class="md-form div-delete">
                         <div class="checkbox-container">
@@ -121,9 +127,10 @@
                     </div>
                     {% endfor %}
                 </div>
+                {% endif %}
                 <div style="clear:both"></div>
                 <div id="uploaded_images_container">
-                    <div class="uploaded"><strong>Uploaded Images</strong></div>
+                    <div><strong>Currently Uploaded Images</strong></div>
                 </div>
                 <div id="images_container">
 
@@ -131,7 +138,7 @@
                 <div style="clear:both"></div>
                 <div class="form-row">
                     <div class="col-12">
-                        <span class='btn btn-sm btn-secondary ml-0 mt-3' id="add_image">
+                        <span class='btn btn-md btn-outline-primary ml-0 mt-3' id="add_image">
                             <i class="fa fa-file-image-o icon"></i> Add image</span>
                         {% if sublodging_form.errors %}
                             <div class="error"><small>{{sublodging_form.errors.0}}</small></div>
