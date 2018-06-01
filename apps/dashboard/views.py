@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from apps.lodging.models import Lodging, CommonlyUsedLodgingModel
+from apps.lodging.models import Lodging, CommonlyUsedLodgingModel, Dealer
 from django.contrib.auth.decorators import login_required
-from .forms import ProfileForm, RefundForm
+from .forms import ProfileForm, RefundForm, DealerProfileForm
 from apps.user.utils import ViewException
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models.query import Prefetch
 from .models import Refund
-from apps.locations.models import Region
+from apps.locations.models import Region, District
 
 User = get_user_model()
 
@@ -170,15 +170,57 @@ def refund_view(request,transaction_id):
 @maintain_cookie
 @login_required
 def edit_profile_view(request):
+    is_dealer = request.user.is_dealer
+    if is_dealer:
+        user = User.objects.prefetch_related(
+            Prefetch('dealer',queryset=Dealer.objects.prefetch_related('district')
+        )).get(mobile_number=request.user)
+    else:
+        user = request.user
     if request.method=='POST':
-        form=ProfileForm(request.POST,instance=request.user)
-        if form.is_valid():
+        form=ProfileForm(request.POST,instance=user)
+        if is_dealer:
+            dealer_form=DealerProfileForm(request.POST)
+            if form.is_valid() and dealer_form.is_valid():
+                district = dealer_form.cleaned_data.get('district')
+                available_property_types = dealer_form.cleaned_data.get('available_property_types')
+                dealer = Dealer.objects.get(user=user)
+                if available_property_types:
+                    dealer.available_property_types=','.join(available_property_types)
+                if district:
+                    dealer.district=District.objects.get(id=district)
+                with transaction.atomic():
+                    form.save()
+                    dealer.save()
+                messages.success(request,'Profile has been updated successfully')
+        elif form.is_valid():
             form.save()
             messages.success(request,'Profile has been updated successfully')
     else:
         form=ProfileForm(initial={
-            'email':request.user.email,
-            'mobile_number_alternate2':request.user.mobile_number_alternate2,
-            'mobile_number_alternate1':request.user.mobile_number_alternate1,
-            'is_dealer': request.user.is_dealer})
-    return render(request,'dashboard/profile.html',{'form':form})
+            'first_name':user.first_name,
+            'last_name':user.last_name,
+            'email':user.email,
+            'mobile_number_alternate2':user.mobile_number_alternate2,
+            'mobile_number_alternate1':user.mobile_number_alternate1,
+            'is_dealer': user.is_dealer})
+        if is_dealer:
+            try:
+                dealer = user.dealer
+            except:
+                dealer = Dealer.objects.create(user=user)
+            available_property_types = ''
+            district = ''
+            if dealer.available_property_types:
+                available_property_types=dealer.available_property_types.split(',')
+            if dealer.district:
+                district = dealer.district.name
+            dealer_form=DealerProfileForm(initial={
+                'available_property_types': available_property_types ,
+                'district': district
+            })
+    if is_dealer:
+        return render(request,'dashboard/profile.html',{
+                'form':form,'dealer_form':dealer_form})
+    return render(request,'dashboard/profile.html',{
+            'form':form})

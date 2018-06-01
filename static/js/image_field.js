@@ -5,7 +5,7 @@ $(document).ready(function(){
         var id = "id_"+name;
         var image_input = `
         <div class="uploader">
-            <label class="fileContainer pd-1 btn btn-default btn-sm waves-effect waves-light active">
+            <label class="fileContainer pd-1 btn btn-outline-primary btn-sm waves-effect waves-light active">
                 Choose files
                 <input type="file" id="`+id+`" name=`+name+` onchange="loadImageFile('`+id+`')" class="display-none">
             </label>

@@ -85,6 +85,16 @@ nav[aria-label="pagination example"]{
     justify-content: center;
     margin-top: 2rem;
 }
+ul.scroller li {
+    line-height: 2rem;
+    height: 1.5rem;
+}
+
+ul.scroller {
+    max-height: 220px;
+    overflow-y: scroll;
+    list-style-type: none;
+}
 @media screen and (min-width: 560px){
     .card-wrapper{
         width: 50%;

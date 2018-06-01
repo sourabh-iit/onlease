@@ -5,5 +5,5 @@ app_name="lodging"
 urlpatterns = [
     path('create', views.lodging_create_view, name="create"),
     path('edit/<int:ad_id>', views.lodging_edit_view, name="edit"),
-    path('image/upload', views.image_upload_view, name="image-upload"),
+    path('image/upload/<ad_type>', views.image_upload_view, name="image-upload"),
 ]

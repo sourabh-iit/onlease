@@ -15,7 +15,7 @@ $(document).ready(function () {
         pair: $('#id_upper_availability'),
         open_on_focus: true,
         format: 'd-m-Y',
-        container: $('#datepicker-container')
+        container: $('#datepicker-container1')
     });
     $('#id_upper_availability').Zebra_DatePicker({
         default_position: 'above',
@@ -23,6 +23,6 @@ $(document).ready(function () {
         direction: [1,15],
         open_on_focus: true,
         format: 'd-m-Y',
-        container: $('#datepicker-container')
+        container: $('#datepicker-container2')
     });
  });

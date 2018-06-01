@@ -159,5 +159,8 @@
     </div>
     <script>
         var csrf_token="{{csrf_token}}";
+        var url = "{% url 'lodging:image-upload' ad_type='lodging' %}";
+        var width = 900;
+        var height = 500;
     </script>
 {% endblock %}

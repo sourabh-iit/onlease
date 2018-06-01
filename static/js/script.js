@@ -35,4 +35,6 @@ $('document').ready(function(){
     $('input[length],textarea[length]').focusout(function(){
         $(this).prev('.character-counter').remove();
     });
+    $('input[type=checkbox]').attr('class','option-input form-check-input');
+    $('input[type=radio]').attr('class','option-input form-check-input radio');
 })

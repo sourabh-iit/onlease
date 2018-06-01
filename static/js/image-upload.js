@@ -1,7 +1,7 @@
 var fileReader = new FileReader();
 var filterType = /^(?:image\/gif|image\/jpeg|image\/jpeg|image\/jpeg|image\/png|image\/svg\+xml|image\/x\-icon|image\/x\-rgb)$/i;
-var max_width = 900;
-var max_height = 500;
+var max_width = window.width;
+var max_height = window.height;
 var file = [];
 
 fileReader.onload = function (event) {
@@ -29,7 +29,7 @@ fileReader.onload = function (event) {
         var dataURL = canvas.toDataURL('image/jpeg');
         $.ajax({
             type:'POST',
-            url: '/lodging/image/upload',
+            url: window.url,
             data: {
                 'image': dataURL
             },
@@ -37,6 +37,7 @@ fileReader.onload = function (event) {
                 'X-CSRFToken': window.csrf_token
             }
         }).done(function(res){
+            $('#profile').trigger('profile-updated',[res.id,res.url]);
             $(file).val("");
             var div = document.createElement('div');
             div.className = 'flex';

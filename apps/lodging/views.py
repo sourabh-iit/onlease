@@ -22,6 +22,8 @@ from .utils import generate_random, create_thumbnail
 import re
 import base64
 import io
+from apps.roommate.models import Image
+from apps.dashboard.models import ProfileImage
 
 def delete_files(*args):
     for file in args:
@@ -29,6 +31,18 @@ def delete_files(*args):
             os.remove(settings.MEDIA_ROOT+'/'+file)
 
 @receiver(post_delete, sender=ImageModel)
+def delete_image(sender,instance,using,**kwargs):
+    delete_files(
+        instance.image.name,
+        instance.image_thumbnail.name)
+
+@receiver(post_delete, sender=Image)
+def delete_image(sender,instance,using,**kwargs):
+    delete_files(
+        instance.image.name,
+        instance.image_thumbnail.name)
+
+@receiver(post_delete, sender=ProfileImage)
 def delete_image(sender,instance,using,**kwargs):
     delete_files(
         instance.image.name,
@@ -128,10 +142,12 @@ def lodging_edit_view(request,ad_id):
     return render(request,'lodging/edit_lodging.html',
         {'sublodging_form': sublodging_form,'images':images})
 
-def image_upload_view(request):
+@login_required
+def image_upload_view(request,ad_type):
     if request.method=="POST":
         try:
-            dataUrlPattern = re.compile('data:image/(png|jpeg);base64,(.*)$')
+            # import pdb; pdb.set_trace()
+            dataUrlPattern = re.compile('data:image/(png|jpeg|gif);base64,(.*)$')
             image_data = request.POST['image']
             image_data = dataUrlPattern.match(image_data).group(2)
             image_data = image_data.encode()
@@ -139,12 +155,25 @@ def image_upload_view(request):
             image_name = generate_random(32)
             file = InMemoryUploadedFile(io.BytesIO(image_data),
                 'image',image_name+'.jpeg',None,None,None)
-            thumb_file = create_thumbnail(file,thumbnail_size,
+            if ad_type=='user-profile':
+                thumb_size=(50,50)
+            else:
+                thumb_size=thumbnail_size
+            thumb_file = create_thumbnail(file,thumb_size,
                 image_name+'.thumbnail.jpeg')
-            im = ImageModel.objects.create(image=file,image_thumbnail=thumb_file)
+            if ad_type=='lodging':
+                im = ImageModel.objects.create(image=file,image_thumbnail=thumb_file)
+            elif ad_type=='roommate':
+                im = Image.objects.create(image=file,image_thumbnail=thumb_file)
+            elif ad_type=='user-profile':
+                profile = request.user.profile.all()
+                if(profile):
+                    profile.delete()
+                im = ProfileImage.objects.create(image=file,image_thumbnail=thumb_file,
+                    user=request.user)
             return JsonResponse({
                 'id':im.id,
-                'url': im.image_thumbnail.url})
+                'url': im.image.url})
         except Exception as e:
             return HttpResponseBadRequest(request,{'errors':'Sorry, could not upload file.'})
             

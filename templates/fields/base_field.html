@@ -1,0 +1,9 @@
+{% load widget_tweaks %}
+<div class="md-form">
+    {% block icon %}{% endblock %}
+    {% render_field form.email class+="form-control" %}
+    <label for="id_email">Email address</label>
+    {% if form.email.errors %}
+        <div class="error"><small>{{form.email.errors.0}}</small></div>
+    {% endif %}
+</div>

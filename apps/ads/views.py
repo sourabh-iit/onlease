@@ -17,6 +17,12 @@ import os
 from django.conf import settings
 from django.core.paginator import Paginator
 from apps.roommate.models import RoomieAd
+from django.contrib.auth import get_user_model
+from apps.user.utils import number_verfication_required
+
+User = get_user_model()
+
+num_dealers_per_page = 10
 
 num_ads = 12
 
@@ -97,6 +103,8 @@ def ads_list_view(request,state,state_id,district,district_id):
         'state_id':state_id,'district_id':district_id,'page':page})
 
 
+@login_required
+@number_verfication_required
 def roomie_ads_list_view(request,state,state_id,district,district_id):
     try:
         q=Q(
@@ -107,13 +115,10 @@ def roomie_ads_list_view(request,state,state_id,district,district_id):
             form = RoomieAdsForm(state_id,district_id,request.POST)
             if form.is_valid():
                 data = form.cleaned_data
-                q &= (Q(
+                q &= Q(
                     rent__gte=int(data['min_rent']),
                     rent__lte=int(data['max_rent']),
-                ) | Q(
-                    budget__gte=int(data['min_rent']),
-                    budget__lte=int(data['max_rent']),
-                ))
+                )
                 if data['types']:
                     q_ = Q()
                     for type in data['types']:
@@ -133,7 +138,7 @@ def roomie_ads_list_view(request,state,state_id,district,district_id):
         return HttpResponseRedirect(reverse('ads:choose-location')+'?type=roomie')
     ads = RoomieAd.objects.prefetch_related(
             'region','images','user'
-        ).filter(q).order_by('created_at')
+        ).filter(q).order_by('-created_at')
     for ad in ads:
         try:
             ad.image = ad.images.all()[0]
@@ -146,6 +151,28 @@ def roomie_ads_list_view(request,state,state_id,district,district_id):
     return render(request,'ads/roomie_ad_list.html',
         {'form':form,'ads':page.object_list,'state':state,'district':district,
         'state_id':state_id,'district_id':district_id,'page':page})
+
+
+def dealer_ads_list_view(request,state,state_id,district,district_id):
+    all_dealers = User.objects.filter(is_dealer=True,is_verified=True,dealer__district=district_id).order_by('created_at')
+    page_1_dealers = all_dealers.filter(dealer__page=1)
+    no_page_1_dealers = len(page_1_dealers)
+    other_dealers = all_dealers.exclude(dealer__page=1)
+    page = request.GET.get('page')
+    if not page:
+        page=1
+    else:
+        page = int(page)
+    if page!=1:
+        dealers = other_dealers[(10-no_page_1_dealers):]
+    elif not no_page_1_dealers:
+        dealers = all_dealers[:10]
+    else:    
+        dealers = list(page_1_dealers.order_by('dealer__position')) + list(other_dealers[:(10-no_page_1_dealers)])
+    paginator = Paginator(dealers,num_dealers_per_page)
+    return render(request,'ads/dealer_ad_list.html',
+        {'ads':paginator.page(page).object_list,'state':state,'district':district,
+        'state_id':state_id,'district_id':district_id,'page':paginator.page(page)})
 
 
 def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
@@ -174,8 +201,9 @@ def ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
     }
     return render(request,'ads/detail.html',context)
 
-
-def roomie_ads_detail_view(request,state,state_id,district,district_id,slug,ad_id):
+@login_required
+@number_verfication_required
+def roomie_ads_detail_view(request,state,state_id,district,district_id,ad_id):
     redirection_url = reverse('ads:roomie-list',kwargs={
         'state':state,
         'state_id':state_id,
@@ -186,16 +214,12 @@ def roomie_ads_detail_view(request,state,state_id,district,district_id,slug,ad_i
     except RoomieAd.DoesNotExist:
         messages.error(request,'Ad with id '+ad_id+' does not exist')
         return HttpResponseRedirect(redirection_url)
-    if ad.is_booked:
-        messages.error(request,'Ad is no more available')
+    if not ad.is_active:
+        messages.error(request,'Ad is not active any more')
         return HttpResponseRedirect(redirection_url)
-    images=[]
-    for image in ad.images.all():
-        name_and_ext = os.path.splitext(image.image.url)
-        images.append(name_and_ext[0]+'.large'+name_and_ext[1])
     context = {
         'ad': ad,
-        'images': images,
+        'images': ad.images.all(),
         'state': state,
         'state_id': state_id,
         'district': district,
@@ -203,4 +227,4 @@ def roomie_ads_detail_view(request,state,state_id,district,district_id,slug,ad_i
         'ad_id': ad_id,
         'posted_by': ad.user
     }
-    return render(request,'ads/roomie-detail.html',context)
+    return render(request,'ads/roomie_detail.html',context)

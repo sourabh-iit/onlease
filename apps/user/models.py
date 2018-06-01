@@ -63,7 +63,7 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     no_times_refunded = models.PositiveIntegerField(default=0)
     no_times_took_commission = models.PositiveIntegerField(default=0)
-    is_dealer = models.NullBooleanField(
+    is_dealer = models.BooleanField(
         verbose_name="Are you a dealer?",
         choices=STATE_CHOICES, default=False)
     mobile_number_alternate1 = models.CharField(max_length=16,
@@ -71,6 +71,8 @@ class User(AbstractUser):
     mobile_number_alternate2 = models.CharField(max_length=16,
         validators=[RegexValidator(mobile_number_regex)],null=True)
     gender = models.CharField(choices=GENDER_CHOICES,max_length=1)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'mobile_number'
     objects = CustomUserManager()
@@ -84,8 +86,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.mobile_number
-
-    # TODO indexing
 
 
 class ContactModel(models.Model):

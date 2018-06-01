@@ -228,7 +228,7 @@ select.btn.btn-default{
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 2rem;
+    padding-top: 3rem;
     padding-left: 5px;
     padding-right: 5px;
 }
@@ -281,4 +281,44 @@ select.btn.btn-default{
     .mobile{
         display: none!important;
     }
+}
+.option-input{
+    margin-left: 0;
+}
+select.btn.btn-outline-primary{
+    width: 100%!important;
+    padding: 0.8rem!important;
+}
+.nav-profile{
+    width: 30px;
+    height: 30px;
+    border-radius: 18px;
+}
+.nav-profile-icon{
+    font-size: 30px;
+}
+.w-90{
+    width: 90%;
+}
+.form-check label{
+    display: flex;
+    align-items: center;
+}
+input[type="checkbox"].option-input{
+    margin-top: 0;
+    margin-right: 0.6rem;
+}
+input[type="radio"].option-input{
+    margin-left: 1rem;
+    margin-right: 0;
+}
+.form-check ul{
+    padding: 0;
+    list-style-type: none;
+}
+.fs-10{
+    font-size: 10rem;
+}
+.text-darkblue{
+    color: darkblue;
 }

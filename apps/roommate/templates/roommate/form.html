@@ -5,14 +5,15 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'roommate/form.css' %}">
-<link rel="stylesheet" href="{% static 'css/progress.css' %}">
-<link rel="stylesheet" href="{% static 'css/file_uploader.css' %}">
+<link rel="stylesheet" href="{% static 'css/indeterminate_progress.css' %}">
+<link rel="stylesheet" href="{% static 'css/image-upload.css' %}">
 {% endblock %}
 
 {% block script %}
 <script src="{% static 'roommate/form.js' %}"></script>
 <script src="{% static 'js/location_render.js' %}"></script>
 <script src="{% static 'js/image_field.js' %}"></script>
+<script src="{% static 'js/image-upload.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -24,9 +25,9 @@
     </div>
 </div>
 <div class="container col-12 col-md-9 col-lg-7 col-xl-6">
-    <form action="{% url 'roommate:create' %}" enctype="multipart/form-data" method="post" novalidate class="mt-5">
+    <form action="{% url 'roommate:create' %}" enctype="multipart/form-data" method="post" novalidate class="mt-5 custom-main-form">
         {% csrf_token %}
-        <p class="h4 text-center mb-4">POST ROOMIE AD</p>
+        <p class="h4 text-center custom-main-form-heading">ROOMMATE AD</p>
 
         {{formset.management_form}}
         {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
@@ -34,113 +35,109 @@
             <div class="form-row">
                 
                 <div class="md-form col-12 col-sm-6" id="state">
-                    {% render_field form.state class+="btn btn-default" %}
+                    {% render_field form.state class+="btn btn-outline-primary" %}
+                    <div class="form-text">
+                        <small class="text-muted">e.g. Delhi</small>
+                    </div>
                     {% if form.state.errors %}
                         <div class="error"><small>{{form.state.errors.0}}</small></div>
                     {% endif %}
                 </div>
 
                 <div class="md-form col-12 col-sm-6" id="district">
-                    {% render_field form.district class+="btn btn-default" %}
+                    {% render_field form.district class+="btn btn-outline-primary" %}
+                    <div class="form-text">
+                        <small class="text-muted">e.g. North West Delhi</small>
+                    </div>
                     {% if form.district.errors %}
                         <div class="error"><small>{{form.district.errors.0}}</small></div>
                     {% endif %}
                 </div>
 
                 <div class="md-form col-12 col-sm-6" id="region">
-                    {% render_field form.region class+="btn btn-default" %}
+                    {% render_field form.region class+="btn btn-outline-primary" %}
+                    <div class="form-text">
+                        <small class="text-muted">e.g. Dr. Mukherjee Nagar</small>
+                    </div>
                     {% if form.region.errors %}
                         <div class="error"><small>{{form.region.errors.0}}</small></div>
                     {% endif %}
                 </div>
-
+                
                 <div class="md-form col-12 col-sm-6">
-                    {% render_field form.type class+="btn btn-default" %}
+                    {% render_field form.type class+="btn btn-outline-primary" %}
+                    {% if form.type.help_text %}
+                    <div class="form-text">
+                        <small class="text-muted">{{form.type.help_text}}</small>
+                    </div>
+                    {% endif %}
                     {% if form.type.errors %}
                         <div class="error"><small>{{form.type.errors.0}}</small></div>
                     {% endif %}
                 </div>
             </div>
 
-            {{form.has_room}}
-
             <div class="form-row">
                 <div class="custom-form col-12 col-sm-6">
-                    <div><label for="id_has_room1">Do you have room/flat?</label></div>
-                    <input type="radio" name="has_room" id="id_has_room1" class="option-input radio ml-0" value="True" {% if form.has_room.value == "True" %}checked{% endif %}>
+                    <div><label for="id_has_room1">
+                        Do you have rented room/flat already?</label></div>
+                    <input type="radio" name="has_property" id="id_has_room1" class="option-input radio ml-0" value="True" {% if form.has_property.value == "True" %}checked{% endif %}>
                     <label for="id_has_room1">Yes</label>
-                    <input type="radio" name="has_room" id="id_has_room2" class="option-input radio" value="False" {% if form.has_room.value == "False" %}checked{% endif %}>
+                    <input type="radio" name="has_property" id="id_has_room2" class="option-input radio" value="False" {% if form.has_property.value == "False" %}checked{% endif %}>
                     <label for="id_has_room2">No</label>
-                    {% if form.has_room.errors %}
-                        <div class="error"><small>{{form.has_room.errors.0}}</small></div>
+                    {% if form.has_property.errors %}
+                        <div class="error"><small>{{form.has_property.errors.0}}</small></div>
                     {% endif %}
                 </div>
 
                 <div class="md-form col-12 col-sm-6" id="rent">
                     <i class="fa fa-inr prefix"></i>
                     {% render_field form.rent class+="form-control" %}
-                    <label for="id_rent">Rent</label>
+                    <label for="id_rent">
+                    {% if form.has_property.value == 'True' %}
+                    Rent
+                    {% else %}
+                    Budget
+                    {% endif %}
+                    </label>
+                    {% if form.rent.help_text %}
+                    <div class="form-text">
+                        <small class="text-muted">{{form.rent.help_text}}</small>
+                    </div>
+                    {% endif %}
                     {% if form.rent.errors %}
                         <div class="error"><small>{{form.rent.errors.0}}</small></div>
-                    {% endif %}
-                </div>
-
-                <div class="md-form col-12 col-sm-6" id="budget">
-                    <i class="fa fa-inr prefix"></i>
-                    {% render_field form.budget class+="form-control" %}
-                    <label for="id_budget">Budget</label>
-                    {% if form.budget.errors %}
-                        <div class="error"><small>{{form.budget.errors.0}}</small></div>
                     {% endif %}
                 </div>
             </div>
 
             <div class="md-form col-12">
-                <i class="fa fa-pencil prefix"></i>
-                {% render_field form.lodging_description length="500" class+="md-textarea form-control" %}
+                <i class="fa fa-info-circle prefix"></i>
+                {% render_field form.lodging_description length="500" placeholder=form.lodging_description.help_text class+="md-textarea form-control" %}
                 <label for="id_lodging_description">Room/Flat details</label>
-                <div class="form-text">
-                    <small class="text-muted">{{form.lodging_description.help_text}}</small>
-                </div>
-                {% if form.additional_details.errors %}
+                {% if form.lodging_description.errors %}
                     <div class="error"><small>{{form.lodging_description.errors.0}}</small></div>
                 {% endif %}
             </div>
-            
-            <div class="md-form">
-                <i class="fa fa-pencil prefix"></i>
-                {% render_field form.qualities|attr:"length:1000" class+="md-textarea form-control" %}
-                <label for="id_qualities">What makes you a great roommate?</label>
-                <div class="form-text">
-                    <small class="text-muted">{{form.qualities.help_text}}</small>
-                </div>
-                {% if form.qualities.errors %}
-                    <div class="error"><small>{{form.qualities.errors.0}}</small></div>
-                {% endif %}
+
+            <div id="uploaded_images_container">
+                <div>Currently Uploaded Images</div>
             </div>
 
+            <h5 class="w-90 mt-4">
+                <strong>Add images of your property to show</strong>
+            </h5>
+            
             <div id="images_container">
-                {% for form in formset %}
-                    <div class="uploader">
-                        <label class="fileContainer btn btn-default pd-1 btn-sm">
-                            Choose files
-                            {{form.image}}
-                        </label>
-                        <input type="text" id='text_{{form.image.auto_id}}' class="form-control padding-0" placeholder="upload your image">
-                    </div>
-                    {% if form.errors %}
-                        <div class="error"><small>{{form.image.errors.0}}</small></div>
-                    {% endif %}
-                {% endfor %}
             </div>
+
             <div style="clear:both"></div>
+
             <div class="md-form">
-                <span class='btn btn-sm btn-secondary' id="add_image">
-                    <i class="fa fa-file-image-o icon"></i> Add image</span>
-                {% if formset.errors %}
-                    <div class="error"><small>{{formset.non_form_errors.0}}</small></div>
-                {% endif %}
+                <span class='btn btn-sm btn-outline-primary' id="add_image">
+                    <i class="fa fa-file-image-o icon"></i> Add new image</span>
             </div>
+            {{form.images}}
         {% endwith %}
 
         <div class="text-center mt-4">
@@ -150,4 +147,10 @@
 
     </form>
 </div>
+<script>
+    var csrf_token = "{{csrf_token}}";
+    var url = "{% url 'lodging:image-upload' ad_type='roommate' %}";
+    var width = 900;
+    var height = 500;
+</script>
 {% endblock %}

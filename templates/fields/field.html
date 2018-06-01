@@ -1,0 +1,11 @@
+{% load widget_tweaks %}
+<div class="md-form {{classes}}">
+    {% if icon %}
+    <i class="fa fa-{{icon}} prefix"></i>
+    {% endif %}
+    {% render_field field class+="form-control" %}
+    <label for="{{field.id}}">{{field.label}}</label>
+    {% if field.errors %}
+        <div class="error"><small>{{field.errors.0}}</small></div>
+    {% endif %}
+</div>

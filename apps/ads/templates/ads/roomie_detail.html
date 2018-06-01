@@ -69,28 +69,24 @@
         <div style="clear: both"></div>
         <div class="card example-1 scrollbar-dusty-grass square thin">
             <div class="card-body">
-                <h4 id="section1"><strong>Additional details</strong></h4>
+                <h4 id="section1"><strong><i class="fa fa-info-circle"></i>
+                     Room/Flat description</strong></h4>
                 <p>{{ad.additional_details}}</p>
             </div>
         </div>
-        {% if posted_by.is_dealer is not True %}
-        <div class="text-center d-flex align-items-center">
-            <a href="{% url 'transactions:lodging' state=state state_id=state_id district=district district_id=district_id ad_id=ad_id %}" class="btn btn-default d-block book font-weight-bold">
-                    <i class="fa fa-credit-card"></i>&nbsp BOOK NOW</a>
-        </div>
-        {% else %}
         <div class="card mt-2">
             <div class="card-body">
-                <h4><strong>Contact details</strong></h4>
                 <div class="card-text contact-details">
-                <i class="fa fa-phone"> {{posted_by.mobile_number}}</i>
-                </div>
-                <div class="card-text contact-details">
-                <i class="fa fa-address-card"> {{ad.lodging.address}}</i>
+                <strong>
+                    <i class="fa fa-phone"> {{posted_by.mobile_number}}</i>
+                </strong>
+                
                 </div>
             </div>
         </div>
-        {% endif %}
+        <div class="mt-2 gender">
+            <i class="fa fa-user"> {{posted_by.gender|gender_type_full_form}}</i>
+        </div>
     </div>
     <div style="clear:both"></div>
 {% endblock %}

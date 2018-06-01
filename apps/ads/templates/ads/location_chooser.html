@@ -61,6 +61,8 @@ active
                 var state_id = $('#stateInput').val();
                 if($.urlParam('type')=='roomie'){
                     var url = "{% url 'ads:roomie-list' state='state' state_id='state_id' district='district' district_id='district_id' %}";
+                } else if($.urlParam('type')=='dealer'){
+                    var url = "{% url 'ads:dealer-list' state='state' state_id='state_id' district='district' district_id='district_id' %}";
                 } else {
                     var url = "{% url 'ads:list' state='state' state_id='state_id' district='district' district_id='district_id' %}";
                 }

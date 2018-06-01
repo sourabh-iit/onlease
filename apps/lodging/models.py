@@ -8,7 +8,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator, validate_slug
 from stdimage import StdImageField
-from apps.locations.models import Region
+from apps.locations.models import Region, District
 
 allowed_image_formats = ['png','jpg','jpeg','gif']
 
@@ -114,3 +114,11 @@ class ImageModel(models.Model):
 
     def __str__(self):
         return self.image_thumbnail.url
+
+
+class Dealer(models.Model):
+    user = models.OneToOneField(User, related_name='dealer', on_delete=models.CASCADE)
+    available_property_types = models.CharField(max_length=100,choices=CommonlyUsedLodgingModel.TYPE_CHOICES,null=True)
+    district = models.ForeignKey(District,related_name='dealers',on_delete=models.CASCADE,null=True)
+    page = models.PositiveIntegerField(default=1000,db_index=True,null=True)
+    position = models.PositiveIntegerField(default=1000,db_index=True,null=True)

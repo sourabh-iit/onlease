@@ -1,6 +1,16 @@
 {% extends 'navbar.html' %}
 {% load widget_tweaks %}
 {% block title %}Profile{% endblock %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'dashboard/profile.css' %}">
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'dashboard/profile.js' %}"></script>
+<script src="{% static 'js/image-upload.js' %}"></script>
+{% endblock %}
 
 {% block content %}
     <div class="container col-12 col-sm-10 col-md-8 col-lg-7 col-xl-5">
@@ -9,39 +19,72 @@
             <p class="h4 text-center text-capitalize custom-main-form-heading">PROFILE</p>
             
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                <div class="row">
+                    <div class="col-6" id="profile-image-container">
+                        {% if user.profile %}
+                        <img src="{{user.profile.image.url}}" alt="profile photo" id="profile-photo">
+                        {% else %}
+                        <img src="" alt="profile photo" id="profile-photo" style="display:none">
+                        <i class="fa fa-user-circle-o" id="profile-icon"></i>
+                        {% endif %}
+                        <input type="file" name="profile" id="profile" onclick="loadImageFile('profile')">
+                        <button id="upload-image" class="btn btn-default btn-md">
+                            Upload Photo
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <div class="row">
+                            {% include 'fields/field.html' with classes="col-12" field=form.first_name %}
+                            {% include 'fields/field.html' with classes="col-12" field=form.last_name %}
+                         </div>
+                    </div>
+                </div>
 
                 <div class="md-form">
                     <i class="fa fa-mobile prefix"></i>
                     <input type="text" name="mobile" id="mobile" value="{{user.mobile_number}}" class="form-control" disabled>
                     <label for="mobile">Mobile number</label>
                 </div>
-                
-                <div class="md-form">
-                    <i class="fa fa-envelope prefix"></i>
-                    {% render_field form.email class+="form-control" %}
-                    <label for="id_email">Email address</label>
-                    {% if form.email.errors %}
-                        <div class="error"><small>{{form.email.errors.0}}</small></div>
+
+                {% include 'fields/field.html' with field=form.email icon="envelope" %}
+                {% include 'fields/field.html' with field=form.mobile_number_alternate1 icon="mobile" %}
+                {% include 'fields/field.html' with field=form.mobile_number_alternate2 icon="mobile" %}
+
+                {% comment %} {% for label in form.is_dealer %}
+                {% if form.is_dealer.value %}
+                <input type="radio" name="{{form.is_dealer.name}}" value="{{label.tag.value}}" id="id_is_dealer_1" class="option-input form-check-input radio">
+                {% else %}
+                {{label.tag}}
+                {% endif %}
+                {% endfor %} {% endcomment %}
+                <div class="custom-form">
+                    <div><label for="label id_is_dealer1">Are you a dealer?</label></div>
+                    {% if form.is_dealer.value %}
+                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True" checked>
+                    <label for="label id_is_dealer">Yes</label>
+                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False">
+                    <label for="label id_is_dealer2">No</label>
+                    {% else %}
+                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True">
+                    <label for="label id_is_dealer">Yes</label>
+                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False" checked>
+                    <label for="label id_is_dealer2">No</label>
+                    {% endif %}
+                    {% if form.is_dealer.errors %}
+                        <div class="error"><small>{{form.is_dealer.errors.0}}</small></div>
                     {% endif %}
                 </div>
 
-                <div class="md-form">
-                    <i class="fa fa-mobile prefix"></i>
-                    {% render_field form.mobile_number_alternate1 class+="form-control" %}
-                    <label for="id_mobile_number_alternate1">Alternate Mobile Number</label>
-                    {% if form.mobile_number_alternate1.errors %}
-                        <div class="error"><small>{{form.mobile_number_alternate1.errors.0}}</small></div>
-                    {% endif %}
-                </div>
-                
-                <div class="md-form">
-                    <i class="fa fa-mobile prefix"></i>
-                    {% render_field form.mobile_number_alternate2 class+="form-control" %}
-                    <label for="id_mobile_number_alternate2">Alternate Mobile Number</label>
-                    {% if form.mobile_number_alternate2.errors %}
-                        <div class="error"><small>{{form.mobile_number_alternate2.errors.0}}</small></div>
-                    {% endif %}
-                </div>
+                {% if user.is_dealer %}
+                    <div class="row w-90">
+                        <div>Choose District in which you want to operate</div>
+                        {% include 'fields/select_field.html' with field=dealer_form.state %}
+                        {% include 'fields/select_field.html' with field=dealer_form.district %}
+                    </div>
+
+                    {% include 'fields/check_field.html' with field=dealer_form.available_property_types %}
+
+                {% endif %}
 
             {% endwith %}
 
@@ -51,4 +94,10 @@
 
         </form>
     </div>
+    <script>
+        var csrf_token = "{{csrf_token}}";
+        var url = "{% url 'lodging:image-upload' ad_type='user-profile' %}";
+        var width = 150;
+        var height = 150;
+    </script>
 {% endblock %}

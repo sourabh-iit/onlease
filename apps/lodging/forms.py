@@ -25,7 +25,6 @@ class AdCommonFieldsForm(forms.Form):
     district = forms.ModelChoiceField(queryset=District.objects.none(),widget=forms.Select)
     region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=forms.Select)
     state = forms.ChoiceField(choices=[(None,'Choose state')]+[(state.id,state.name) for state in State.objects.all()],widget=forms.Select)
-    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
 
 # only clean and init methods in this
 class AdCommonFieldsMixinForm(object):
@@ -40,16 +39,20 @@ class AdCommonFieldsMixinForm(object):
                 self.fields['region'].queryset = districts.get(id=int(self.data['district'])).regions.all()
             except:
                 pass
-        if 'images' in self.data:    
-            self.fields['images'].queryset = ImageModel.objects.filter(
-                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
 
 
 class LodgingCommonFieldsForm(forms.Form):
     available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
 
 
 class LodgingCommonFieldsMixinForm(object):
+    
+    def __init__(self, *args, **kwargs):
+        super(LodgingCommonFieldsMixinForm,self).__init__(*args,**kwargs)
+        if 'images' in self.data:    
+            self.fields['images'].queryset = ImageModel.objects.filter(
+                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
     
     def clean_floor_no(self):
         floor_no = self.cleaned_data.get('floor_no')
