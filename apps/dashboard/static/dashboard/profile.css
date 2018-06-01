@@ -17,3 +17,6 @@
 input[id='profile']{
     display: none;
 }
+#upload-image{
+    visibility: hidden;
+}

@@ -3,6 +3,7 @@ $(document).ready(function(){
         e.preventDefault();
         $('#profile').click();
     });
+    $('#upload-image').css({'visibility':'visible'});
     $('#profile').on('profile-updated',function(e,id,url){
         $('#profile-photo').attr('src',url);
         $('#profile-icon').css({'display':'none'});
