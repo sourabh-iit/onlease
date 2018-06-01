@@ -82,8 +82,8 @@
                 {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link dropdown-toggle waves-effect waves-light" id="account" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        {% if user.profile.first %}
-                        <img src="{{user.profile.first.image_thumbnail.url}}" alt="profile photo icon" class="nav-profile">
+                        {% if user.profile %}
+                        <img src="{{user.profile.image_thumbnail.url}}" alt="profile photo icon" class="nav-profile">
                         {% else %}
                         <i class="fa fa-user-circle-o" class="nav-profile-icon"></i>
                         {% endif %}    
