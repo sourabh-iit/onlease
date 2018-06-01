@@ -166,7 +166,7 @@ def image_upload_view(request,ad_type):
             elif ad_type=='roommate':
                 im = Image.objects.create(image=file,image_thumbnail=thumb_file)
             elif ad_type=='user-profile':
-                profile = request.user.profile.all()
+                profile = request.user.profile
                 if(profile):
                     profile.delete()
                 im = ProfileImage.objects.create(image=file,image_thumbnail=thumb_file,

@@ -1,3 +1,4 @@
+from .common_settings import *
 import os
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -19,3 +20,5 @@ SECURE_BROWSER_XSS_FILTER = True
 ADMINS = [('Sourabh singh','sourabh7singh@gmail.com'),('Vinit kumar','dhayania1992vinit@gmail.com')]
 
 MANAGERS = [('Sourabh singh','sourabh7singh@gmail.com'),]
+
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
