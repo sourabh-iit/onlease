@@ -24,7 +24,6 @@ class User(AbstractUser):
     MALE = 'M'
     FEMALE = 'F'
     GENDER_CHOICES = (
-        (None,'Choose gender'),
         (MALE,'Male'),
         (FEMALE,'Female'),
     )
@@ -34,7 +33,7 @@ class User(AbstractUser):
     STATUS_CHOICES = (
         (BLOCKED,'Blocked'),
         (WARNED,'Warned'),
-        (REGULAR,'REGULAR')
+        (REGULAR,'Regular')
     )
     STATE_CHOICES=(
         (True,'Yes'),
@@ -57,7 +56,7 @@ class User(AbstractUser):
         validators=[RegexValidator('^[a-zA-Z]{3,}$')])
     last_name = models.CharField(max_length=30, null=True, blank=True,
         validators=[RegexValidator('^[a-zA-Z]{3,}$')])
-    is_allowed = models.BooleanField(default=False,help_text="Profile completion is required for adding business.")
+    is_allowed = models.BooleanField(default=False,help_text="Profile is not completed yet.")
     status = models.CharField(max_length=1,choices=STATUS_CHOICES,
         default=REGULAR)
     is_verified = models.BooleanField(default=False)

@@ -18,43 +18,54 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container col-sm-10 col-md-8 col-lg-6 col-xl-5">
-        <form action="{% url 'user:login' %}" method="post" novalidate class="mt-5 custom-main-form">
+    <div class="container col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
+        <form action="{% url 'user:login' %}" method="post" novalidate class="mt-5 card custom-main-form">
             {% csrf_token %}
             <p class="h4 text-center custom-main-form-heading">
                 <i class="fa fa-sign-in"></i> LOG IN</p>
             
-            {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
-                <div class="md-form">
-                    <i class="fa fa-user prefix"></i>
-                    {% render_field form.username|append_attr:"autofocus" id="username" class+="form-control" %}
-                    <label for="username">Mobile number or email address</label>
-                    {% if form.username.errors %}
-                    <div class="error"><small>{{form.username.errors.0}}</small></div>
-                    {% endif %}
+            <div class="form">
+                {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+                    <div class="md-form">
+                        <i class="fa fa-user prefix"></i>
+                        {% render_field form.username|append_attr:"autofocus" id="username" class+="form-control" %}
+                        <label for="username">Mobile number or email address</label>
+                        {% if form.username.errors %}
+                        <div class="error"><small>{{form.username.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+                
+                    <div class="md-form">
+                        <i class="fa fa-lock prefix"></i>
+                        {% render_field form.password id="password" class+="form-control" %}
+                        <label for="password">Password</label>
+                        {% if form.password.errors %}
+                        <div class="error"><small>{{form.password.errors.0}}</small></div>
+                        {% endif %}
+                    </div>
+                {% endwith %}
+    
+                <div class="form-group row">
+                    {% render_field form.next_ class+="form-control" %}
                 </div>
-            
-                <div class="md-form">
-                    <i class="fa fa-lock prefix"></i>
-                    {% render_field form.password id="password" class+="form-control" %}
-                    <label for="password">Password</label>
-                    {% if form.password.errors %}
-                    <div class="error"><small>{{form.password.errors.0}}</small></div>
-                    {% endif %}
+    
+                <p class="font-small blue-text d-flex justify-content-end">
+                    <a href="{% url 'user:request-otp' %}?reset_password=True" class="dark-text bold-800 ml-1">
+                        Forgot Password?
+                    </a>
+                </p>
+                
+                <div class="text-center mt-5">
+                    <button class="btn submit-1 btn-block" type="submit">Log in</button>
                 </div>
-            {% endwith %}
+                <p class="font-small grey-text d-flex justify-content-end mt-3">
+                    Not a member? 
+                    <a href="{% url 'user:register' %}" class="dark-text bold-800 ml-1"> 
+                        Sign Up
+                    </a>
+                </p>
 
-            <div class="form-group row">
-                {% render_field form.next_ class+="form-control" %}
             </div>
-
-            <p class="font-small blue-text d-flex justify-content-end">
-                <a href="{% url 'user:request-otp' %}?reset_password=True" class="blue-text ml-1">Forgot Password?</a></p>
-            
-            <div class="text-center mt-4">
-                <button class="btn btn-primary" type="submit">Log in</button>
-            </div>
-            <p class="font-small grey-text d-flex justify-content-end mt-3">Not a member? <a href="{% url 'user:register' %}" class="blue-text ml-1"> Sign Up</a></p>
         </form>
     </div>
 {% endblock %}

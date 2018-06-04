@@ -220,29 +220,28 @@ select.btn.btn-default{
 #carousel-ad{
     height: 500px;
 }
-.custom-main-form{
-    box-shadow: 2px 10px 4px rgba(1,1,1,0.2), -2px -2px 4px rgba(1,1,1,0.2);
-    border-radius: 15px 15px 0 0;
-    /* padding: 10px; */
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 3rem;
-    padding-left: 5px;
-    padding-right: 5px;
+.form{
+    padding: 2rem;
+}
+form.custom-main-form {
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
 }
 .custom-main-form-heading{
-    height: 4rem;
-    background: linear-gradient(to bottom,#4b515d,#8a7c7c,#f1f7f1);
-    /* border-radius: 15px 15px 0 0; */
-    border: none;
-    width: 90%;
-    position: absolute;
-    top: -2rem;
-    border-radius: 10px 10px 0 0;
-    color: white;
-    font-size: 2rem;
+    font-size: 25px;
+    margin-bottom: 3rem;
+    text-align: left!important;
+    padding: 2rem;
+    background: #e6e6e6;
+    color: #59636b;
+}
+.dark-text{
+    color: #4b515d;
+}
+.bold-800{
+    font-weight: 800;
+}
+.submit-1{
+    background: #1a64f7!important;
 }
 .md-form{
     width: 90%;

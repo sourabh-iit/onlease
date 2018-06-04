@@ -4,12 +4,12 @@
 {% block register_active %}active{% endblock %}
 
 {% block content %}
-    <div class="container col-11 col-sm-10 col-md-9 col-lg-8 col-xl-6">
+    <div class="container col-12 col-sm-9 col-md-8 col-lg-7 col-xl-6">
         <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5 custom-main-form">
             {% csrf_token %}
             <p class="h4 text-center custom-main-form-heading">
                 <i class="fa fa-user-plus"></i> REGISTER</p>
-            
+            <div class="form">
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
                 <div class="row">
                     <div class="md-form col-12 col-md-6">
@@ -90,11 +90,17 @@
                 </div>
             {% endwith %}
 
-            <div class="text-center mt-4">
-                <button class="btn btn-primary" type="submit">Register</button>
+            <div class="text-center mt-5">
+                <button class="btn btn-block submit-1" type="submit">Register</button>
             </div>
 
-            <p class="font-small grey-text d-flex justify-content-end mt-3">Already a member? <a href="{% url 'user:login' %}" class="blue-text ml-1"> Login</a></p>
+            <p class="font-small grey-text d-flex justify-content-end mt-3">
+                Already a member? 
+                <a href="{% url 'user:login' %}" class="dark-text bold-800 ml-1"> 
+                    Login
+                </a>
+            </p>
+            </div>
         </form>
     </div>
 {% endblock %}
