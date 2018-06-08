@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'apps.locations',
     'apps.legal',
     'stdimage',
-    'apps.roommate'
+    'apps.roommate',
+    'django_select2',
 ]
 
 MIDDLEWARE = [

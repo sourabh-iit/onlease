@@ -34,3 +34,7 @@ def generate_random(size):
 
 def clean_data(data):
     return re.sub(r'[7-9][0-9]{9}','',data)
+
+# TODO
+def measurement_unit_conversion():
+    pass

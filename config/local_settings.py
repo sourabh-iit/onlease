@@ -52,3 +52,6 @@ BASE_URL = 'http://localhost:8000'
 LANGUAGE_CODE = 'hi-IN'
 
 DATE_INPUT_FORMATS = ['%d-%m-%Y','%Y-%m-%d']
+
+SELECT2_CSS = STATIC_URL + 'css/select2.min.css'
+SELECT2_JS = STATIC_URL + 'js/select2.min.js'

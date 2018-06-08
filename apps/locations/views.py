@@ -22,3 +22,21 @@ def locations_view(request):
         for region in regions:
             response.append({'id':region.id,'name':region.name})
         return JsonResponse({'values':response})
+
+
+def regions_view(request):
+    data = request.GET
+    try:
+        key = data['district_key']
+        regions = Region.objects.prefetch_related('state','district').filter(Q(name__icontains=key,district__name__icontains=key,state__name__icontains=key))[:20]
+        serialized_data = []
+        for region in regions:
+            serialized_data.append({
+                'id':region.id,
+                'name':region.name,
+                'district':region.district.name,
+                'state':region.state.name
+            })
+        return JsonResponse({'regions':serialized_data})
+    except:
+        return JsonResponse({'regions':[]})

@@ -1,20 +1,22 @@
 from django import forms
-from .models import Lodging, ImageModel, CommonlyUsedLodgingModel, thumbnail_size,\
-    allowed_image_formats, max_size
 from django.core.exceptions import ValidationError
-from django.forms import inlineformset_factory
-from .utils import clean_data, generate_random, create_thumbnail
-import datetime
-from django.forms.models import BaseInlineFormSet
-from PIL import Image
-import io
-import hashlib
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from apps.locations.models import State, District, Region
 from django.db.models.query import Prefetch
 from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
+from .models import Lodging, ImageModel, CommonlyUsedLodgingModel, thumbnail_size
+from .utils import clean_data, generate_random, create_thumbnail
+from apps.locations.models import Region
+from apps.widgets import CustomSelect2Widget
+
+from django_select2.forms import Select2MultipleWidget, Select2Widget
+
+import datetime
+import io
+import hashlib
 import os
-import stdimage
+from PIL import Image
+
 
 def mb_to_bytes(size):
     return size*1024*1024
@@ -22,9 +24,8 @@ def mb_to_bytes(size):
 
 # only fields in this
 class AdCommonFieldsForm(forms.Form):
-    district = forms.ModelChoiceField(queryset=District.objects.none(),widget=forms.Select)
-    region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=forms.Select)
-    state = forms.ChoiceField(choices=[(None,'Choose state')]+[(state.id,state.name) for state in State.objects.all()],widget=forms.Select)
+    region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=CustomSelect2Widget,required=False)
+
 
 # only clean and init methods in this
 class AdCommonFieldsMixinForm(object):
@@ -32,18 +33,16 @@ class AdCommonFieldsMixinForm(object):
     def __init__(self, *args, **kwargs):
         super(AdCommonFieldsMixinForm,self).__init__(*args,**kwargs)
 
-        if 'state' in self.data and 'district' in self.data:
-            try:
-                districts = District.objects.prefetch_related('regions').filter(state__id=int(self.data['state']))
-                self.fields['district'].queryset = districts
-                self.fields['region'].queryset = districts.get(id=int(self.data['district'])).regions.all()
-            except:
-                pass
+        if 'region' in self.data:
+            self.fields['region'].queryset = Region.objects.all()
 
 
 class LodgingCommonFieldsForm(forms.Form):
-    available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS,required=False)
     images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
+    facilities = forms.MultipleChoiceField(
+        choices=CommonlyUsedLodgingModel.FACILITIES_AVAILABLE_CHOICES,
+        widget=Select2MultipleWidget)
 
 
 class LodgingCommonFieldsMixinForm(object):
@@ -52,7 +51,7 @@ class LodgingCommonFieldsMixinForm(object):
         super(LodgingCommonFieldsMixinForm,self).__init__(*args,**kwargs)
         if 'images' in self.data:    
             self.fields['images'].queryset = ImageModel.objects.filter(
-                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
+                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60*24*7))
     
     def clean_floor_no(self):
         floor_no = self.cleaned_data.get('floor_no')
@@ -83,6 +82,8 @@ class LodgingCommonFieldsMixinForm(object):
         if date and date>datetime.date.today()+datetime.timedelta(days=30):
             raise ValidationError('Available date more than 30 days is not permitted',
             code='dateafter')
+        if not date:
+            return datetime.date.today()
         return date
 
 
@@ -103,16 +104,19 @@ class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsM
         self.fields['is_furnished'].required = False
         self.fields['is_parking_available'].required = False
         self.fields['is_kitchen_available'].required = False
-        # self.fields['images'] = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.filter(
-        #     created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=15)))
 
     class Meta:
         model = CommonlyUsedLodgingModel
-        fields = ('lodging_type','total_floors','floor_no','is_furnished',
-            'is_kitchen_available','is_parking_available','rent',
-            'additional_details','title','region','available_from')
+        fields = ('lodging_type','lodging_type_other','total_floors','floor_no',
+            'furnishing','facilities','rent','area','area_unit','bathrooms','bedrooms',
+            'balconies','other_rooms','halls','security_deposit','booking_amount',
+            'flooring','additional_details','title','region','available_from')
         widgets = {
-            'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15})
+            'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15}),
+            'flooring': Select2Widget,
+            'flooring': Select2Widget,
+            'flooring': Select2Widget,
+            'flooring': Select2Widget,
         }    
 
     def clean_title(self):

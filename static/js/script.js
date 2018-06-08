@@ -6,7 +6,7 @@ $('document').ready(function(){
     var offset = $('footer').offset();
     var windowHeight = $(window).height();
     if(offset.top<windowHeight){
-        $('footer').css({'position': 'relative','top':windowHeight-offset.top,'width':'100%'});
+        $('footer').css({'position': 'relative','top':windowHeight-offset.top-$('#preloader').height,'width':'100%'});
     }
     var height = $('#center').height();
     $('#center').css({'margin-top':(windowHeight/2-height/2-$('body').css('padding-top'))+'px'});

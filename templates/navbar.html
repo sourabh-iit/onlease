@@ -19,35 +19,18 @@
     </head>
     <body class="padding-top-3">
 
+        <div class="h-100 w-100 d-flex align-items-center justify-content-center" id="preloader">
+            <img src="{% static 'images/preloader.gif' %}" alt="">
+        </div>
+           
+        <div id="main-container" class="display">
+
         <div id="mySidenav" class="sidenav scrollbar-dusty-grass square thin">
             <a class="closebtn" onclick="closeNav()">&times;</a>
-            <a href="{% url 'home:front-page' %}">
-                <i class="fa fa-home"></i> Home</a>
             {% if user.is_authenticated %}
             <a href="{% url 'dashboard:home' %}">
                 <i class="fa fa-dashboard"></i> Dashboard
             </a>
-            {% endif %}
-            <div data-toggle="#view">
-                <i class="fa fa-eye"></i> View All</div>
-            <ul id="view" class="toggle">
-                {% comment %} <a href="{% url 'ads:choose-location' %}?type=dealer">
-                    <li>Dealer's Ad</li>
-                </a> {% endcomment %}
-                <a href="{% url 'ads:choose-location' %}">
-                    <li>Owner's Ad</li>
-                </a>
-                <a href="{% url 'ads:choose-location' %}?type=roomie">
-                    <li>Roommate's Ad</li>
-                </a>
-            </ul>
-            <div data-toggle="#add">
-                <i class="fa fa-plus"></i> Add New</div>
-            <ul id="add" class="toggle">
-                <a href="{% url 'lodging:create' %}"><li>Property</li></a>
-                <a href="{% url 'roommate:create' %}"><li>Roommate Ad</li></a>
-            </ul>
-            {% if user.is_authenticated %}
             <div data-toggle="#account">
                 <i class="fa fa-user"></i> My Account</div>
             <ul id="account" class="toggle">
@@ -112,32 +95,10 @@
                 {% endif %}
             </ul>
             <ul class="desktop navbar-nav ml-auto">
-                <li class="nav-item {% block home_active %}{% endblock %}">
-                    <a class="nav-link waves-effect waves-light text-capitalized" href="{% url 'home:front-page' %}">
-                        <i class="fa fa-home"></i> Home
+                <li class="nav-item {% block rent_active %}{% endblock %}">
+                    <a href="{% url 'lodging:create' %}" class="nav-link waves-effect waves-light text-capitalized">
+                        Rent Property
                     </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="view_all" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        <i class="fa fa-eye"></i> View all</a>
-                    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="view_all">
-                        {% comment %} <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'ads:choose-location' %}?type=dealer">
-                            Dealer's Ad</a> {% endcomment %}
-                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'ads:choose-location' %}">
-                            Owner's Ad</a>
-                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'ads:choose-location' %}?type=roomie">
-                            Roommate's Ad</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="view_all" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        <i class="fa fa-plus"></i> Add new</a>
-                    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="view_all">
-                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'lodging:create' %}">
-                            Property Ad</a>
-                        <a class="dropdown-item waves-effect waves-light text-capitalized" href="{% url 'roommate:create' %}">
-                            Roommate Ad</a>
-                    </div>
                 </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item {% block dashboard_active %}{% endblock %}">
@@ -188,8 +149,7 @@
             {% endfor %}
         </div>
         {% endif %}
-                      
-        
+                   
         {% block content %}{% endblock %}
 
         <footer class="page-footer font-small blue pt-4 mt-4">
@@ -336,6 +296,8 @@
                 </div>
             </div>
         </div> {% endcomment %}
+
+        </div>
         
         <script type="text/javascript" src="{% static 'js/jquery-3.3.1.js' %}"></script>
         <script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
@@ -344,6 +306,10 @@
         <script src="{% static 'js/sidebar.js' %}"></script>
         <script src="{% static 'js/script.js' %}"></script>
         {% block script %}{% endblock %}
+        <script>
+            $('#preloader').toggleClass('display');
+            $('#main-container').toggleClass('display');
+        </script>
 
     </body>
 </html>

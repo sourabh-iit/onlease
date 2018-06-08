@@ -10,33 +10,75 @@
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'home/landing-page.css' %}">
+    <link rel="stylesheet" href="{% static 'css/slider.css' %}">
+    {{form.media.css}}
 {% endblock %}
 
 {% block script %}
+{{form.media.js}}
     <script src="{% static 'home/landing-page.js' %}"></script>
+    <script src="{% static 'js/bootstrap-slider.js' %}"></script>
 {% endblock %}
 
 {% block content %}
     <div class="container d-flex">
         <img src="{% static 'images/kari-shea-180802-unsplash_desktop.jpg' %}" alt="">
-        <div class="business">
-            <div class="text-uppercase">
-                <strong>Expand your lease Business</strong>
-            </div>
-            <a href="{% url 'user:register' %}" class="btn btn-deep-orange text-capitalized">
-                <i class="fa fa-handshake-o"></i> Let's join
-            </a>
+        <div class="business z-depth-2 col-12 col-md-10 col-lg-9 col-xl-8">
+            <form action="{% url 'home:front-page' %}" method="get" novalidate class="w-100">
+                <div class="business-choices">
+                    <div class="business-choice active" id="mates">Mates</div>
+                    <div class="business-choice" id="dealers">Owners</div>
+                    <div class="business-choice" id="self-deal">Brokers</div>
+                </div>
+                <!-- {{form.types}} -->
+                
+                
+                {{form.business}}
+                
+                <div class="input-group mt-2 row ml-0 mr-0">
+                    <div class="input-group-prepend col-2 p-0">
+                        <span class="input-group-text w-100" id="search-filter">
+                            Add Filters <i class="fa fa-caret-down caret"></i>
+                        </span>
+                        <div class="filter-arrow-up hide"></div>
+                        <div class="filters hide">
+                            <div class="rent-range">
+                                <div>Rent Range:</div>
+                                <div class="row mt-2">
+                                    {{form.min_rent|attr:"class:col-5 form-control"}} 
+                                    <div class="col-2">-</div> 
+                                    {{form.max_rent|attr:"class:col-5 form-control"}}
+                                </div>
+                                <input type="text" class="span2" >
+                                <hr>
+                            </div>
+                            <div class="property-types">
+                                <div>Property Type:</div>
+                                <div class="row mt-2">
+                                    <i class="fa fa-home prefix-large col-1 p-0 prefix"></i>
+                                    {{form.types|attr:"data-placeholder:e.g. flat"}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{form.region}}
+                    <button class="btn btn-default m-0 search col-3">Search</button>
+                </div>
+            </form>
         </div>
-        <div class="rooms">
-            <div class="rooms-text">Looking for room/flat/house?</div>
-            <a href="#find-a-room">
-                <i class="fa fa-arrow-circle-down pointer z-depth-2 waves-effect waves-light"></i>
+        <div id="roommates" class=" z-depth-2">
+            <div class="need-rooommate">
+                Need Roommate?
+            </div>
+            <a class="btn btn-secondary" id="post-roommate-ad">
+                Post Ad 
+                <span class="top small">Free</span>
             </a>
         </div>
     </div>
     <div class="benefits">
         <h2 class="text-align-center text-uppercase">
-            <strong>Why us?</strong></h2>
+            <strong>Why OnLease?</strong></h2>
         <div class="row">
             <div class="col-12 col-md-6 center-items">
                 <i class="fa fa-laptop icon"></i>
@@ -95,4 +137,7 @@
             </a>
         </div>
      </a>
+     <script>
+        var location_url = "{% url 'locations:regions' %}";
+     </script>
 {% endblock %}

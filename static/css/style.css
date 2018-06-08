@@ -191,6 +191,16 @@ html,body{
 body{
     padding-top: 3.8rem;
 }
+#preloader{
+    position: fixed;
+}
+#preloader img{
+    width: 120px;
+    height: 120px;
+}
+.display{
+    display: none!important;
+}
 footer.page-footer{
     background: #4b515d!important;
 }
@@ -318,6 +328,19 @@ input[type="radio"].option-input{
 .fs-10{
     font-size: 10rem;
 }
+.fs-1{
+    font-size: 1rem!important;
+}
 .text-darkblue{
     color: darkblue;
+}
+.prefix-large{
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    justify-content: flex-start;
+}
+.navbar a{
+    text-transform: uppercase;
+    font-weight: 600;
 }
