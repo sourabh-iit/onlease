@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from apps.locations.models import Region
 from stdimage import StdImageField
-from apps.lodging.models import large_image_size, thumbnail_size, image_help_text
+from apps.lodging.models import thumbnail_size, image_help_text
 
 User = get_user_model()
 
@@ -56,9 +56,11 @@ class Image(models.Model):
     ad = models.ForeignKey(RoomieAd,on_delete=models.CASCADE,
         related_name='images',null=True,db_index=True)
     image = models.ImageField(upload_to=image_upload_path,
-        help_text="Allowed image formats are jpeg/png/gif.")
+        help_text=image_help_text)
     image_thumbnail = models.ImageField(upload_to=image_upload_path,
-        help_text="Allowed image formats are jpeg/png/gif.")
+        help_text=image_help_text)
+    image_mobile = models.ImageField(upload_to=image_upload_path,
+        help_text=image_help_text, blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True,db_index=True)
 
     def __str__(self):

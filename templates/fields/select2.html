@@ -1,6 +1,8 @@
 {% load widget_tweaks %}
-<div class="md-form {{classes}}">
-    {% render_field field class+="btn btn-outline-primary w-100" %}
+
+<div class="md-form {{classes}} select">
+    <label>{{field.label}}</label>
+    {% render_field field class+="form-control" data-placeholder=dataPlaceholder %}
     {% if field.help_text %}
     <div class="form-text">
         <small class="text-muted">{{field.help_text}}</small>
@@ -11,9 +13,9 @@
     {% endif %}
 </div>
 
-{% comment %} 
+{% comment %}
 
-classes - fieldset classes
-field - form field
+classes
+field
 
- {% endcomment %}
+{% endcomment %}

@@ -24,7 +24,7 @@ def mb_to_bytes(size):
 
 # only fields in this
 class AdCommonFieldsForm(forms.Form):
-    region = forms.ModelChoiceField(queryset=Region.objects.none(),widget=CustomSelect2Widget,required=False)
+    region = forms.ChoiceField(widget=CustomSelect2Widget)
 
 
 # only clean and init methods in this
@@ -32,14 +32,13 @@ class AdCommonFieldsMixinForm(object):
     
     def __init__(self, *args, **kwargs):
         super(AdCommonFieldsMixinForm,self).__init__(*args,**kwargs)
-
         if 'region' in self.data:
             self.fields['region'].queryset = Region.objects.all()
 
 
 class LodgingCommonFieldsForm(forms.Form):
-    available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS,required=False)
-    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
+    available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none())
     facilities = forms.MultipleChoiceField(
         choices=CommonlyUsedLodgingModel.FACILITIES_AVAILABLE_CHOICES,
         widget=Select2MultipleWidget)
@@ -91,37 +90,64 @@ class LodgingCreateForm(forms.ModelForm):
     class Meta:
         model = Lodging
         fields = ('address',)
+    
+    def __init__(self, request, *args, **kwargs):
+        super(LodgingCreateForm,self).__init__(*args,**kwargs)
+        self.request = request
 
     def clean_address(self):
         data = self.cleaned_data.get('address')
         return clean_data(data)
 
+    def save(self):
+        data = self.cleaned_data
+        lodging = super(LodgingCreateForm,self).save(commit=False)
+        if self.request.user.is_authenticated:
+            lodging.posted_by = self.request.user
+        else:
+            lodging.session_key = self.request.session.session_key
+        lodging.save()
+        return lodging
+
+
+widgets = {
+    'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15}),
+    'flooring': Select2Widget,
+    'lodging_type': Select2Widget,
+    'furnishing': Select2Widget,
+    'facilities': Select2MultipleWidget,
+}
+
 
 class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsMixinForm,forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
+    
+    def __init__(self, request, *args, **kwargs):
         super(CommonlyUsedLodgingCreateForm, self).__init__(*args, **kwargs)
-        self.fields['is_furnished'].required = False
-        self.fields['is_parking_available'].required = False
-        self.fields['is_kitchen_available'].required = False
+        self.request = request
 
     class Meta:
         model = CommonlyUsedLodgingModel
         fields = ('lodging_type','lodging_type_other','total_floors','floor_no',
             'furnishing','facilities','rent','area','area_unit','bathrooms','bedrooms',
             'balconies','other_rooms','halls','security_deposit','booking_amount',
-            'flooring','additional_details','title','region','available_from')
-        widgets = {
-            'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15}),
-            'flooring': Select2Widget,
-            'flooring': Select2Widget,
-            'flooring': Select2Widget,
-            'flooring': Select2Widget,
-        }    
+            'flooring','additional_details','title','available_from')
+        widgets = widgets
 
     def clean_title(self):
         data = self.cleaned_data.get('title')
         return clean_data(data)
+
+    def save(self):
+        data = self.cleaned_data
+        sublodging = super(CommonlyUsedLodgingCreateForm,self).save(commit=False)
+        if data.get('facilities'):
+            sublodging.facilities = ','.join(data['facilities'])
+        sublodging.save()
+        for image_id in self.data.getlist('images'):
+            image = ImageModel.objects.get(id=image_id)
+            image.sublodging = sublodging
+            image.save()
+        return sublodging
 
 
 CommonlyUsedLodgingCreateForm.base_fields.update(AdCommonFieldsForm.base_fields)
@@ -131,30 +157,20 @@ CommonlyUsedLodgingCreateForm.base_fields.update(LodgingCommonFieldsForm.base_fi
 class CommonlyUsedLodgingUpdateForm(LodgingCommonFieldsMixinForm,AdCommonFieldsMixinForm,forms.ModelForm):
     delete_images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),
                 required=False)
-    images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
     class Meta:
         model = CommonlyUsedLodgingModel
-        fields = ('is_furnished','is_kitchen_available','is_parking_available',
-        'is_booked','available_from','rent',
-        'additional_details','floor_no','total_floors')
-        widgets = {
-            'additional_details': forms.Textarea(attrs={'rows':4,'cols':15}),
-        }
+        fields = ('total_floors','floor_no','furnishing','facilities','rent',
+            'area','area_unit','bathrooms','bedrooms','balconies','other_rooms',
+            'halls','security_deposit','booking_amount','flooring',
+            'additional_details','title','available_from')
+        widgets = widgets
 
     def __init__(self, images, *args, **kwargs):
         super(CommonlyUsedLodgingUpdateForm, self).__init__(*args, **kwargs)
-        self.fields['is_furnished'].required = False
-        self.fields['is_booked'].required = False
-        self.fields['available_from'].required = False
-        self.fields['rent'].required = False
-        self.fields['additional_details'].required = False
-        self.fields['floor_no'].required = False
-        self.fields['total_floors'].required = False
+        for field in self.fields:
+            self.fields[field].required=False
         if images:
             self.fields['delete_images'].queryset = images
-        if 'images' in self.data:    
-            self.fields['images'].queryset = ImageModel.objects.filter(
-                created_at__gte=datetime.datetime.now()-datetime.timedelta(minutes=60))
 
 
 CommonlyUsedLodgingUpdateForm.base_fields.update(LodgingCommonFieldsForm.base_fields)

@@ -1,16 +1,18 @@
 from django import forms
-import datetime
 from django.forms import ValidationError
+from django.conf import settings
+from django.urls import reverse
+
+from django_select2.forms import Select2MultipleWidget
+
+from apps.widgets import CustomSelect2Widget
+from apps.locations.views import regions_view
 from apps.lodging.models import CommonlyUsedLodgingModel
 from apps.locations.models import Region, District
 from apps.roommate.models import RoomieAd
 from apps.user.models import User
-from django_select2.forms import Select2MultipleWidget
-from apps.widgets import CustomSelect2Widget
-from django.urls import reverse
-from apps.locations.views import regions_view
-from django.conf import settings
 
+import datetime
 
 lower_availability = datetime.date.today()-datetime.timedelta(days=6*30)
 

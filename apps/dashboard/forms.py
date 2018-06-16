@@ -25,7 +25,6 @@ class ProfileForm(forms.ModelForm):
         self.fields['mobile_number_alternate2'].required=False
 
 class DealerProfileForm(forms.Form):
-    available_property_types=forms.MultipleChoiceField(choices=CommonlyUsedLodgingModel.TYPE_CHOICES[1:],widget=forms.CheckboxSelectMultiple,help_text="Choose all types of property you have currently for customers")
     state = forms.ChoiceField(choices=[(None,'Choose State')]+[(state.id,state.name) for state in State.objects.all()])
     district = forms.ChoiceField(choices=[(None,'Choose District')],help_text="This is area in which you operate currently")
     
