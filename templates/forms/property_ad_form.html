@@ -1,0 +1,175 @@
+<form class="modal fade" id="modalPropertyAdForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+  novalidate>
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Find Property On Rent</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3 row">
+
+        <div class="md-form mb-4 col-12 m-5px" style="margin-top: 1rem!important">
+          <i class="fa fa-tag prefix grey-text"></i>
+          <input type="text" name="title" id="property_title" class="form-control" length="70">
+          <label for="property_title">Title</label>
+        </div>
+
+        <div class="group-heading mb-4">General details</div>
+
+        <div class="mb-4 col-12 col-lg-10 m-5px">
+          <select name="region" id="property_region" data-placeholder="Choose region"></select>
+          <label for="property_region">Region</label>
+        </div>
+        <div class="mb-4 md-form col-12 col-lg-10 m-5px">
+          <i class="fa fa-address prefix grey text"></i>
+          <input type="text" name="address" id="property_address" class="form-control" placeholder="e.g. h.no. 190, dhirpur village">
+          <label for="property_address">Address</label>
+        </div>
+        <div class="mb-4 col-12 col-md-6 m-5px">
+          <select name="type" id="property_type" data-target="other" data-label="Property type">
+            <option value="">Choose type</option>
+            <option value="F">Flat</option>
+            <option value="H">House</option>
+            <option value="P">Paying guest</option>
+            <option value="R">Room(s)</option>
+            <option value="O">Other</option>
+          </select>
+          <label for="property_type">Type</label>
+        </div>
+        <div class="mb-4 col-12 col-md-6 m-5px">
+          <select name="furnishing" id="property_furnishing" required>
+            <option value="">Choose furnishing</option>
+            <option value="F">Fully Furnished</option>
+            <option value="S">Semi-Furnished</option>
+            <option value="U">UnFurnished</option>
+          </select>
+          <label for="property_furnishing">Furnishing</label>
+        </div>
+
+        <div class="group-heading mb-4">Rent details</div>
+
+        <div class="md-form mb-4 col-12 col-md-6 m-5px">
+          <i class="fa fa-inr prefix grey-text"></i>
+          <input type="text" name="rent" id="property_rent" class="form-control" required>
+          <label for="property_rent">Rent (per month)</label>
+        </div>
+        <div class="md-form mb-4 col-12 col-md-6 m-5px">
+          <i class="fa fa-inr prefix grey-text"></i>
+          <input type="text" name="security_deposit" id="property_security_deposit" class="form-control">
+          <label for="property_security_deposit">Security deposit</label>
+        </div>
+        <div class="md-form mb-4 col-12 col-md-6 m-5px">
+          <i class="fa fa-inr prefix grey-text"></i>
+          <input type="text" name="booking_amount" id="property_booking_amount" class="form-control">
+          <label for="property_booking_amount">Booking amount</label>
+        </div>
+
+        <div class="group-heading mb-4">Facilities available</div>
+
+        <div class="mb-4 col-12 col-md-6 m-5px">
+          <select name="facilities" id="property_facilities" multiple="multiple" data-placeholder="Select facilities" required>
+            <option value="A">Air conditioner</option>
+            <option value="P">Parking</option>
+            <option value="K">Kitchen</option>
+          </select>
+          <label for="property_facilities">Facilities</label>
+        </div>
+        <div class="col-12 mb-4 col-md-6 m-5px">
+          <select name="bathrooms" id="property_bathrooms">
+            <option value="">Choose total bathrooms</option>
+          </select>
+          <label for="poperty_bathrooms">Bathrooms</label>
+        </div>
+        <div class="col-12 mb-4 col-md-6 m-5px">
+          <select name="balconies" id="property_balconies">
+            <option value="">Choose total balconies</option>
+          </select>
+          <label for="proeprty_balconies">Balconies</label>
+        </div>
+
+        <div class="md-form mb-4 col-12 col-md-6 m-5px">
+          <i class="fa fa-calendar prefix grey-text"></i>
+          <input type="text" name="available_from" id="property_available_from" class="form-control" required>
+          <label for="property_available_from">Date of availability</label>
+          <div id="datepicker-container" class="mt-3"></div>
+        </div>
+
+        <div class="group-heading mb-4">Property details</div>
+
+        <div class="input-group md-form mb-4 col-12 col-md-8 m-5px" role="group" aria-label="Area with unit" required>
+          <label for="property_area" style="top: 0">Area (built up)</label>
+          <input type="text" name="area" id="property_area" class="form-control p-0">
+          <span class="input-group-append" style="width:100px">
+            <select name="measuring_unit" style="width:100%" id="property_measuring_unit"></select>
+          </span>
+        </div>
+        <div class="mb-4 col-12 col-md-6 m-5px">
+          <select name="flooring" id="property_flooring" data-target="other" data-label="Flooring type">
+            <option value="">Choose flooring type</option>
+          </select>
+          <label for="property_flooring">Flooring</label>
+        </div>
+        <div class="col-12 mb-4 col-md-6 m-5px">
+          <select name="floor_no" id="property_floor_no">
+            <option value="">Choose floor number</option>
+          </select>
+          <label for="property_floor_no">Floor number</label>
+        </div>
+        <div class="col-12 mb-4 col-md-6 m-5px">
+          <select name="total_floors" id="property_total_floors">
+            <option value="">Choose total floors</option>
+          </select>
+          <label for="property_total_floors">Total floors</label>
+        </div>
+
+        <div class="group-heading mb-4">Room details</div>
+
+        <div class="col-12 mb-4 col-md-6 m-5px">
+          <select name="halls" id="property_halls">
+            <option value="">Choose total halls</option>
+          </select>
+          <label for="property_halss">Halls</label>
+        </div>
+        <div class="col-12 mb-4 col-md-6 m-5px">
+          <select name="other_rooms" id="property_other_rooms">
+            <option value="">Choose total other rooms</option>
+          </select>
+          <label for="property_other_rooms">Other rooms</label>
+        </div>
+        <div class="col-12 mb-4 col-md-6 m-5px">
+          <select name="bedrooms" id="property_bedrooms">
+            <option value="">Choose total bedrooms</option>
+          </select>
+          <label for="property_bedrooms">Bedrooms</label>
+        </div>
+
+        <div class="md-form mb-4 m-5px" style="margin-top: 1rem!important">
+          <i class="fa fa-pencil prefix grey-text"></i>
+          <textarea rows="3" length="1000" placeholder="e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished."
+            class="md-textarea form-control" name="additional_details" id="property_additional_details"></textarea>
+          <label for="property_additional_details">Additional details</label>
+        </div>
+
+        <div class="group-heading">Images</div>
+        <select name="property_images" hidden="true" id="property_images" multiple="mutiple"></select>
+
+        <div id="property_images_container" class="col-12">
+
+        </div>
+
+        <div class="form-row">
+          <div class="col-12">
+            <span class='btn btn-md btn-outline-primary ml-0 mt-3' id="property_add_image">
+              <i class="fa fa-file-image-o icon"></i> Add image</span>
+          </div>
+        </div>
+
+        <div class="text-center col-12 mt-4">
+          <button class="btn btn-primary" type="submit">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

@@ -46,46 +46,6 @@
                     <label for="mobile">Mobile number</label>
                 </div>
 
-                {% include 'fields/field.html' with field=form.email icon="envelope" %}
-                {% include 'fields/field.html' with field=form.mobile_number_alternate1 icon="mobile" %}
-                {% include 'fields/field.html' with field=form.mobile_number_alternate2 icon="mobile" %}
-
-                {% comment %} {% for label in form.is_dealer %}
-                {% if form.is_dealer.value %}
-                <input type="radio" name="{{form.is_dealer.name}}" value="{{label.tag.value}}" id="id_is_dealer_1" class="option-input form-check-input radio">
-                {% else %}
-                {{label.tag}}
-                {% endif %}
-                {% endfor %} {% endcomment %}
-                <div class="custom-form">
-                    <div><label for="label id_is_dealer1">Are you a dealer?</label></div>
-                    {% if form.is_dealer.value %}
-                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True" checked>
-                    <label for="label id_is_dealer">Yes</label>
-                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False">
-                    <label for="label id_is_dealer2">No</label>
-                    {% else %}
-                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True">
-                    <label for="label id_is_dealer">Yes</label>
-                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False" checked>
-                    <label for="label id_is_dealer2">No</label>
-                    {% endif %}
-                    {% if form.is_dealer.errors %}
-                        <div class="error"><small>{{form.is_dealer.errors.0}}</small></div>
-                    {% endif %}
-                </div>
-
-                {% if user.is_dealer %}
-                    <div class="row w-90">
-                        <div>Choose District in which you want to operate</div>
-                        {% include 'fields/select_field.html' with field=dealer_form.state %}
-                        {% include 'fields/select_field.html' with field=dealer_form.district %}
-                    </div>
-
-                    {% include 'fields/check_field.html' with field=dealer_form.available_property_types %}
-
-                {% endif %}
-
             {% endwith %}
 
             <div class="text-center mt-4">

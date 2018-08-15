@@ -1,0 +1,270 @@
+{% extends "base_templates/base_template_1.html" %}
+{% load static %}
+{% load lodging_filters %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'ads/ad_detail.css' %}">
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static 'ads/ad_detail.js' %}"></script>
+{% endblock %}
+
+
+{% block content %}
+{% comment %} <div class="custom-control custom-checkbox">
+  <input type="checkbox" class="custom-control-input" id="tableDefaultCheck1">
+  <label class="custom-control-label" for="tableDefaultCheck1">Check 1</label>
+</div> {% endcomment %}
+<div class="row m-0 ad-container">
+  <div class="col-12 col-md-6">
+    <div class="ad-title">
+      {{sublodging.title}}
+    </div>
+    <div id="images" data-pause="true" class="carousel slide carousel-fade" data-ride="false">
+      <ol class="carousel-indicators">
+        {% for image in sublodging.images.all %}
+          <li data-target="#images" data-slide-to="{{forloop.counter0}}"{% if forloop.first %} class="active"{% endif %}></li>
+        {% endfor %}
+      </ol>
+      <div class="carousel-inner" role="listbox">
+        {% for image in sublodging.images.all %}
+          {% if forloop.first %}
+          <div class="carousel-item active">
+            <div class="view">
+              <img class="d-block w-100 cursor-zoom-in" src="{{image.image_mobile.url}}"  alt="{{sublodging.title}}"
+                onclick="display_full_screen_carousel([{% for image in sublodging.images.all %}'{{image.image.url}}',{% endfor %}],'{{sublodging.rent}}','{{sublodging.region}}','{{sublodging | full_form:'type' }}','{{sublodging.available_from}}','{{sublodging.title}}')">
+          {% else %}
+          <div class="carousel-item">
+            <div class="view">
+              <img class="d-block w-100 cursor-zoom-in" src="" data-src="{{image.image_mobile.url}}" alt="{{sublodging.title}}"
+                onclick="display_full_screen_carousel([{% for image in sublodging.images.all %}'{{image.image.url}}',{% endfor %}],'{{sublodging.rent}}','{{sublodging.region}}','{{sublodging | full_form:'type' }}','{{sublodging.available_from}}','{{sublodging.title}}')">
+          {% endif %}
+            </div>
+            <div class="carousel-caption">
+              Image tag here
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if sublodging.images.count > 1 %}
+      <a class="carousel-control-prev" href="#images" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#images" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
+      <div class="zoom-icon text-white pink darken-1 p-1" onclick="display_full_screen_carousel([{% for image in sublodging.images.all %}'{{image.image.url}}',{% endfor %}],'{{sublodging.rent}}','{{sublodging.region}}','{{sublodging | full_form:'type' }}','{{sublodging.available_from}}','{{sublodging.title}}')">
+        <small><i class="fa fa-search-plus"></i> Zoom</small>
+      </div>
+      {% endif %}
+    </div>
+    <div class="mt-3">
+      <div>
+        <div class="heading">Contact Details</div>
+      </div>
+      <table class="table table-bordered">
+        <tbody>
+          <tr>
+            <th><small>Phone number</small></th>
+            <td>{{lodging.posted_by.mobile_number}}</td>
+          </tr>
+          {% for mobile_number in lodging.posted_by.mobile_numbers.all %}
+            <tr>
+              <th><small>Alternate number {{forloop.counter}}</small></th>
+              <td>{{mobile_number}}</td>
+            </tr>
+          {% endfor %}
+          <tr>
+            <th><small>Address</small></th>
+            <td>{{lodging.address}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div>
+        <div class="heading">Additional Details</div>
+      </div>
+      <table class="table table-bordered">
+        <tbody>
+          <tr>
+            <th><small>Additional Details</small></th>
+            <td>{{sublodging.additional_details}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="basic-details indigo lighten-5 float-left w-100">
+      <div class="indigo text-white float-left p-2 font-weight-bold">
+        <small>
+          <i class="fa fa-inr"></i>
+          {{sublodging.rent}}
+        </small>
+      </div>
+      <div class="indigo text-white float-right p-2">
+        <small>
+          <i class="fa fa-map-marker"></i>
+          {{sublodging.region}}
+        </small>
+      </div>
+    </div>
+    <div class="p-2 w-100 float-left">
+        <div class="details">
+          <div>
+            <div class="heading">Basic Details</div>
+          </div>
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <th class="text-center">
+                  <div class="detail-label">
+                    Furnishing
+                  </div>
+                  <div>
+                    {{sublodging|full_form:'furnishing'}}
+                  </div>
+                </th>
+                <th class="text-center">
+                  <div class="detail-label">
+                    Area
+                  </div>
+                  <div>
+                    {{sublodging.area}}
+                    {{sublodging | full_form:'area_unit'}}
+                  </div>
+                </th>
+              </tr>
+              <tr>
+                <th class="text-center">
+                  <div class="detail-label">
+                    Flooring
+                  </div>
+                  <div>
+                    {{sublodging|full_form:'flooring'}}
+                  </div>
+                </th>
+                <th class="text-center">
+                  <div class="detail-label">
+                    Floor
+                  </div>
+                  <div>
+                    {% if sublodging.ground_floor %}
+                    Ground Floor
+                    {% elif sublodging.top_floor %}
+                    Top Floor
+                    {% else %}
+                    {{sublodging.floor_no}}<sup>{{sublodging.floor_no|style_number}}</sup> floor <small>(Total floors: {{sublodging.total_floors}})</small>
+                    {% endif %}
+                  </div>
+                </th>
+              </tr>
+              <tr>
+                <th class="text-center">
+                  <div class="detail-label">
+                    Facilities
+                  </div>
+                  <div>
+                    {{sublodging|full_form:'facilities'}}
+                  </div>
+                </th>
+                <th class="text-center">
+                  <div class="detail-label">
+                    Type
+                  </div>
+                  <div>
+                    {{sublodging|full_form:'type'}}
+                  </div>
+                </th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="rooms">
+          <div>
+            <div class="heading">Rooms Detail</div>
+          </div>
+          <table class="table table-bordered table-responsive">
+            <tbody>
+              <tr>
+                <th>Bathrooms</th>
+                <th>Bedrooms</th>
+                <th>Balconies</th>
+                <th>Halls</th>
+                <th>Other rooms</th>
+              </tr>
+              <tr>
+                <td>{{sublodging.bathrooms}}</td>
+                <td>{{sublodging.bedrooms}}</td>
+                <td>{{sublodging.balconies}}</td>
+                <td>{{sublodging.halls}}</td>
+                <td>{{sublodging.other_rooms}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="additional-details text-black-50 mb-3">
+          <div class="heading-container">
+            <div class="heading">Additional Details</div>
+          </div>
+          <div class="content">
+            {{sublodging.additional_details}}
+          </div>
+        </div>
+        <div class="booking-amount">
+          <div>
+            <div class="heading">Rental Details</div>
+          </div>
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <th>
+                  Security deposit
+                </th>
+                <td>
+                  <i class="fa fa-inr"></i>
+                  {{sublodging.security_deposit}}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  Booking amount
+                </th>
+                <td>
+                  <i class="fa fa-inr"></i>
+                  {{sublodging.booking_amount}}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  Rent per month
+                </th>
+                <td>
+                  <i class="fa fa-inr"></i>
+                  {{sublodging.rent}}
+                </td>
+              </tr>
+              <tr class="green text-white">
+                <th>
+                  Total booking amount
+                </th>
+                <td>
+                  <i class="fa fa-inr"></i>
+                  {{sublodging.security_deposit | add:sublodging.booking_amount | add:sublodging.rent}}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="text-center">
+          <button class="btn btn-success">Book Now</button>
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

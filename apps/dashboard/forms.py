@@ -14,15 +14,9 @@ class RefundForm(forms.Form):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model=User
-        fields=('first_name','last_name','email','mobile_number_alternate1',
-            'mobile_number_alternate2','is_dealer')
-        widgets={
-            'is_dealer': forms.RadioSelect
-        }
+        fields=('first_name','last_name','email')
     def __init__(self,*args,**kwargs):
         super(ProfileForm,self).__init__(*args,**kwargs)
-        self.fields['mobile_number_alternate1'].required=False
-        self.fields['mobile_number_alternate2'].required=False
 
 class DealerProfileForm(forms.Form):
     state = forms.ChoiceField(choices=[(None,'Choose State')]+[(state.id,state.name) for state in State.objects.all()])

@@ -1,0 +1,66 @@
+{% load static %}
+
+<nav class="mb-1 fixed-top navbar navbar-dark stylish-color">
+  <a class="navbar-brand" href="{% url 'home:front-page' %}">
+    <img src="{% static 'images/logo.png' %}" alt="onlease logo" class="logo">
+  </a>
+  <ul class="navbar-nav ml-auto">
+    {% if user.is_authenticated %}
+    <li class="nav-item dropdown desktop">
+      <a class="nav-link dropdown-toggle waves-effect waves-light btn btn-sm btn-info" id="newAdsLink" data-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="true">
+        New Ad
+      </a>
+      <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="newAdsLink">
+        {% if user.is_verified %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalPropertyAdForm">
+        {% else %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
+        {% endif %} Property
+        </a>
+        {% if user.is_verified %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalRoomieAdForm">
+        {% else %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
+        {% endif %} Mates
+        </a>
+      </div>
+    </li>
+    <li class="nav-item dropdown-md">
+      <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="navbarDropdownMenuLink" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="true">
+        <i class="fa fa-user-circle-o"></i> {{user.mobile_number}} </a>
+      <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
+        <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalChangePasswordForm">
+          Change password</a>
+        <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-action="add-number" 
+          data-target="#modalEnterNumberForm">
+          Add mobile number</a>
+        <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalUserProfileForm">
+          My Profile</a>
+        {% if not user.is_verified %}
+        <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalEnterNumberForm"
+          data-action="verify-number">
+          Verify your number</a>
+        {% endif %}
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item text-capitalized waves-effect waves-light" data-action="logout">
+          Log out</a>
+      </div>
+    </li>
+    {% else %}
+    <li class="nav-item">
+      <a class="dropdown-item waves-effect btn btn-info btn-sm" data-toggle="modal" data-target="#modalLoginForm">
+        New ad</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalLoginForm">
+        <i class="fa fa-sign-in"></i> Log In</a>
+    </li>
+    <li class="nav-item {% block register_active %}{% endblock %}">
+      <a class="nav-link waves-effect waves-light btn btn-sm btn-default text-capitalized" data-toggle="modal" data-target="#modalRegisterForm">
+        <i class="fa fa-user-plus"></i> Register</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>

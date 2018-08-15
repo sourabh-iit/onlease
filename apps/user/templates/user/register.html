@@ -11,25 +11,6 @@
                 <i class="fa fa-user-plus"></i> REGISTER</p>
             <div class="form">
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
-                <div class="row">
-                    <div class="md-form col-12 col-md-6">
-                        <i class="fa fa-user prefix"></i>
-                        {% render_field form.first_name|append_attr:"autofocus" id="first_name" class+="form-control" %}
-                        <label for="first_name">First name</label>
-                        {% if form.first_name.errors %}
-                            <div class="error"><small>{{form.first_name.errors.0}}</small></div>
-                        {% endif %}
-                    </div>
-
-                    <div class="md-form col-12 col-md-6">
-                        <i class="fa fa-user prefix"></i>
-                        {% render_field form.last_name id="last_name" class+="form-control" %}
-                        <label for="last_name">Last name</label>
-                        {% if form.last_name.errors %}
-                            <div class="error"><small>{{form.last_name.errors.0}}</small></div>
-                        {% endif %}
-                    </div>
-                </div>
 
                 <div class="row">
                     <div class="md-form col-12 col-md-6">
@@ -69,24 +50,6 @@
                             <div class="error"><small>{{form.confirm_password.errors.0}}</small></div>
                         {% endif %}
                     </div>
-                </div>
-
-                <div class="custom-form">
-                    <div><label for="label id_is_dealer1">Are you a dealer?</label></div>
-                    {% if form.is_dealer.value == "True" %}
-                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True" checked>
-                    <label for="label id_is_dealer">Yes</label>
-                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False">
-                    <label for="label id_is_dealer2">No</label>
-                    {% else %}
-                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True">
-                    <label for="label id_is_dealer">Yes</label>
-                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False" checked>
-                    <label for="label id_is_dealer2">No</label>
-                    {% endif %}
-                    {% if form.is_dealer.errors %}
-                        <div class="error"><small>{{form.is_dealer.errors.0}}</small></div>
-                    {% endif %}
                 </div>
             {% endwith %}
 

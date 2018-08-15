@@ -46,26 +46,6 @@ body{
     max-height: 200px;
     overflow-y: scroll;
 }
-.select-2-search__field{
-    width: 100%!important;
-    margin-top: 0!important;
-    padding: 5px!important;
-    font-size: 1rem!important;
-    height: 100%!important;
-    display: flex!important;
-    align-items: center;
-}
-.select2-container--default .select2-selection--single .select2-selection__arrow{
-    top: auto!important;
-}
-.select-2{
-    width:auto!important;
-    line-height: normal!important;
-}
-.select2-selection{
-    height: 100%;
-    border-radius: 0!important;
-}
 .search{
     border-radius: 0 4px 4px 0!important;
     max-height: 46px;
@@ -123,24 +103,6 @@ body{
     border-right: none!important;
     border-top: none!important;
 }
-.property-type .select2-selection{
-    border-radius: 4px!important;
-    border: 1px solid #ced4da;
-    padding-top: 14px!important;
-    padding-bottom: 7px!important;
-    padding-left: 1.2rem!important;
-}
-.select-2-ul{
-    display: block!important;
-    height: 100%!important;
-    display: flex!important;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.select-2-ul .select2-selection__choice {
-    color: darkgreen;
-    font-size: 1rem;
-}
 .pointer{
     height: 3rem;
     width: 3rem;
@@ -189,9 +151,6 @@ h3, h2, h4{
 .detail{
     font-size: large;
     text-align: center;
-}
-.desktop{
-    display: none;
 }
 .text-align-center{
     text-align: center;
@@ -247,11 +206,31 @@ div#roommates {
     font-weight: 900;
     font-size: smaller;
 }
-@media only screen and (min-width: 768px){
-    .desktop{
-        display: inline-flex;
-    }
-    .mobile{
-        display: none;
-    }
+.arrow::after{
+    border-bottom-color: #dc3545!important;
+}
+.popover{
+    width: 200px;
+    text-align: center;
+}
+#location_search_container{
+  width: 83.33%!important;
+}
+#search_button{
+  width: 16.67%!important;
+}
+@media only screen and (max-width: 500px){
+  #location_search_container{
+    width: 100%!important;
+    font-size: 0.8rem!important;
+  }
+  #search_button{
+    border-radius: 0!important;
+    margin-top: 0.5rem!important;
+    padding: 0.5rem 1rem;
+    width: fit-content!important;
+  }
+  .business-choice{
+    font-size: 0.8rem;
+  }
 }

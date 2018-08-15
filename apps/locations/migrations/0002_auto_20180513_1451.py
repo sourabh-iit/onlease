@@ -20,6 +20,8 @@ def add_data(apps, schema_editor):
         count+=1
         print(count)
         state=row['statename']
+        if state.lower()!='delhi':
+            continue
         district=row['districtname']
         region=row['officename'].split(' '+row['officetype'])[0]
         pincode=row['pincode']

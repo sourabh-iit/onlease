@@ -138,9 +138,6 @@ active
         {% for ad in ads %}
         <div class="card-wrapper">
             <a class="card z-depth-2" href="{% url 'ads:detail' state=state district=district state_id=state_id district_id=district_id ad_id=ad.id slug=ad.title %}">
-                {% if ad.lodging.posted_by.is_dealer %}
-                <div class="tag-bottom-right">Dealer</div>
-                {% endif %}
                 {% if ad.image %}
                 <img class="card-img-top" src="{{ad.image.image_thumbnail.url}}" alt="{{ad.title}}">
                 {% else %}

@@ -28,21 +28,16 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('first_name','last_name','email','password','mobile_number','is_dealer')
+        fields = ('email','password','mobile_number')
         widgets = {
-            'password': forms.PasswordInput,
-            'is_dealer': forms.RadioSelect
+            'password': forms.PasswordInput
         }
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         super(RegisterForm, self).__init__(*args, **kwargs)
-        self.fields['first_name'].required = True
-        self.fields['last_name'].required = True
-        self.fields['email'].required = True
         self.fields['password'].required = True
         self.fields['mobile_number'].required = True
-        self.fields['is_dealer'].required = True
 
     def clean(self):
         cleaned_data = super().clean()
@@ -82,18 +77,12 @@ class ContactForm(forms.ModelForm):
     def __init__(self,user,*args,**kwargs):
         super(ContactForm,self).__init__(*args,**kwargs)
         if user.is_authenticated:
-            self.fields['name'].widget.attrs['readonly']=True
             self.fields['mobile_number'].widget.attrs['readonly']=True
             self.fields['email'].widget.attrs['readonly']=True
             self.fields['subject'].widget.attrs.update({'autofocus':''})
         else:
             self.fields['name'].widget.attrs.update({'autofocus':''})
         self.user=user
-
-    def clean_name(self):
-        if self.user.is_authenticated:
-            return self.user.full_name()
-        return self.cleaned_data.get('name')
 
     def clean_mobile_number(self):
         if self.user.is_authenticated:
@@ -104,6 +93,12 @@ class ContactForm(forms.ModelForm):
         if self.user.is_authenticated:
             return self.user.email
         return self.cleaned_data.get('email')
+
+    def clean(self):
+        data = self.cleaned_data
+        if not data.get('mobile_number') and not data.get('email'):
+            raise ValidationError('Mobile number or email address is required.')
+        return data
 
     class Meta:
         model = ContactModel
@@ -131,3 +126,27 @@ class ResetPasswordForm(forms.ModelForm):
             raise forms.ValidationError(
                 'Password and confirm password should match',
                 code = 'nomatch')
+
+class PasswordChangeForm(forms.Form):
+    current_password = forms.CharField(max_length=50)
+    password = forms.CharField(
+        max_length=50, min_length=8,
+        widget = forms.PasswordInput)
+    confirm_password = forms.CharField(max_length=50)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        if password!=confirm_password:
+            raise ValidationError('Passwords do not match')
+
+
+class ProfileForm(forms.ModelForm):
+    
+    class Meta:
+        model=User
+        fields=('first_name','last_name','email','detail','type_of_roommate','gender')
+    
+    def __init__(self,*args,**kwargs):
+        super(ProfileForm,self).__init__(*args,**kwargs)

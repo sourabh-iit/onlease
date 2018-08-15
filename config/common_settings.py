@@ -29,15 +29,16 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'apps.user',
     'apps.lodging',
-    'apps.dashboard',
+    # 'apps.dashboard',
     'apps.ads',
     'apps.home',
-    'apps.transactions',
+    'apps.image',
+    # 'apps.transactions',
     'apps.locations',
-    'apps.legal',
-    'stdimage',
+    # 'apps.legal',
     'apps.roommate',
-    'django_select2',
+    # framework for rest apis
+    # 'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.context_processors.settings_variable',
             ],
         },
         # 'libraries': {

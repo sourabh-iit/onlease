@@ -1,0 +1,26 @@
+{% load static %}
+
+<div class="dropdown ads_circle_dropdown_container mobile">
+  <div class="ads_circle bg-info z-depth-3" data-toggle="dropdown" id="new_ads_circle" aria-expanded="false">
+    <span>New</span>&nbsp;
+    <i class="fa fa-caret-up"></i>
+  </div>
+  <div class="dropdown-menu dropdown-menu-top" aria-labelledby="new_ads_circle">
+    <a class="dropdown-item waves-effect waves-light text-capitalized">Property</a>
+    <a class="dropdown-item waves-effect waves-light text-capitalized">Mates</a>
+  </div>
+</div>
+
+{% if messages %}
+<div class="messages-container">
+  {% for message in messages %}
+  <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon" {% endif %}>
+    {{message}}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<div class="h-100 w-100 d-flex align-items-center justify-content-center" id="preloader">
+  <img src="{% static 'images/preloader.gif' %}" alt="">
+</div>

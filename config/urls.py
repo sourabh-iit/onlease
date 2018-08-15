@@ -17,20 +17,24 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from django.conf import settings
+from apps.image.views import image_upload_view
 
 # handler404 = 'apps.views.handler404'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/', include('apps.user.urls')),
-    path('roomie/', include('apps.roommate.urls')),
+    path('api/account/', include('apps.user.api_urls')),
+    path('api/roomie/', include('apps.roommate.urls')),
     path('lodging/', include('apps.lodging.urls')),
-    path('dashboard/', include('apps.dashboard.urls')),
+    path('api/lodging/', include('apps.lodging.ajax_urls')),
+    # path('dashboard/', include('apps.dashboard.urls')),
     path('ads/', include('apps.ads.urls')),
     path('', include('apps.home.urls')),
-    path('transactions/', include('apps.transactions.urls')),
+    # path('transactions/', include('apps.transactions.urls')),
     path('api/locations/', include('apps.locations.urls')),
-    path('legal/', include('apps.legal.urls')),
+    # path('legal/', include('apps.legal.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
+    path('api/upload/image/<ad_type>/',image_upload_view),
     re_path(r'^select2/', include('django_select2.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -8,7 +8,7 @@ SECRET_KEY = '_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'localhost:8000','127.0.0.1']
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'localhost:8000', 'localhost:8001','127.0.0.1']
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
@@ -53,25 +53,19 @@ LANGUAGE_CODE = 'hi-IN'
 
 DATE_INPUT_FORMATS = ['%d-%m-%Y','%Y-%m-%d']
 
-SELECT2_CSS = STATIC_URL + 'css/select2.min.css'
-SELECT2_JS = STATIC_URL + 'js/select2.min.js'
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    },
-    'select2': {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/2",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    }
-}
-
-# Set the cache backend to select2
-SELECT2_CACHE_BACKEND = 'select2'
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     },
+#     'select2': {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/2",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }

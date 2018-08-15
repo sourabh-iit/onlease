@@ -1,0 +1,127 @@
+{% extends 'base_templates/ad_list.html' %} 
+{% load widget_tweaks %} 
+{% load roommate_filters %} 
+{% block title %}OnLease{% endblock %} 
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<div id="ads_wrapper" class="row">
+	{% for ad in ads %}
+	<div class="card col-xs-12 col-sm-6 col-md-4 col-lg-3">
+		<div class="img-container ol-image">
+      {% if ad.has_property %}
+        {% if not ad.images.first %}
+          <img class="card-img-top" src="{% static 'images/No-image-available.jpg' %}" alt="">
+        {% else %}
+          <div id="ad_images_carousel_{{forloop.counter}}" data-pause="true" class="carousel slide carousel-fade" data-ride="false">
+            <ol class="carousel-indicators">
+              {% for image in ad.images.all %}
+              <li data-target="#ad_images_carousel_{{forloop.counter}}" data-slide-to="{{forloop.counter0}}"{% if forloop.first %} class="active"{% endif %}></li>
+              {% endfor %}
+            </ol>
+            <div class="carousel-inner" role="listbox">
+              <script>
+                var ad_images = [{% for image in ad.images.all %}"{{image.image.url}}",{% endfor %}];
+              </script>
+              {% for image in ad.images.all %}
+                {% if forloop.first %}
+                <div class="carousel-item active view overlay zoom">
+                  <img class="d-block w-100" src="{{image.image_thumbnail.url}}" alt="ad.title">
+                {% else %}
+                <div class="carousel-item view overlay zoom">
+                  <img class="d-block w-100" src="" data-src="{{image.image_thumbnail.url}}" alt="ad.title">
+                {% endif %}
+                  <div class="mask flex-center waves-effect waves-light">
+                    <p class="white-text" onclick="display_full_images_carousel(ad_images)">View All</p>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#ad_images_carousel_{{forloop.counter}}" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true">
+              </span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#ad_images_carousel_{{forloop.counter}}" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true">
+              </span>
+              <span class="sr-only">Next</span>
+            </a>
+          </div>
+        {% endif %}
+      {% else %}
+        {% if not ad.sender.profile_image.first %}
+        <img class="card-img-top" src="{% static 'images/No-image-available.jpg' %}" alt="">
+        {% else %}
+        <img class="card-img-top" src="{{ad.sender.profile_image.first.image_mobile.url}}" alt="">
+        {% endif %}
+      {% endif %}
+		</div>
+		<div class="card-body">
+			<div class="card-title"></div>
+			{% if ad.has_property %}
+			<div class="card-text">
+				Own Property: Yes
+			</div>
+			<div class="card-text">
+				Rent: {{ad.rent}}
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Location of property.">
+				Region: {{ ad.regions|full_form:"regions" }}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Type of property.">
+				Type: {{ ad.types|full_form:"types" }}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Gender of people with whom {{ad.sender.username}} can share with.">
+				Gender: {{ad.gender|full_form:"gender"}}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Number of people {{ad.sender.first_name}} is ready to share accomodation with.">
+				Share: {{ad.share}}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			{% else %}
+			<div class="card-text">
+				Own Property: No
+			</div>
+			<div class="card-text">
+				Budget: {{ad.rent}}
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Regions in which {{ad.user.first_name}} is looking for accomodation.">
+				Regions: {{ ad.regions|full_form:"regions" }}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Types of property for which {{ad.sender.first_name}} is looking for accomodation.">
+				Types: {{ ad.types|full_form:"types" }}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Gender of people with whom {{ad.sender.first_name}} can share with">
+				Gender: {{ad.gender|full_form:"gender"}}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			<div class="card-text" data-toggle="tooltip" 
+				title="Maximum number of people with whom {{ad.sender.first_name}} can share accomodation.">
+				Share: {{ad.share}}
+				<i class="fa fa-info-circle"></i>
+			</div>
+			{% endif %}
+			<button class="badge badge-default cursor-pointer" data-toggle="modal" data-target="#modalSenderProfile" 
+				onclick="display_sender_profile('{{ad.sender.full_name}}','{{ad.sender.profile_image.first.image_mobile.url}}',
+					'{{ad.sender.detail}}','{{ad.sender.type_of_roommate}}')">
+				View {{ad.sender.first_name}}'s profile</button>
+		</div>
+	</div>
+	{% endfor %}
+</div>
+{% endblock %}

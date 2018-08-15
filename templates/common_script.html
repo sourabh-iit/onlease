@@ -1,0 +1,21 @@
+{% load static %}
+<script>
+  var API_PREFIX = '{{API_PREFIX}}/api/';
+  var csrf_token = '{{csrf_token}}';
+  var mobile_number = '{{user.mobile_number}}';
+  var image_url = API_PREFIX + 'upload/image/user-profile/';
+  var roomie_image_url = API_PREFIX + 'upload/image/roomie-ad/';
+  var create_property_url = "{% url 'lodging_ajax:create' %}"
+</script>
+<script type="text/javascript" src="{% static 'js/jquery-3.3.1.js' %}"></script>
+<script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'MDB Free/js/bootstrap.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'MDB Free/js/mdb.min.js' %}"></script>
+{% comment %} <script src="{% static 'js/sidebar.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/jquery.validate.js' %}"></script>
+<script src="{% static 'js/additional-methods.js' %}"></script>
+{% comment %} <script src="{% static 'js/select2.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/selectize.js' %}"></script>
+<script src="{% static 'js/zebra_datepicker.min.js' %}"></script>
+<script src="{% static 'js/jquery.panzoom.min.js' %}"></script>
+<script src="{% static 'js/script.js' %}"></script>

@@ -170,57 +170,15 @@ def refund_view(request,transaction_id):
 @maintain_cookie
 @login_required
 def edit_profile_view(request):
-    is_dealer = request.user.is_dealer
-    if is_dealer:
-        user = User.objects.prefetch_related(
-            Prefetch('dealer',queryset=Dealer.objects.prefetch_related('district')
-        )).get(mobile_number=request.user)
-    else:
-        user = request.user
+    user = request.user
     if request.method=='POST':
         form=ProfileForm(request.POST,instance=user)
-        if is_dealer:
-            dealer_form=DealerProfileForm(request.POST)
-            if form.is_valid() and dealer_form.is_valid():
-                district = dealer_form.cleaned_data.get('district')
-                available_property_types = dealer_form.cleaned_data.get('available_property_types')
-                dealer = Dealer.objects.get(user=user)
-                if available_property_types:
-                    dealer.available_property_types=','.join(available_property_types)
-                if district:
-                    dealer.district=District.objects.get(id=district)
-                with transaction.atomic():
-                    form.save()
-                    dealer.save()
-                messages.success(request,'Profile has been updated successfully')
-        elif form.is_valid():
-            form.save()
-            messages.success(request,'Profile has been updated successfully')
+        form.save()
+        messages.success(request,'Profile has been updated successfully')
     else:
         form=ProfileForm(initial={
             'first_name':user.first_name,
             'last_name':user.last_name,
-            'email':user.email,
-            'mobile_number_alternate2':user.mobile_number_alternate2,
-            'mobile_number_alternate1':user.mobile_number_alternate1,
-            'is_dealer': user.is_dealer})
-        if is_dealer:
-            try:
-                dealer = user.dealer
-            except:
-                dealer = Dealer.objects.create(user=user)
-            available_property_types = ''
-            district = ''
-            if dealer.available_property_types:
-                available_property_types=dealer.available_property_types.split(',')
-            if dealer.district:
-                district = dealer.district.name
-            dealer_form=DealerProfileForm(initial={
-                'available_property_types': available_property_types ,
-                'district': district
-            })
-    if is_dealer:
-        return render(request,'dashboard/profile.html',{
-                'form':form,'dealer_form':dealer_form})
+            'email':user.email})
     return render(request,'dashboard/profile.html',{
             'form':form})

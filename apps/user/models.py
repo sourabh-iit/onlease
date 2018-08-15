@@ -1,9 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinLengthValidator
 from django.contrib.contenttypes.models import ContentType
 from django.core.mail import send_mail
+from django.contrib.contenttypes.fields import GenericRelation
+
 from .utils import *
+from apps.image.models import ImageModel
 
 
 class CustomUserManager(BaseUserManager):
@@ -44,13 +47,14 @@ class User(AbstractUser):
     password = models.CharField(max_length=100, null=False, blank=False,
         help_text="Password should be atleast of 8 charaters. It should"+
         " consists of atleast one digit, one small alphabet and one capital alphabet.",
-        validators=[RegexValidator(password_digit,
-            message="Password must contain at least one digit."),
-            RegexValidator(password_lower_case_letter,
-            message="Password must contain at least one lower case letter."),
-            RegexValidator(password_upper_case_letter,
-            message="Password must contain at least one upper case letter."),])
-    email = models.EmailField(unique=True,null=True,blank=True,
+        validators=[MinLengthValidator(8,message="Password must be atleast 8 characters long.")])
+        # validators=[RegexValidator(password_digit,
+        #     message="Password must contain at least one digit."),
+        #     RegexValidator(password_lower_case_letter,
+        #     message="Password must contain at least one lower case letter."),
+        #     RegexValidator(password_upper_case_letter,
+        #     message="Password must contain at least one upper case letter."),])
+    email = models.EmailField(null=True,blank=True,
         validators=[RegexValidator(email_regex)])
     first_name = models.CharField(max_length=30, null=True, blank=True,
         validators=[RegexValidator('^[a-zA-Z]{3,}$')])
@@ -60,18 +64,12 @@ class User(AbstractUser):
     status = models.CharField(max_length=1,choices=STATUS_CHOICES,
         default=REGULAR)
     is_verified = models.BooleanField(default=False)
-    no_times_refunded = models.PositiveIntegerField(default=0)
-    no_times_took_commission = models.PositiveIntegerField(default=0)
-    is_dealer = models.BooleanField(
-        verbose_name="Are you a dealer?",
-        choices=STATE_CHOICES, default=False)
-    mobile_number_alternate1 = models.CharField(max_length=16,
-        validators=[RegexValidator(mobile_number_regex)],null=True)
-    mobile_number_alternate2 = models.CharField(max_length=16,
-        validators=[RegexValidator(mobile_number_regex)],null=True)
-    gender = models.CharField(choices=GENDER_CHOICES,max_length=1)
+    gender = models.CharField(choices=GENDER_CHOICES,max_length=1,blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+    type_of_roommate = models.TextField(blank=True, null=True)
+    detail = models.TextField(blank=True, null=True)
+    profile_image = GenericRelation(ImageModel)
 
     USERNAME_FIELD = 'mobile_number'
     objects = CustomUserManager()
@@ -87,16 +85,24 @@ class User(AbstractUser):
         return self.mobile_number
 
 
+class MobileNumber(models.Model):
+    value = models.CharField(max_length=16,validators=[
+        RegexValidator(mobile_number_regex,
+            message="Enter a valid mobile number.")])
+    user = models.ForeignKey(User, related_name='mobile_numbers', on_delete=models.CASCADE)
+    is_verified = models.BooleanField(default=False)
+
+
 class ContactModel(models.Model):
     name = models.CharField(max_length=50,validators=[RegexValidator(
         regex="^[a-zA-Z ]+$",
         message = "Enter a valid name."
-    )])
+    )],blank=True, null=True)
     email = models.EmailField(validators=[
-        RegexValidator(email_regex,message="Enter a valid email address.")])
+        RegexValidator(email_regex,message="Email address is not valid.")],blank=True, null=True)
     mobile_number = models.CharField(max_length=16,validators=[
         RegexValidator(mobile_number_regex,
-            message="Enter a valid mobile number.")])
+            message="Mobile number is not valid.")],null=True,blank=True)
     message = models.TextField(max_length=2000,validators=[
         RegexValidator('^[0-9A-Za-z ,.]{10,}$',
             message="Enter a valid message.")],
