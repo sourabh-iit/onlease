@@ -1,5 +1,4 @@
-from . import common_production_settings
-from . import common_settings
+from .common_production_settings import *
 import os
 
 ALLOWED_HOSTS = ['103.95.13.160','staging.onlease.in','www.staging.onlease.in']
