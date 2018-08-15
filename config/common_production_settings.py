@@ -26,6 +26,8 @@ STATIC_ROOT = os.path.join(BASE_DIR,'static')
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
+    'www.staging.onlease.in',
     'staging.onlease.in',
+    'www.onlease.in',
     'onlease.in',
 )
