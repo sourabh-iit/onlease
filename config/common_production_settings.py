@@ -22,3 +22,10 @@ ADMINS = [('Sourabh singh','sourabh7singh@gmail.com'),('Vinit kumar','dhayania19
 MANAGERS = [('Sourabh singh','sourabh7singh@gmail.com'),]
 
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
+
+CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ORIGIN_WHITELIST = (
+    'staging.onlease.in',
+    'onlease.in',
+)
