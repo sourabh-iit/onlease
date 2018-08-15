@@ -1331,7 +1331,7 @@ $('document').ready(function(){
 
   $.ajaxSetup({
     beforeSend: function(xhr, settings) {
-      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+      if (!csrfSafeMethod(settings.type)) {
         xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
       }
     }
