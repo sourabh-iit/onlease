@@ -1,16 +1,13 @@
 from django import forms
-from django_select2.forms import Select2MultipleWidget
-from apps.widgets import CustomSelect2MultipleWidget
 
 from apps.locations.models import Region, District
 from apps.roommate.models import RoomieAd
 
 
 class CommonQueryForm(forms.Form):
-    region = forms.ChoiceField(widget=CustomSelect2MultipleWidget)
+    region = forms.ChoiceField()
     types = forms.MultipleChoiceField(
-        choices=RoomieAd.TYPE_CHOICES[1:],required=False,
-        widget=Select2MultipleWidget)
+        choices=RoomieAd.TYPE_CHOICES[1:],required=False)
     min_rent = forms.CharField(initial=0,widget = forms.TextInput(attrs={'readonly':True}))
     max_rent = forms.CharField(initial=1000000,widget = forms.TextInput(attrs={'readonly':True}))
 

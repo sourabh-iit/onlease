@@ -1,20 +1,17 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from django_select2.forms import Select2MultipleWidget
-
 import datetime
 
 from .models import RoomieAd
 from apps.image.models import ImageModel
-from apps.widgets import CustomSelect2MultipleWidget
 from apps.locations.models import Region
 
 
 class RoomieAdForm(forms.ModelForm):
     # images = forms.MultipleChoice(queryset=ImageModel.objects.none(),required=False)
-    regions = forms.ChoiceField(widget=CustomSelect2MultipleWidget,required=False)
-    types = forms.ChoiceField(widget=Select2MultipleWidget,choices=RoomieAd.TYPE_CHOICES,required=False)
+    regions = forms.ChoiceField(required=False)
+    types = forms.ChoiceField(choices=RoomieAd.TYPE_CHOICES,required=False)
     image_ids = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),required=False)
 
     def __init__(self, *args, **kwargs):

@@ -1,12 +1,10 @@
 from django import forms
 from django.conf import settings
-from django_select2.forms import Select2MultipleWidget, Select2Widget
 from django.core.exceptions import ValidationError
 
 from .models import Lodging, CommonlyUsedLodgingModel
 from .utils import clean_data
 from apps.locations.models import Region
-from apps.widgets import CustomSelect2Widget
 
 import datetime
 
@@ -36,8 +34,7 @@ class AdCommonFieldsMixinForm(object):
 class LodgingCommonFieldsForm(forms.Form):
   available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
   facilities = forms.MultipleChoiceField(
-    choices=CommonlyUsedLodgingModel.FACILITIES_AVAILABLE_CHOICES,
-    widget=Select2MultipleWidget)
+    choices=CommonlyUsedLodgingModel.FACILITIES_AVAILABLE_CHOICES)
 
 
 class LodgingCommonFieldsMixinForm(object):
@@ -88,10 +85,6 @@ class LodgingCreateForm(forms.ModelForm):
 
 widgets = {
   'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15}),
-  'flooring': Select2Widget,
-  'lodging_type': Select2Widget,
-  'furnishing': Select2Widget,
-  'facilities': Select2MultipleWidget,
 }
 
 
