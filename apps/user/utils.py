@@ -19,8 +19,8 @@ cookie_message = "Cookies are not enabled in browser"
 def not_logged_in(view):
     def wrap(request,*args,**kwargs):
         if request.user.is_authenticated:
-            if request.is_ajax():
-              messages.success(request,'User already logged in.')
+            if not request.is_ajax():
+              messages.info(request,'User already logged in.')
               return HttpResponseRedirect('/')
             else:
               return HttpResponse('User not logged in required.',status=400)

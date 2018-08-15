@@ -198,6 +198,7 @@ def register_view(request):
     return render(request,'user/register.html',{'form':form})
 
 @not_logged_in
+@require_POST
 def register_view_ajax(request):
     if request.method=='POST':
         form = RegisterForm(request.POST,request=request)
