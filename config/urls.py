@@ -36,5 +36,4 @@ urlpatterns = [
     # path('legal/', include('apps.legal.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
     path('api/upload/image/<ad_type>/',image_upload_view),
-    re_path(r'^select2/', include('django_select2.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
