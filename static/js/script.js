@@ -184,7 +184,8 @@ function login_form_validation(){
             if($(form).valid()){
                 let data = {
                     username: $('#login_username').val(),
-                    password: $('#login_password').val()
+                    password: $('#login_password').val(),
+                    csrfmiddlewaretoken: csrf_token
                 }
                 let url = window['API_PREFIX']+'account/login/';
                 $.ajax({
