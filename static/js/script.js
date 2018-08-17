@@ -81,6 +81,9 @@ function get_selectize_configurations(value,remove_button=true){
         url: regions_url,
         type: 'GET',
         dataType: 'json',
+        xhrFields: {
+           withCredentials: true
+        },
         data: {
           q: query,
           business: business,
