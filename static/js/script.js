@@ -1338,7 +1338,11 @@ $('document').ready(function(){
       if (!csrfSafeMethod(settings.type)) {
         xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
       }
-    }
+    },
+    xhrFields: {
+      withCredentials: true
+    },
+    crossDomain: true,
   });
 
   $(window).resize(set_footer);
