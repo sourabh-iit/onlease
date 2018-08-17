@@ -185,7 +185,7 @@ function login_form_validation(){
                 let data = {
                     username: $('#login_username').val(),
                     password: $('#login_password').val(),
-                    csrfmiddlewaretoken: csrf_token
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 let url = window['API_PREFIX']+'account/login/';
                 $.ajax({
@@ -1193,7 +1193,7 @@ function initialize_form_selectize(){
     $('#property_facilities').selectize({
       plugins: ['remove_button'],
       copyClassesToDropdown: false,
-    })
+    });
     $('select:not([hidden=true])').selectize({
       copyClassesToDropdown: false,
     });

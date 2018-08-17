@@ -53,6 +53,10 @@ LANGUAGE_CODE = 'hi-IN'
 
 DATE_INPUT_FORMATS = ['%d-%m-%Y','%Y-%m-%d']
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
 # CACHES = {
 #     "default": {
 #         "BACKEND": "django_redis.cache.RedisCache",
