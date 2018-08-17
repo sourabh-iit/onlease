@@ -188,7 +188,7 @@ function login_form_validation(){
                 let data = {
                     username: $('#login_username').val(),
                     password: $('#login_password').val(),
-                    csrfmiddlewaretoken: csrf_token,
+                    // csrfmiddlewaretoken: csrf_token,
                 }
                 let url = window['API_PREFIX']+'account/login/';
                 $.ajax({
@@ -1341,140 +1341,140 @@ $('document').ready(function(){
     }
   });
 
-    $(window).resize(set_footer);
+  $(window).resize(set_footer);
 
-    custom_validators();
+  custom_validators();
 
-    register_form_validation();
+  register_form_validation();
 
-    login_form_validation();
+  login_form_validation();
 
-    verify_number_form_validation();
+  verify_number_form_validation();
 
-    enter_number_form_validation();
+  enter_number_form_validation();
 
-    set_password_form_validation();
+  set_password_form_validation();
 
-    change_password_form_validation();
+  change_password_form_validation();
 
-    set_custom_alerts();
+  set_custom_alerts();
 
-    add_tawk_to();
+  add_tawk_to();
 
-    set_footer();
-    
-    set_character_count();
+  set_footer();
+  
+  set_character_count();
 
-    set_logout();
+  set_logout();
 
-    profile_form_validation();
+  profile_form_validation();
 
-    roomie_ad_form_validation();
+  roomie_ad_form_validation();
 
-    property_ad_form_validation();
+  property_ad_form_validation();
 
-    var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
+  var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
 
-    $('[data-action=add-number]').click(function(){
-        add_number = true;
-        mobile_number = $enter_mobile_number.val();
-        $enter_mobile_number.val('');
-    });
+  $('[data-action=add-number]').click(function(){
+      add_number = true;
+      mobile_number = $enter_mobile_number.val();
+      $enter_mobile_number.val('');
+  });
 
-    $('[data-action=verify-number]').click(function(){
-        add_number = false;
-        if(mobile_number!=""){
-            $enter_mobile_number.val(mobile_number);
-        }
-    });
+  $('[data-action=verify-number]').click(function(){
+      add_number = false;
+      if(mobile_number!=""){
+          $enter_mobile_number.val(mobile_number);
+      }
+  });
 
-    $('#resend_otp').click(function(){
-      set_resend_otp();
-    });
+  $('#resend_otp').click(function(){
+    set_resend_otp();
+  });
 
-    $('input[name=has_property]').change(function(event){
-        if(event.target.value=="False"){
-            $('.has_property').addClass('d-none');
-            $('.not_has_property').removeClass('d-none');
-        } else {
-            $('.not_has_property').addClass('d-none');
-            $('.has_property').removeClass('d-none');
-        }
-        $($('#modalRoomieAdForm .modal-body').children('div')[1]).removeClass('d-none');
-    });
-
-    $('[data-target=other]').change(function(){
-      var id = this.id;
-      if($('#'+id+' option:selected').text().toLowerCase()=='other'){
-        var label = $(this).attr('data-label');
-        var el = `
-        <div class="md-form mt-0 col-12 col-md-6 mb-4" id="`+id+'_other_container'+`">
-          <input type="text" class="form-control" name="`+id+'_other'+`" id=`+id+'_other'+`>
-          <label for=`+id+`>`+label+`</label> 
-        </div>
-        `;
-        $(this).parent().after(el);
+  $('input[name=has_property]').change(function(event){
+      if(event.target.value=="False"){
+          $('.has_property').addClass('d-none');
+          $('.not_has_property').removeClass('d-none');
       } else {
-        $('#'+id+'_other_container').remove();
+          $('.not_has_property').addClass('d-none');
+          $('.has_property').removeClass('d-none');
       }
-    });
+      $($('#modalRoomieAdForm .modal-body').children('div')[1]).removeClass('d-none');
+  });
 
-    $('#property_available_from').Zebra_DatePicker({
-      default_position: 'below',
-      show_icon: false,
-      open_on_focus: true,
-      format: 'd-m-Y',
-      direction: [1,15],
-      container: $('#datepicker-container'),
-      onSelect: function(){
-        $('#property_available_from').trigger('change');
-      }
-    });
+  $('[data-target=other]').change(function(){
+    var id = this.id;
+    if($('#'+id+' option:selected').text().toLowerCase()=='other'){
+      var label = $(this).attr('data-label');
+      var el = `
+      <div class="md-form mt-0 col-12 col-md-6 mb-4" id="`+id+'_other_container'+`">
+        <input type="text" class="form-control" name="`+id+'_other'+`" id=`+id+'_other'+`>
+        <label for=`+id+`>`+label+`</label> 
+      </div>
+      `;
+      $(this).parent().after(el);
+    } else {
+      $('#'+id+'_other_container').remove();
+    }
+  });
 
-    create_options(1,20,$('#property_total_floors'));
-    create_options(1,20,$('#property_floor_no'));
-    create_options(0,6,$('#property_bathrooms'));
-    create_options(0,6,$('#property_bedrooms'));
-    create_options(0,6,$('#property_halls'));
-    create_options(0,6,$('#property_other_rooms'));
-    create_options(0,6,$('#property_balconies'));
-    create_options_from_array($('#property_measuring_unit'),
-      ['Gaj','Sq. Ft.','Sq. Yds','Sq. Meter','Acre','Marla','Bigha','Kanal','Grounds','Ares','Biswa','Guntha','Hectares'],
-      ['G','SF','SY','SM','A','M','B','K','GR','AR','BI','GU','H']
-    );
-    create_options_from_array($('#property_flooring'),
-      ['Marble','Vitrified Tile','Vinyl','Hardwood','Granite','Bamboo','Concrete','Laminate','Linoleum','Tarrazzo','Brick','Other'],
-      ['M','VT','V','H','G','B','C','L','LI','T','BR','O']
-    );
+  $('#property_available_from').Zebra_DatePicker({
+    default_position: 'below',
+    show_icon: false,
+    open_on_focus: true,
+    format: 'd-m-Y',
+    direction: [1,15],
+    container: $('#datepicker-container'),
+    onSelect: function(){
+      $('#property_available_from').trigger('change');
+    }
+  });
 
-    // var options = $('#id_images option:selected');
-    // if(options.length>0){
-    //     $('#uploaded_images_container').css({'display':'block'});
-    //     $.each(options,function(i,option){
-    //         var img = document.createElement('img');
-    //         img.src = $(option).text();
-    //         $('#uploaded_images_container').append(img);
-    //     })
-    // }
+  create_options(1,20,$('#property_total_floors'));
+  create_options(1,20,$('#property_floor_no'));
+  create_options(0,6,$('#property_bathrooms'));
+  create_options(0,6,$('#property_bedrooms'));
+  create_options(0,6,$('#property_halls'));
+  create_options(0,6,$('#property_other_rooms'));
+  create_options(0,6,$('#property_balconies'));
+  create_options_from_array($('#property_measuring_unit'),
+    ['Gaj','Sq. Ft.','Sq. Yds','Sq. Meter','Acre','Marla','Bigha','Kanal','Grounds','Ares','Biswa','Guntha','Hectares'],
+    ['G','SF','SY','SM','A','M','B','K','GR','AR','BI','GU','H']
+  );
+  create_options_from_array($('#property_flooring'),
+    ['Marble','Vitrified Tile','Vinyl','Hardwood','Granite','Bamboo','Concrete','Laminate','Linoleum','Tarrazzo','Brick','Other'],
+    ['M','VT','V','H','G','B','C','L','LI','T','BR','O']
+  );
 
-    enable_add_image();
+  // var options = $('#id_images option:selected');
+  // if(options.length>0){
+  //     $('#uploaded_images_container').css({'display':'block'});
+  //     $.each(options,function(i,option){
+  //         var img = document.createElement('img');
+  //         img.src = $(option).text();
+  //         $('#uploaded_images_container').append(img);
+  //     })
+  // }
+
+  enable_add_image();
 
 
-    $('#upload-image').click(function(e){
-      e.preventDefault();
-      $('#profile').click();
-    });
-    $('#upload-image').css({'visibility':'visible'});
-    $('#profile').on('profile-updated',function(e,id,url){
-      $('#profile-photo').attr('src',url);
-      $('#profile-icon').css({'display':'none'});
-      $('#profile-photo').css({'display':'block'});
-    });
+  $('#upload-image').click(function(e){
+    e.preventDefault();
+    $('#profile').click();
+  });
+  $('#upload-image').css({'visibility':'visible'});
+  $('#profile').on('profile-updated',function(e,id,url){
+    $('#profile-photo').attr('src',url);
+    $('#profile-icon').css({'display':'none'});
+    $('#profile-photo').css({'display':'block'});
+  });
 
-    initialize_auto_save('modalPropertyAdForm',['property_region']);
-    initialize_auto_save('modalRoomieAdForm',['roomie_regions']);
+  initialize_auto_save('modalPropertyAdForm',['property_region']);
+  initialize_auto_save('modalRoomieAdForm',['roomie_regions']);
 
-    initialize_form_selectize();
+  initialize_form_selectize();
 
-    set_carousel();
+  set_carousel();
 });
