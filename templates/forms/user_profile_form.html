@@ -12,60 +12,62 @@
       </div>
       <div class="modal-body mx-3">
         {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
-        <div class="col-12 mb-4" id="profile-image-container">
-          {% if user.profile_image %}
-          <img src="{{user.profile_image.first.image.url}}" alt="profile photo" id="profile-photo"> {% else %}
-          <img src="" alt="profile photo" id="profile-photo" style="display:none">
-          <i class="fa fa-user-circle-o" id="profile-icon"></i>
-          {% endif %}
-          <input type="file" name="profile" id="profile" onchange="loadImageFile('profile',window.image_url)">
-          <a id="upload-image" class="btn btn-default btn-md">
-            Upload Photo
-          </a>
-        </div>
+          {% if user.is_authenticated %}
+          <div class="col-12 mb-4" id="profile-image-container">
+            {% if user.profile_image %}
+            <img src="{{user.profile_image.first.image.url}}" alt="profile photo" id="profile-photo"> {% else %}
+            <img src="" alt="profile photo" id="profile-photo" style="display:none">
+            <i class="fa fa-user-circle-o" id="profile-icon"></i>
+            {% endif %}
+            <input type="file" name="profile" id="profile" onchange="loadImageFile('profile',window.image_url)">
+            <a id="upload-image" class="btn btn-default btn-md">
+              Upload Photo
+            </a>
+          </div>
 
-        <div class="md-form col-12 col-md-10 mb-4">
-          <i class="fa fa-user prefix grey-text"></i>
-          <input type="text" class="form-control" placeholder="e.g. Vinit Dhyania" {% if user.first_name or user.last_name %} value="{% if user.first_name %}{{user.first_name}}{% endif %} {% if user.last_name %}{{user.last_name}}{% endif %}"
-            {% endif %} id="profile_name">
-          <label for="profile_name">Full Name</label>
-        </div>
+          <div class="md-form col-12 col-md-10 mb-4">
+            <i class="fa fa-user prefix grey-text"></i>
+            <input type="text" class="form-control" placeholder="e.g. Vinit Dhyania" {% if user.first_name or user.last_name %} value="{% if user.first_name %}{{user.first_name}}{% endif %} {% if user.last_name %}{{user.last_name}}{% endif %}"
+              {% endif %} id="profile_name">
+            <label for="profile_name">Full Name</label>
+          </div>
 
-        <div class="md-form col-12 col-md-6 mb-4">
-          <i class="fa fa-mobile prefix grey-text"></i>
-          <input type="text" value="{{user.mobile_number}}" id="profile_mobile_number" class="form-control" disabled>
-          <label for="profile_mobile_number">Mobile number</label>
-        </div>
+          <div class="md-form col-12 col-md-6 mb-4">
+            <i class="fa fa-mobile prefix grey-text"></i>
+            <input type="text" value="{{user.mobile_number}}" id="profile_mobile_number" class="form-control" disabled>
+            <label for="profile_mobile_number">Mobile number</label>
+          </div>
 
-        {% for mobile in user.mobile_numbers.all %}
-        <div class="md-form col-12 col-md-6 mb-4 alternate_mobile_number">
-          <i class="fa fa-mobile prefix grey-text"></i>
-          <input type="text" id="profile_alternate_mobile_number_{{forloop.counter}}" value="{{mobile.value}}" class="form-control"
-            disabled>
-          <label for="profile_alternate_mobile_number_{{forloop.counter}}">Alternate Mobile number {{forloop.counter}}</label>
-        </div>
-        {% endfor %}
+          {% for mobile in user.mobile_numbers.all %}
+          <div class="md-form col-12 col-md-6 mb-4 alternate_mobile_number">
+            <i class="fa fa-mobile prefix grey-text"></i>
+            <input type="text" id="profile_alternate_mobile_number_{{forloop.counter}}" value="{{mobile.value}}" class="form-control"
+              disabled>
+            <label for="profile_alternate_mobile_number_{{forloop.counter}}">Alternate Mobile number {{forloop.counter}}</label>
+          </div>
+          {% endfor %}
 
-        <div class="md-form mb-4 col-12 col-md-6">
-          <i class="fa fa-envelope prefix grey-text"></i>
-          <input type="text" id="profile_email" placeholder="e.g. vinit@gmail.com" name="email" class="form-control">
-          <label for="profile_email">Email address</label>
-        </div>
+          <div class="md-form mb-4 col-12 col-md-6">
+            <i class="fa fa-envelope prefix grey-text"></i>
+            <input type="text" id="profile_email" placeholder="e.g. vinit@gmail.com" name="email" class="form-control">
+            <label for="profile_email">Email address</label>
+          </div>
 
-        <div class="md-form mb-4 col-12 col-md-10">
-          <i class="fa fa-pencil prefix grey-text"></i>
-          <textarea type="text" class="md-textarea form-control" rows="3" placeholder="e.g. I work at codegenesys." name="detail" id="profile_detail">{% if user.detail %}{{user.detail}}{% endif %}</textarea>
-          <label for="profile_detail">Describe yourself</label>
-        </div>
+          <div class="md-form mb-4 col-12 col-md-10">
+            <i class="fa fa-pencil prefix grey-text"></i>
+            <textarea type="text" class="md-textarea form-control" rows="3" placeholder="e.g. I work at codegenesys." name="detail" id="profile_detail">{% if user.detail %}{{user.detail}}{% endif %}</textarea>
+            <label for="profile_detail">Describe yourself</label>
+          </div>
 
-        <div class="md-form col-12 col-md-10">
-          <i class="fa fa-pencil prefix grey-text"></i>
-          <textarea type="text" class="md-textarea form-control" rows="3" placeholder="e.g. I want a working room partner." name="type_of_roommate"
-            id="profile_type_of_roommate">{% if user.type_of_roommate %}{{user.type_of_roommate}}{% endif %}</textarea>
-          <label for="profile_detail">What type of roommate do you want?</label>
-        </div>
+          <div class="md-form col-12 col-md-10">
+            <i class="fa fa-pencil prefix grey-text"></i>
+            <textarea type="text" class="md-textarea form-control" rows="3" placeholder="e.g. I want a working room partner." name="type_of_roommate"
+              id="profile_type_of_roommate">{% if user.type_of_roommate %}{{user.type_of_roommate}}{% endif %}</textarea>
+            <label for="profile_detail">What type of roommate do you want?</label>
+          </div>
 
-      </div>
+        </div>
+      {% endif %}
 
       {% endwith %}
 
