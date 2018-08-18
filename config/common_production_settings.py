@@ -23,7 +23,9 @@ MANAGERS = [('Sourabh singh','sourabh7singh@gmail.com'),]
 
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_WHITELIST = (
     'www.staging.onlease.in',

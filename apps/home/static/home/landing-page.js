@@ -98,7 +98,7 @@ function display_popover() {
 var max_rent = 100000;
 
 function initialize_selectize(){
-  $('#id_region').selectize(get_selectize_configurations('search'));
+  $('#id_region').selectize(window.get_selectize_configurations('search'));
   $(document).trigger('initialize_form_selectize');
   $('#id_business').change(function(event){
     $('#id_region')[0].selectize.clearOptions();
