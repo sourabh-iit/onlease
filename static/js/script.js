@@ -81,9 +81,6 @@ function get_selectize_configurations(value,remove_button=true){
         url: regions_url,
         type: 'GET',
         dataType: 'json',
-        xhrFields: {
-           withCredentials: true
-        },
         data: {
           q: query,
           business: business,
@@ -188,7 +185,7 @@ function login_form_validation(){
                 let data = {
                     username: $('#login_username').val(),
                     password: $('#login_password').val(),
-                    // csrfmiddlewaretoken: csrf_token,
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 let url = window['API_PREFIX']+'account/login/';
                 $.ajax({
@@ -256,6 +253,7 @@ function enter_number_form_validation(){
             if($(form).valid()){
                 var data = {
                     mobile_number: $('#enter_mobile_number').val(),
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 if(!add_number){
                     var url = API_PREFIX + 'account/request-otp/';
@@ -296,6 +294,7 @@ function verify_number_form_validation(){
             if($(form).valid()){
                 var data = {
                     otp: $('#verify_otp').val(),
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 if(!add_number){
                     var url = API_PREFIX + 'account/verify-number/';
@@ -386,7 +385,8 @@ function register_form_validation(){
                     email: $('#register_email').val(),
                     mobile_number: $('#register_mobile_number').val(),
                     password: $('#register_password').val(),
-                    confirm_password: $('#register_confirm_password').val()
+                    confirm_password: $('#register_confirm_password').val(),
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/register/';
                 $.ajax({
@@ -469,6 +469,7 @@ function roomie_ad_form_validation(){
                     'share': $('#roomie_share').val(),
                     'gender': $('#roomie_gender').val(),
                     'image_ids': getSelect2Values($('#id_images')),
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'roomie/create/';
                 $.ajax({
@@ -628,6 +629,7 @@ function property_ad_form_validation(){
                   'url': window.create_property_url,
                   'data': data,
                   traditional: true,
+                  csrfmiddlewaretoken: csrf_token,
               }).always((data)=>{
                   if(data.status=='200'){
                     create_and_display_success_message('Post added.')
@@ -687,6 +689,7 @@ function set_password_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
+                    csrfmiddlewaretoken: csrf_token,
                 }).always((data)=>{
                     if(data.status=='200'){
                         display_message(form,'Password re-set successfully.');
@@ -754,6 +757,7 @@ function change_password_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
+                    csrfmiddlewaretoken: csrf_token,
                 }).always((data)=>{
                     if(data.status=='200'){
                         display_message(form,'Password changed successfully.');
@@ -814,6 +818,7 @@ function profile_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
+                    csrfmiddlewaretoken: csrf_token,
                 }).always((data)=>{
                     if(data.status=='200'){
                         display_message(form,'Profile Saved.');
@@ -994,7 +999,8 @@ fileReader.onload = function (event) {
             type:'POST',
             url: upload_image_url,
             data: {
-                'image': dataURL
+                'image': dataURL,
+                csrfmiddlewaretoken: csrf_token,
             },
             headers: {
                 'X-CSRFToken': window.csrf_token

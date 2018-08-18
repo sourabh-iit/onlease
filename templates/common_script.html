@@ -1,5 +1,6 @@
 {% load static %}
 <script>
+  console.log("{% csrf_token %}");
   var API_PREFIX = '{{API_PREFIX}}/api/';
   var csrf_token = '{{csrf_token}}';
   var mobile_number = '{{user.mobile_number}}';
