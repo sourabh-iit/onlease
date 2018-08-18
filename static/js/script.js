@@ -1339,13 +1339,13 @@ function csrfSafeMethod(method) {
 
 $('document').ready(function(){
 
-  $.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-      if (!csrfSafeMethod(settings.type)) {
-        xhr.setRequestHeader("X-CSRFToken", csrf_token);
-      }
-    },
-  });
+  // $.ajaxSetup({
+  //   beforeSend: function(xhr, settings) {
+  //     if (!csrfSafeMethod(settings.type)) {
+  //       xhr.setRequestHeader("X-CSRFToken", csrf_token);
+  //     }
+  //   },
+  // });
 
   $(window).resize(set_footer);
 
