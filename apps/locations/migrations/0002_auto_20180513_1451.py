@@ -18,10 +18,10 @@ def add_data(apps, schema_editor):
     count=0
     for row in file_data:
         count+=1
-        print(count)
         state=row['statename']
         if state.lower()!='delhi':
             continue
+        print(count)
         district=row['districtname']
         region=row['officename'].split(' '+row['officetype'])[0]
         pincode=row['pincode']
