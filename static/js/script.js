@@ -595,7 +595,7 @@ function property_ad_form_validation(){
       submitHandler: function(form,e){
           e.preventDefault();
           e.stopPropagation();
-          // propertyAdFormValidator.form();
+          propertyAdFormValidator.form();
           if($(form).valid()){
               var data = {
                   'title': $('#property_title').val(),
@@ -605,7 +605,7 @@ function property_ad_form_validation(){
                   'total_floors': $('#property_total_floors').val(),
                   'floor_no': $('#property_floor_no').val(),
                   'furnishing': $('#property_furnishing').val(),
-                  'facilities': getSelectValues('property_facilities'),
+                  'facilities': $('#property_facilities').val(),
                   'rent': $('#property_rent').val(),
                   'available_from': $('#property_available_from').val(),
                   'area': $('#property_area').val(),
@@ -620,7 +620,7 @@ function property_ad_form_validation(){
                   'flooring': $('#property_flooring').val(),
                   'flooring_other': $('#property_other').val(),
                   'additional_details':$('#property_additional_details').val(),
-                  'images': getSelectValues('property_images'),
+                  'images': $('#property_images').val(),
                   'address': $('#property_address').val(),
               }
               $.ajax({

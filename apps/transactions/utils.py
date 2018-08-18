@@ -42,6 +42,7 @@ def send_otp(request,mobile_number):
         'sender': 'ONLOTP',
         'otp': otp
     }
+    # TODO make ajax compatible
     if 'total_otps' in request.session:
         if request.session['total_otps']>=5:
             messages.error(request,'Too many OTPs has been sent to this number')
