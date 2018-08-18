@@ -29,31 +29,13 @@ api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
 
 @login_required
 def redirect_to_instamojo_view(request,state,state_id,district,district_id,ad_id):
-    transactions_lodging = reverse('transactions:lodging', kwargs={
-        'state':state,'state_id':state_id,'district':district,'district_id':district_id,'ad_id':ad_id})
-    ads_list = reverse('ads:list', kwargs={
-        'state':state,'state_id':state_id,'district':district,'district_id':district_id})
     try:
         lodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
-        if lodging.sublodging.is_booked or lodging.sublodging.no_times_refunded>=2:
-            if lodging.sublodging.is_booked:
-                messages.error(request,'This lodging is already booked')
-            else:
-                messages.error(request,'This is lodging is not available for booking anymore')
-            return HttpResponseRedirect(ads_list)
+        if lodging.sublodging.is_booked:
+          JsonResponse({'errors':{'lodging':'This property is already booked.'}})
         if lodging.sublodging.is_blocked:
-            raise ViewException('This lodging is under process of booking by another user')
-        try:
-            transaction_ = LodgingTransaction.objects.filter(
-                status=LodgingTransaction.SUCCESS,
-                created_at__gte=datetime.datetime.now()-datetime.timedelta(days=3),
-                user=request.user
-            ).latest('updated_at')
-        except:
-            transaction_=None
-        if transaction_:
-            raise ValidationError('You have lodging that needs to be settled')
-        amount = lodging.sublodging.rent//10
+          raise ViewException('This lodging is under process of booking by another user')
+        amount = lodging.sublodging.booking_amount
         transaction_ = LodgingTransaction.objects.create(
             amount = amount,
             user = request.user,

@@ -1,0 +1,33 @@
+.heading{
+  width: fit-content;
+  padding: 0.2rem;
+  font-size: x-small;
+  background: #f4511e;
+  color: white;
+  font-weight: 600;
+}
+.content{
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+}
+.ad-title {
+  padding: 0.5rem;
+  color: #3f51b5!important;
+  font-weight: bold;
+}
+.detail-label {
+  font-size: small;
+  color: cadetblue;
+}
+.zoom-icon{
+  padding: 0.5rem;
+  background: #dee2e6;
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: red;
+  cursor: pointer;
+}
+.table-borderless th, .table-borderless td{
+  border: none;
+}

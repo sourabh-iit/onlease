@@ -1336,13 +1336,9 @@ $('document').ready(function(){
   $.ajaxSetup({
     beforeSend: function(xhr, settings) {
       if (!csrfSafeMethod(settings.type)) {
-        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        xhr.setRequestHeader("X-CSRFToken", csrf_token);
       }
     },
-    xhrFields: {
-      withCredentials: true
-    },
-    crossDomain: true,
   });
 
   $(window).resize(set_footer);

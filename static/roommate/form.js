@@ -1,0 +1,10 @@
+$(document).ready(function(){
+    $('#id_has_room1').click(function(){
+        $('#rent').css({'display':'inline-block'});
+        $('label[for=id_rent]')[0].innerText='Rent';
+    });
+    $('#id_has_room2').click(function(){
+        $('#rent').css({'display':'inline-block'});
+        $('label[for=id_rent]')[0].innerText='Budget';
+    });
+})
