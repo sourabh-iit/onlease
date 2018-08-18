@@ -622,6 +622,7 @@ function property_ad_form_validation(){
                   'additional_details':$('#property_additional_details').val(),
                   'images': $('#property_images').val(),
                   'address': $('#property_address').val(),
+                  csrfmiddlewaretoken: csrf_token,
               }
               $.ajax({
                   'type':'POST',
@@ -629,7 +630,6 @@ function property_ad_form_validation(){
                   'url': window.create_property_url,
                   'data': data,
                   traditional: true,
-                  csrfmiddlewaretoken: csrf_token,
               }).always((data)=>{
                   if(data.status=='200'){
                     create_and_display_success_message('Post added.')
@@ -1339,13 +1339,13 @@ function csrfSafeMethod(method) {
 
 $('document').ready(function(){
 
-  // $.ajaxSetup({
-  //   beforeSend: function(xhr, settings) {
-  //     if (!csrfSafeMethod(settings.type)) {
-  //       xhr.setRequestHeader("X-CSRFToken", csrf_token);
-  //     }
-  //   },
-  // });
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type)) {
+        xhr.setRequestHeader("X-CSRFToken", csrf_token);
+      }
+    },
+  });
 
   $(window).resize(set_footer);
 
