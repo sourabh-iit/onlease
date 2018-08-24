@@ -408,6 +408,10 @@ div#new_ads_circle {
   font-size: xx-large;
   cursor: pointer;
 }
+.flex-vertical-center{
+  display: flex;
+  align-self: center;
+}
 @media only screen and (min-width: 768px){
   .desktop{
       display: flex;

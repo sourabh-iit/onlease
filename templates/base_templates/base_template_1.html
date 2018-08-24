@@ -1,6 +1,5 @@
 {% load static %}
 {% load widget_tweaks %} 
-<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -30,6 +29,9 @@
       {% include 'nav.html' %}
                 
       {% block content %}{% endblock %}
+      <iframe width="600" height="450" frameborder="0" style="border:0" 
+      src="https://www.google.com/maps/embed/v1/directions?origin=place_id:ChIJNzob1nypDTkRhENCep8gbTg&destination=place_id:ChIJa8lu5gvtDzkR_hlzUvln_6U&key=AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ" 
+      allowfullscreen></iframe>
 
       {% include 'footer.html' %}
 

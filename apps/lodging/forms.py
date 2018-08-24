@@ -22,14 +22,6 @@ class AdCommonFieldsMixinForm(object):
     if 'region' in self.data:
       self.fields['region'].queryset = Region.objects.all()
 
-  # def clean_region(self):
-  #   import pdb ; pdb.set_trace()
-  #   id_ = self.cleaned_data.get('region')
-  #   try:
-  #     return Region.objects.get(id=id_)
-  #   except Region.DoesNotExist:
-  #     raise ValidationError('Region with this id does not exist')
-
 
 class LodgingCommonFieldsForm(forms.Form):
   available_from = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
@@ -98,8 +90,8 @@ class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsM
     model = CommonlyUsedLodgingModel
     fields = ('lodging_type','lodging_type_other','total_floors','floor_no',
         'furnishing','facilities','rent','area','area_unit','bathrooms','bedrooms',
-        'balconies','other_rooms','halls','security_deposit','booking_amount',
-        'flooring','additional_details','title','available_from','region')
+        'balconies','other_rooms','halls',
+        'flooring','additional_details','title','available_from','region','latlng')
     widgets = widgets
 
   def clean_title(self):
@@ -109,38 +101,6 @@ class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsM
   def clean_facilities(self):
     return self.request.POST.getlist('facilities[]')
 
-    # def save(self,commit=True):
-    #     data = self.cleaned_data
-    #     sublodging = super(CommonlyUsedLodgingCreateForm,self).save(commit=False)
-    #     if data.get('facilities'):
-    #         sublodging.facilities = ','.join(data['facilities'])
-    #     if commit:
-    #       return sublodging.save()
-    #     else:
-    #       return sublodging.save(commit=False)
-
 
 CommonlyUsedLodgingCreateForm.base_fields.update(AdCommonFieldsForm.base_fields)
 CommonlyUsedLodgingCreateForm.base_fields.update(LodgingCommonFieldsForm.base_fields)
-
-
-# class CommonlyUsedLodgingUpdateForm(LodgingCommonFieldsMixinForm,AdCommonFieldsMixinForm,forms.ModelForm):
-#     delete_images = forms.ModelMultipleChoiceField(queryset=ImageModel.objects.none(),
-#                 required=False)
-#     class Meta:
-#         model = CommonlyUsedLodgingModel
-#         fields = ('total_floors','floor_no','furnishing','facilities','rent',
-#             'area','area_unit','bathrooms','bedrooms','balconies','other_rooms',
-#             'halls','security_deposit','booking_amount','flooring',
-#             'additional_details','title','available_from')
-#         widgets = widgets
-
-#     def __init__(self, images, *args, **kwargs):
-#         super(CommonlyUsedLodgingUpdateForm, self).__init__(*args, **kwargs)
-#         for field in self.fields:
-#             self.fields[field].required=False
-#         if images:
-#             self.fields['delete_images'].queryset = images
-
-
-# CommonlyUsedLodgingUpdateForm.base_fields.update(LodgingCommonFieldsForm.base_fields)

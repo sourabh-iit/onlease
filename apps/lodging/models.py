@@ -168,22 +168,7 @@ class CommonlyUsedLodgingModel(models.Model):
   balconies = models.IntegerField(default=0)
   other_rooms = models.IntegerField(default=0)
   halls = models.IntegerField(default=0)
-  security_deposit = models.CharField(max_length=20,validators=[RegexValidator(
-      regex="^[0-9]*$",
-      message="Enter in digits only"
-  )],default=0)
-  booking_amount = models.CharField(max_length=20,validators=[RegexValidator(
-      regex="^[0-9]*$",
-      message="Enter in digits only"
-  )],default=0)
-  extra_charges = models.CharField(max_length=20,validators=[RegexValidator(
-      regex="^[0-9]*$",
-      message="Enter in digits only"
-  )],default=0)
-  extra_charges_description = models.CharField(max_length=200,
-      help_text='Valid length is under 200 characters.',
-      null=True, blank=True)
-  advance_of_months = models.PositiveIntegerField(default=1)
+  advance_rent_of_months = models.PositiveIntegerField(default=1)
   flooring = models.CharField(max_length=2,choices=FLOORING_CHOICES,null=True,blank=True)
   flooring_other = models.CharField(max_length=100,blank=True, null=True)
   additional_details = models.TextField(max_length=2000,
@@ -198,6 +183,7 @@ class CommonlyUsedLodgingModel(models.Model):
   slug = models.SlugField(max_length=20,editable=False,validators=[validate_slug])
   is_booked = models.BooleanField(default=False)
   images = GenericRelation(ImageModel)
+  latlng = models.CharField(max_length=100, blank=True, null=True)
 
   def save(self, *args, **kwargs):
     if self.title:
@@ -207,12 +193,26 @@ class CommonlyUsedLodgingModel(models.Model):
         self.top_floor=True
       elif self.floor_no==1:
         self.ground_floor=True
-    self.rent=self.rent+self.rent//10
+    self.rent=str(int(self.rent)+int(self.rent)//10)
     if not self.advance_of_months==0:
       self.advance_of_months = 1
-    self.booking_amount = self.advance_of_months*self.rent+self.security_deposit+self.extra_charges
+    if not self.security_deposit:
+      self.security_deposit='0'
+    if not self.extra_charges:
+      self.extra_charges='0'
+    self.booking_amount = str(self.advance_of_months*int(self.rent)+int(self.security_deposit)+int(self.extra_charges))
     super(CommonlyUsedLodgingModel, self).save(*args, **kwargs)
 
   class Meta:
     ordering = ('-available_from',)
     # TODO indexing
+
+
+class Charge(models.Model):
+  amount=models.CharField(max_length=20)
+  description=models.CharField(max_length=100)
+  is_per_month=models.BooleanField(default=False)
+  lodging=models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE)
+
+  def __str__(self):
+    return self.description+': Rs. '+self.amount

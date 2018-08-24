@@ -6,7 +6,7 @@ function AddToggleClassEvent(...args) {
         $('#' + v).removeClass('active');
       })
       $(this).toggleClass('active');
-      $('#id_business').val($(this).text().toUpperCase());
+      $('#id_business').val(v.toUpperCase());
       $('#id_business').trigger('change');
     });
   });

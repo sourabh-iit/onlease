@@ -9,13 +9,13 @@ from apps.roommate.forms import RoomieAdForm
 
 class LandingPageForm(CommonQueryFormMixin,CommonQueryForm):
     business = forms.ChoiceField(choices=[
-        ('MATES','MATES'),('BROKERS','BROKERS'),('OWNERS','OWNERS')],
+        ('MATES','MATES'),('PROPERTY','PROPERTY')],
         widget=forms.HiddenInput,initial="PROPERTY")
 
 
 @require_GET
 def front_page_view(request):
-    if 'min_rent' in request.method=='GET':
+    if request.method=='GET':
         form = LandingPageForm(request.GET)
         if form.is_valid():
             return HttpResponseRedirect(request,reverse())

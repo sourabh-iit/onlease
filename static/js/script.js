@@ -12,6 +12,7 @@ var max_height = 2000;
 var file = [];
 var upload_image_url;
 var regions_url = window.API_PREFIX + 'locations/regions2/';
+var charge_form_id=1;
 
 function getCookie(name) {
   var cookieValue = null;
@@ -36,6 +37,47 @@ function shortForm(str){
   return str.substr(0,10)+'...';
 }
 
+function getCurrentLocation(ev,input_id){
+  ev.preventDefault();
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(position){
+      var lat=position.coords.latitude;
+      var lng=position.coords.longitude;
+      var geocoder = new google.maps.Geocoder;
+      geocoder.geocode({location: {lat:parseFloat(lat),lng:parseFloat(lng)}},function(res){
+        $('#'+input_id).val(res[0].formatted_address);
+        $('#'+input_id).trigger('change');
+      });
+    })
+  } else {
+    alert("Cannot access your location");
+  }
+}
+
+function create_charge_form(event,prefix){
+  event.preventDefault();
+  $(event.target).parent().prepend(`
+    <div class="row w-100 mt-3">
+      <div class="md-form col-4 p-1">
+        <i class="fa fa-inr prefix grey-text"></i>
+        <input type="text" id="${prefix}_charge_amount_${charge_form_id}" class="form-control ${prefix}_charge_amount">
+        <label for="${prefix}_charge_amount_${charge_form_id}">Amount</label>
+      </div>
+      <div class="md-form col-4 p-1">
+        <input type="text" id="${prefix}_charge_description_${charge_form_id}" class="form-control ${prefix}_charge_description">
+        <label for="${prefix}_charge_description_${charge_form_id}">Description</label>
+      </div>
+      <div class="flex-vertical-center">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="${prefix}_charge_is_per_month_${charge_form_id}">
+          <label class="custom-control-label ${prefix}_charge_is_per_month" for="${prefix}_charge_is_per_month_${charge_form_id}">Per month</label>
+        </div>
+      </div>
+    </div>
+  `);
+  charge_form_id++;
+}
+
 function get_selectize_configurations(value,remove_button=true){
   var business, items, render={
     option: function (item, escape) {
@@ -49,11 +91,6 @@ function get_selectize_configurations(value,remove_button=true){
       return root;
     }
   };
-  if(value.toLowerCase()=='search'){
-    business=$('#id_business').val();
-  } else {
-    business='none';
-  }
   var plugins=[];
   if(remove_button){
     plugins=['remove_button'];
@@ -83,7 +120,7 @@ function get_selectize_configurations(value,remove_button=true){
         dataType: 'json',
         data: {
           q: query,
-          business: business,
+          business: value.toLowerCase()=='search' ? $('#id_business').val() : 'none',
         },
         error: function () {
           callback();
@@ -227,15 +264,15 @@ function close_and_open_modal(button_id,modal_to_hide_id,modal_to_show_id){
     });
 }
 function add_tawk_to(){
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-        s1.async=true;
-        s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
-        s1.charset='UTF-8';
-        s1.setAttribute('crossorigin','*');
-        s0.parentNode.insertBefore(s1,s0);
-    })();
+    // var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    // (function(){
+    //     var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    //     s1.async=true;
+    //     s1.src='https://embed.tawk.to/5adef5845f7cdf4f05338e80/default';
+    //     s1.charset='UTF-8';
+    //     s1.setAttribute('crossorigin','*');
+    //     s0.parentNode.insertBefore(s1,s0);
+    // })();
 }
 function enter_number_form_validation(){
     var form = $('#modalEnterNumberForm');
@@ -622,6 +659,7 @@ function property_ad_form_validation(){
                   'additional_details':$('#property_additional_details').val(),
                   'images': $('#property_images').val(),
                   'address': $('#property_address').val(),
+                  'latlng': $('#property_latlng').val(),
                   csrfmiddlewaretoken: csrf_token,
               }
               $.ajax({
@@ -681,7 +719,8 @@ function set_password_form_validation(){
             if($(form).valid()){
                 var data = {
                     password: $('#set_password').val(),
-                    confirm_password: $('#set_confirm_password').val()
+                    confirm_password: $('#set_confirm_password').val(),
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/reset-password/';
                 $.ajax({
@@ -689,7 +728,6 @@ function set_password_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                    csrfmiddlewaretoken: csrf_token,
                 }).always((data)=>{
                     if(data.status=='200'){
                         display_message(form,'Password re-set successfully.');
@@ -749,7 +787,8 @@ function change_password_form_validation(){
                 var data = {
                     current_password: $('#change_current_password').val(),
                     password: $('#change_password').val(),
-                    confirm_password: $('#change_confirm_password').val()
+                    confirm_password: $('#change_confirm_password').val(),
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/change-password/';
                 $.ajax({
@@ -757,7 +796,6 @@ function change_password_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                    csrfmiddlewaretoken: csrf_token,
                 }).always((data)=>{
                     if(data.status=='200'){
                         display_message(form,'Password changed successfully.');
@@ -811,6 +849,7 @@ function profile_form_validation(){
                     last_name: last_name,
                     detail: $('#profile_detail').val(),
                     type_of_roommate: $('#profile_type_of_roommate').val(),
+                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/save-profile/';
                 $.ajax({
@@ -818,7 +857,6 @@ function profile_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                    csrfmiddlewaretoken: csrf_token,
                 }).always((data)=>{
                     if(data.status=='200'){
                         display_message(form,'Profile Saved.');
@@ -939,7 +977,7 @@ function set_logout(){
         $.ajax({
             type: 'POST',
             url: window['API_PREFIX'] + 'account/logout/',
-            data: {},
+            data: {csrfmiddlewaretoken:csrf_token},
             dataType: 'JSON'
         }).always((data)=>{
             create_and_display_success_message('Logging out');
@@ -1169,6 +1207,7 @@ function resend_otp(){
   } else {
     data = {
       mobile_number: $('#enter_mobile_number').val(),
+      csrfmiddlewaretoken: csrf_token,
     }
   }
   var url = API_PREFIX + 'account/request-otp/';
@@ -1339,13 +1378,13 @@ function csrfSafeMethod(method) {
 
 $('document').ready(function(){
 
-  $.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-      if (!csrfSafeMethod(settings.type)) {
-        xhr.setRequestHeader("X-CSRFToken", csrf_token);
-      }
-    },
-  });
+  // $.ajaxSetup({
+  //   beforeSend: function(xhr, settings) {
+  //     if (!csrfSafeMethod(settings.type)) {
+  //       xhr.setRequestHeader("X-CSRFToken", csrf_token);
+  //     }
+  //   },
+  // });
 
   $(window).resize(set_footer);
 

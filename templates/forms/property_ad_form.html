@@ -19,14 +19,20 @@
         <div class="group-heading mb-4">General details</div>
 
         <div class="mb-4 col-12 col-lg-10 m-5px">
-          <select name="region" id="property_region" data-placeholder="Choose region"></select>
-          <label for="property_region">Region</label>
+          <select name="region" id="property_region" data-placeholder="Search location"></select>
+          <label for="property_region">Location</label>
         </div>
-        <div class="mb-4 md-form col-12 col-lg-10 m-5px">
-          <i class="fa fa-address prefix grey text"></i>
-          <input type="text" name="address" id="property_address" class="form-control" placeholder="e.g. h.no. 190, dhirpur village">
+
+        <div class="md-form mt-0 mb-4" role="group" aria-label="Basic example">
+          <input type="text" name="address" id="property_address" class="form-control" id="property_location" placeholder="Type address..." aria-label="location name" aria-describedby="current-location">
           <label for="property_address">Address</label>
+          <div>
+            <button class="input-group-text btn btn-default btn-sm" onclick="getCurrentLocation(event,'property_address')" id="current-location">Use current location</button>
+          </div>
         </div>
+
+        <input type="hidden" name="property_latlng" id="property_latlng">
+
         <div class="mb-4 col-12 col-md-6 m-5px">
           <select name="type" id="property_type" data-target="other" data-label="Property type">
             <option value="">Choose type</option>
@@ -38,6 +44,7 @@
           </select>
           <label for="property_type">Type</label>
         </div>
+
         <div class="mb-4 col-12 col-md-6 m-5px">
           <select name="furnishing" id="property_furnishing" required>
             <option value="">Choose furnishing</option>
@@ -50,20 +57,19 @@
 
         <div class="group-heading mb-4">Rent details</div>
 
-        <div class="md-form mb-4 col-12 col-md-6 m-5px">
-          <i class="fa fa-inr prefix grey-text"></i>
-          <input type="text" name="rent" id="property_rent" class="form-control" required>
-          <label for="property_rent">Rent (per month)</label>
+        <div class="md-form col-12 col-md-6 m-5px">
+            <i class="fa fa-inr prefix grey-text"></i>
+            <input type="text" name="rent" id="property_rent" class="form-control" required>
+            <label for="property_rent">Rent (per month)</label>
         </div>
-        <div class="md-form mb-4 col-12 col-md-6 m-5px">
-          <i class="fa fa-inr prefix grey-text"></i>
-          <input type="text" name="security_deposit" id="property_security_deposit" class="form-control">
-          <label for="property_security_deposit">Security deposit</label>
+        <div class="md-form col-12 col-md-6 m-5px">
+          <input type="number" name="advance_of_months" id="property_advance_of_months" min="1" class="form-control" required>
+          <label for="property_advance_of_months">Advance rent of months</label>
         </div>
-        <div class="md-form mb-4 col-12 col-md-6 m-5px">
-          <i class="fa fa-inr prefix grey-text"></i>
-          <input type="text" name="booking_amount" id="property_booking_amount" class="form-control">
-          <label for="property_booking_amount">Booking amount</label>
+        <div class="mb-4 mt-0 col-12">
+          <button class="btn btn-primary btn-sm" onclick="create_charge_form(event,'property')">
+            Add additional charges
+          </button>
         </div>
 
         <div class="group-heading mb-4">Facilities available</div>

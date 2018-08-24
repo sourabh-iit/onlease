@@ -5,7 +5,8 @@
   var mobile_number = '{{user.mobile_number}}';
   var image_url = API_PREFIX + 'upload/image/user-profile/';
   var roomie_image_url = API_PREFIX + 'upload/image/roomie-ad/';
-  var create_property_url = "{% url 'lodging_ajax:create' %}"
+  var create_property_url = "{% url 'lodging_ajax:create' %}";
+  var google_api_key="AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ";
 </script>
 <script type="text/javascript" src="{% static 'js/jquery-3.3.1.js' %}"></script>
 <script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
@@ -18,4 +19,5 @@
 <script src="{% static 'js/selectize.js' %}"></script>
 <script src="{% static 'js/zebra_datepicker.min.js' %}"></script>
 <script src="{% static 'js/jquery.panzoom.min.js' %}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA2HZih5TYwuLQVr3bmLOKE5dmBRFS71rE" async defer></script>
 <script src="{% static 'js/script.js' %}"></script>
