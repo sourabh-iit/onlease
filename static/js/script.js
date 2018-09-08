@@ -288,16 +288,18 @@ function display_errors(data,form){
   var ul = document.createElement('ul');
   ul.className = "p-0";
   ul.style.listStyle = 'none';
-  for(let error of globalErrors){
-    var li = document.createElement('li');
-    li.className = "alert alert-danger";
-    $(li).html(
-      `${error} 
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>`
-    );
-    ul.append(li);
+  if(globalErrors){
+    for(let error of globalErrors){
+      var li = document.createElement('li');
+      li.className = "alert alert-danger";
+      $(li).html(
+        `${error} 
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>`
+      );
+      ul.append(li);
+    }
   }
   $(form).find('.modal-body').prepend(ul);
 }

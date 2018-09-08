@@ -51,6 +51,8 @@ def send_otp(request,mobile_number):
         request.session['total_otps']=0
     res = requests.post(url=url, params=params)
     data = json.loads(res.text)
+    if request.is_ajax():
+      return
     if data['type']=='error':
         messages.error(request,'Sorry, OTP was not sent. Please try again')
     else:
