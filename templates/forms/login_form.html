@@ -1,5 +1,7 @@
 
-<form class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<form class="modal fade" id="modalLoginForm" tabindex="-1" 
+  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+  data-backdrop="static">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header text-center">
@@ -22,12 +24,12 @@
         </div>
 
       </div>
-      <div class="modal-footer d-flex justify-content-center row">
-        <div class="col-12 cursor-pointer mb-3 text-align-right fw-600">
+      <div class="modal-footer flex-direction-column">
+        <div class="cursor-pointer w-100 mb-3 text-align-right fw-600">
           <span id="forgot_password_modal">Forgot Password?</span>
         </div>
         <button class="btn btn-default" id="loginSubmit">Login</button>
-        <div class="col-12 mt-3 text-align-right">
+        <div class="w-100 mt-3 text-align-right">
           Not already a member?
           <span class="fw-600 cursor-pointer" id="register_modal">Register</span>
         </div>

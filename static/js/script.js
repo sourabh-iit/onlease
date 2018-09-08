@@ -99,7 +99,7 @@ function remove_loading(form=null){
 
 function show_loading(form=null){
   if(!form){
-    create_spinner($(document));
+    create_spinner($('body'));
   } else {
     create_spinner($(form).find('.modal-dialog'));
   }
@@ -135,7 +135,9 @@ function getCurrentLocation(ev,input_id){
           create_and_display_success_message('Location added');
         },
         error: function(res){
-          create_and_display_error_message(res.responseJSON.errors['__all__'][0]);
+          if(res.responseJSON && errors in res.responseJSON && '__all__' in res.responseJSON){
+            create_and_display_error_message(res.responseJSON.errors['__all__'][0]);
+          }
           display_errors(res,$('#modalPropertyAdForm'));
         },
         complete: function(){
@@ -795,7 +797,7 @@ function property_ad_form_validation(){
       },
       messages: {
         property_images: {
-          minlength: jQuery.validator.format('Atleast {0} images required'),
+          minlength: jQuery.validator.format('Choose atleast {0} images'),
         }
       },
       errorPlacement: function(error, element){
@@ -1162,18 +1164,20 @@ function set_custom_alerts(){
 
 function set_logout(){
     $('[data-action=logout]').click(function(){
-        show_loading();
-        $.ajax({
-            type: 'POST',
-            url: window['API_PREFIX'] + 'account/logout/',
-            dataType: 'JSON'
-        }).always((data)=>{
-            create_and_display_success_message('Logging out');
-            setTimeout(function(){
-                window.location.reload();
-            },1000);
-            remove_loading();
-        });
+      show_loading();
+      $.ajax({
+        type: 'POST',
+        url: window['API_PREFIX'] + 'account/logout/',
+        data: {
+          empty: ''
+        }
+      }).always((data)=>{
+        remove_loading();
+        create_and_display_success_message('Logged out');
+        setTimeout(function(){
+          window.location.reload();
+        },0);
+      });
     });
 }
 
@@ -1309,7 +1313,7 @@ function get_image_id(form=null){
   return image_id;
 }
 
-var loadImageFile = function (event,url=window.roomie_image_url) {
+var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
   var file = event.target;
 
   //check and retuns the length of uploded file.
@@ -1326,6 +1330,19 @@ var loadImageFile = function (event,url=window.roomie_image_url) {
     return;
   }
 
+  var loading_icon = document.createElement('span');
+  $(loading_icon).append(`&nbsp;<i class="fa fa-spinner fa-spin"></i>`)
+  $(file).prev('span').filter(function(){
+    return this.id.match(/add_image$/);
+  }).append(loading_icon);
+
+  var div = document.createElement('div');
+  div.className="progress";
+  var progress_bar = document.createElement('div');
+  progress_bar.className="progress-bar";
+  $(div).append(progress_bar);
+  $(file).after(div);
+
   var fileReader = new FileReader();
   var max_width = 2000;
   var max_height = 2000;
@@ -1335,52 +1352,68 @@ var loadImageFile = function (event,url=window.roomie_image_url) {
   fileReader.onload = function (event) {
     var image = new Image();
     image.onload = function () {
-      var canvas = document.createElement("canvas");
-      var context = canvas.getContext("2d");
-      if (max_width / max_height > image.width / image.height) {
-        canvas.height = max_height;
-        canvas.width = (image.width / image.height) * max_height;
-      } else {
-        canvas.width = max_width;
-        canvas.height = (image.height / image.width) * max_width;
-      }
-      context.drawImage(image,
-        0,
-        0,
-        image.width,
-        image.height,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-      var dataURL = canvas.toDataURL('image/jpeg');
-      if (url == window.image_url) {
-        max_height = 1000;
-        max_width = 1000;
-      }
-      $.ajax({
-        type: 'POST',
-        url: url,
-        data: {
-          'image': dataURL,
-          
-        },
-        headers: {
-          'X-CSRFToken': window.getCookie('csrftoken')
+      setTimeout(()=>{
+        var canvas = document.createElement("canvas");
+        var context = canvas.getContext("2d");
+        if (max_width / max_height > image.width / image.height) {
+          canvas.height = max_height;
+          canvas.width = (image.width / image.height) * max_height;
+        } else {
+          canvas.width = max_width;
+          canvas.height = (image.height / image.width) * max_width;
         }
-      }).done(function (res) {
+        context.drawImage(image,
+          0,
+          0,
+          image.width,
+          image.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        var dataURL = canvas.toDataURL('image/jpeg');
         if (url == window.image_url) {
-          $('#profile').trigger('profile-updated', [res.id, res.url]);
-          return;
+          max_height = 1000;
+          max_width = 1000;
         }
-        create_modal_to_add_tag(res);
-      }).fail(function (err) {
-        $(file).after(`<div class="error">${err}</div>`);
-      }).always(function (data) {
-        $(file).remove();
-        // console.log(data);
-      });
+        $.ajax({
+          type: 'POST',
+          url: url,
+          data: {
+            'image': dataURL,
+          },
+          progress: function(e){
+            if(e.lengthComputable) {
+              var pct = (e.loaded / e.total) * 100;
+              $(progress_bar).css('width',pct+'%');
+              $(progress_bar).text(pct+'%');
+              debugger
+            } else {
+              console.error('Content length not reported');
+            }
+          }
+        }).done(function (res) {
+          create_and_display_success_message("Image Uploaded");
+          if (_type == 'profile') {
+            $('#profile').trigger('profile-updated', [res.id, res.url]);
+            return;
+          } else {
+            create_modal_to_add_tag(res);
+          }
+        }).fail(function (err) {
+          $(file).after(`<div class="error">${err}</div>`);
+        }).always(function (data) {
+          $(loading_icon).remove();
+          $(div).remove();
+          if(_type!='profile'){
+            $(file).remove();
+          } else {
+            $(file).val('');
+          }
+          // console.log(data);
+        });
+      },1);
     }
     image.src = event.target.result;
   };

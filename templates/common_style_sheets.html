@@ -1,5 +1,15 @@
 {% load static %}
-
+<script>
+  var API_PREFIX = '{{API_PREFIX}}/api/';
+  var csrf_token = '{{csrf_token}}';
+  var mobile_number = '{{user.mobile_number}}';
+  var image_url = API_PREFIX + 'upload/image/user-profile/';
+  var roomie_image_url = API_PREFIX + 'upload/image/roomie-ad/';
+  var create_property_url = "{% url 'lodging_ajax:create' %}";
+  var google_api_key="AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ";
+  var tag_url="{% url 'image:action' action='add-tag' %}";
+  var delete_image_url="{% url 'image:action' action='delete' %}";
+</script>
 <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link href="{% static 'MDB Free/css/bootstrap.min.css' %}" rel="stylesheet">

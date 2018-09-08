@@ -486,6 +486,9 @@ div#new_ads_circle {
 .fs-6{
   font-size: 3rem!important;
 }
+.flex-direction-column{
+  flex-direction: column;
+}
 @media (min-width: 576px) {
   .full_screen.modal .modal-dialog {
     max-width: 100%;

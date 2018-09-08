@@ -1,15 +1,5 @@
 {% load static %}
-<script>
-  var API_PREFIX = '{{API_PREFIX}}/api/';
-  var csrf_token = '{{csrf_token}}';
-  var mobile_number = '{{user.mobile_number}}';
-  var image_url = API_PREFIX + 'upload/image/user-profile/';
-  var roomie_image_url = API_PREFIX + 'upload/image/roomie-ad/';
-  var create_property_url = "{% url 'lodging_ajax:create' %}";
-  var google_api_key="AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ";
-  var tag_url="{% url 'image:action' action='add-tag' %}";
-  var delete_image_url="{% url 'image:action' action='delete' %}";
-</script>
+<script type="text/javascript" src="{% static 'js/jquery.ajax-progress.js' %}"></script>
 <script type="text/javascript" src="{% static 'MDB Free/js/popper.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'MDB Free/js/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'MDB Free/js/mdb.min.js' %}"></script>
