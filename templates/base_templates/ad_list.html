@@ -60,15 +60,17 @@
         </div>
       </div>
 
-      <form action="{% url 'ads:ads-view' %}" method="GET" class="row filter-nav desktop" id="id_business_desktop">
-        
-        <div class="col-8 p-0" id="id_region_desktop">
+      <div class="container-fluid">
+        <form action="{% url 'ads:ads-view' %}" method="GET" class="row filter-nav desktop" id="id_business_desktop">
           
-        </div>
-        <div class="col-2 p-0">
-          <button type="submit" class="btn btn-default m-0 search p-0 search-element">Search</button>
-        </div>
-      </form>
+          <div class="col-8 p-0" id="id_region_desktop">
+            
+          </div>
+          <div class="col-2 p-0">
+            <button type="submit" class="btn btn-default m-0 search p-0 search-element">Search</button>
+          </div>
+        </form>
+      </div>
                 
       {% block content %}{% endblock %}
 

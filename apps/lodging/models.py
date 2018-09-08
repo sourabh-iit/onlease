@@ -2,9 +2,10 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import RegexValidator, validate_slug
+from django.core.validators import RegexValidator, validate_slug, DecimalValidator
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+from django.utils import timezone
 
 import os
 from datetime import date
@@ -112,34 +113,6 @@ class CommonlyUsedLodgingModel(models.Model):
     (BRICK, 'Brick'),
     (OTHER, 'Other')
   )
-  GAJ = 'G'
-  SQUARE_FEET = 'SF'
-  SQUARE_YARDS = 'SY'
-  SQUARE_METER = 'SM'
-  ACRES = 'A'
-  MARLA = 'M'
-  BIGHA = 'B'
-  KANAL = 'K'
-  GROUNDS = 'GR'
-  ARES = 'AR'
-  BISWA = 'BI'
-  GUNTHA = 'GU'
-  HECTARES = 'H'
-  MEASUREMENT_CHOICES = (
-    (GAJ,'Gaj'),
-    (SQUARE_FEET,'Sq.Ft.'),
-    (SQUARE_YARDS,'Sq.YDS.'),
-    (SQUARE_METER,'Sq. METER'),
-    (ACRES,'Acres'),
-    (MARLA,'Marla'),
-    (BIGHA,'Bigha'),
-    (KANAL,'Kanal'),
-    (GROUNDS,'Grounds'),
-    (ARES,'Ares'),
-    (BISWA,'Biswa'),
-    (GUNTHA,'Guntha'),
-    (HECTARES,'Hectares'),
-  )
   # COMMERCIAL = 'C'
   # RESIDENTIAL = 'R'
   # LODGING_CHOICES = (
@@ -158,32 +131,38 @@ class CommonlyUsedLodgingModel(models.Model):
   facilities = models.CharField(max_length=1000,null=True,blank=True)
   ground_floor = models.BooleanField(blank=True,default=False)
   top_floor = models.BooleanField(blank=True,default=False)
-  available_from = models.DateField(default=date.today())
+  available_from = models.DateField(default=timezone.now())
   rent = models.CharField(max_length=10,validators=[RegexValidator('^[1-9][0-9]+$')])
-  area = models.CharField(max_length=12,
-      validators=[RegexValidator('^[1-9][0-9]*$')])
-  area_unit = models.CharField(max_length=2,choices=MEASUREMENT_CHOICES,default=GAJ)
+  area = models.CharField(max_length=12)
   bathrooms = models.IntegerField(default=1)
-  bedrooms = models.IntegerField(default=1)
+  rooms = models.IntegerField(default=1)
   balconies = models.IntegerField(default=0)
-  other_rooms = models.IntegerField(default=0)
   halls = models.IntegerField(default=0)
   advance_rent_of_months = models.PositiveIntegerField(default=1)
   flooring = models.CharField(max_length=2,choices=FLOORING_CHOICES,null=True,blank=True)
   flooring_other = models.CharField(max_length=100,blank=True, null=True)
   additional_details = models.TextField(max_length=2000,
       help_text='Valid length is under 500 characters.',
-      null=True,blank=True)
-  title = models.CharField(max_length=70, validators=\
-      [RegexValidator(
-          '^[0-9A-Za-z ]{10,}',
-          message='Use alphabets and digits only.'+
-      " Valid length is under 70 characters.")],
-      help_text="Make title as informative as possible")
-  slug = models.SlugField(max_length=20,editable=False,validators=[validate_slug])
+      default="")
+  title = models.CharField(max_length=70, validators=[RegexValidator('^[-a-zA-Z0-9_ ]+\Z')],
+        help_text="Max length is 70 characters. Only characters, digits, hyphen and underscore are allowed.")
+  slug = models.SlugField(max_length=70,editable=False,validators=[validate_slug])
   is_booked = models.BooleanField(default=False)
   images = GenericRelation(ImageModel)
   latlng = models.CharField(max_length=100, blank=True, null=True)
+
+  def get_per_month_amount(self):
+    total = int(self.rent)
+    for charge in self.charges.all():
+      if charge.is_per_month:
+        total += int(charge.amount)
+    return total
+    
+  def get_first_month_amount(self):
+    total = int(self.rent)*self.advance_rent_of_months
+    for charge in self.charges.all():
+      total += int(charge.amount)
+    return total
 
   def save(self, *args, **kwargs):
     if self.title:
@@ -194,13 +173,8 @@ class CommonlyUsedLodgingModel(models.Model):
       elif self.floor_no==1:
         self.ground_floor=True
     self.rent=str(int(self.rent)+int(self.rent)//10)
-    if not self.advance_of_months==0:
-      self.advance_of_months = 1
-    if not self.security_deposit:
-      self.security_deposit='0'
-    if not self.extra_charges:
-      self.extra_charges='0'
-    self.booking_amount = str(self.advance_of_months*int(self.rent)+int(self.security_deposit)+int(self.extra_charges))
+    if not self.advance_rent_of_months==0:
+      self.advance_rent_of_months = 1
     super(CommonlyUsedLodgingModel, self).save(*args, **kwargs)
 
   class Meta:
@@ -209,10 +183,10 @@ class CommonlyUsedLodgingModel(models.Model):
 
 
 class Charge(models.Model):
-  amount=models.CharField(max_length=20)
-  description=models.CharField(max_length=100)
+  amount=models.CharField(max_length=20, validators=[RegexValidator('^[0-9]+$')])
+  description=models.CharField(max_length=50, validators=[validate_slug])
   is_per_month=models.BooleanField(default=False)
-  lodging=models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE)
+  lodging=models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,related_name='charges')
 
   def __str__(self):
     return self.description+': Rs. '+self.amount

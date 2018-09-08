@@ -1,10 +1,18 @@
 from django import template
 from apps.lodging.models import CommonlyUsedLodgingModel
 from apps.locations.models import Region
+from apps.image.models import ImageModel
 import datetime
-import json
+import ast
 
 register = template.Library()
+
+
+FACILITY_ICON = {
+  'K': 'utensils',
+  'P': 'car',
+  'A': 'plug',
+}
 
 
 @register.filter(name='full_form')
@@ -21,17 +29,26 @@ def full_form(value, arg):
       return value.flooring_other
     choices=CommonlyUsedLodgingModel.FLOORING_CHOICES
     model_value=value.flooring
-  elif arg=="area_unit":
-    choices=CommonlyUsedLodgingModel.MEASUREMENT_CHOICES
-    model_value=value.area_unit
   elif arg=="furnishing":
     choices=CommonlyUsedLodgingModel.FURNISHING_CHOICES 
     model_value=value.furnishing
   elif arg=='facilities':
-    if len(json.loads(value.facilities))==0:
-      return 'N/A'
+    facilities = ast.literal_eval(value.facilities)
+    if len(facilities)==0:
+      return [{'value': 'None available', 'icon': 'check-trash'}]
     else:
-      return json.loads(value.facilities).join(', ')
+      l = []
+      for tup in CommonlyUsedLodgingModel.FACILITIES_AVAILABLE_CHOICES:
+        if tup[0] in facilities:
+          l.append({
+            'value': tup[1],
+            'icon': FACILITY_ICON[tup[0]],
+          })
+      return l
+          
+  elif arg=='image_tag':
+    choices=ImageModel.LODGING_TAG_CHOICES
+    model_value=value.tag
   if not choices:
     return 'unknown'
   for type_tuple in choices:

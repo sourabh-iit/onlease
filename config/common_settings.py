@@ -145,3 +145,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # for custom widgets
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
+
+GOOGLE_MAPS_API_KEY=os.environ.get('GOOGLE_MAPS_API_KEY')

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
@@ -68,4 +68,39 @@ def image_upload_view(request,ad_type):
     })
   except Exception as e:
     return HttpResponseBadRequest({'errors':'Sorry, could not upload file.'})
-            
+
+@login_required         
+@require_POST
+def image_action_view(request,action):
+  if action=='add-tag':
+    try:
+      data=request.POST
+      pk=data.get('pk')
+      tag=data['value']
+      if not pk:
+        return HttpResponse('Primary key is missing',status=404)
+      image=ImageModel.objects.get(pk=pk)
+      image.tag=tag
+      valid_tag=False
+      for (key,text) in ImageModel.LODGING_TAG_CHOICES:
+        if key==tag:
+          valid_tag=True
+          break
+      if not valid_tag:
+        return HttpResponse('Invalid tag. Choose tag from given options',status=400)
+      image.save()
+      return HttpResponse(status=200)
+    except ImageModel.DoesNotExist:
+      return HttpResponse('Image is deleted or not uploaded',status=404)
+    except KeyError:
+      return HttpResponse('Tag is missing',status=404)
+  elif action=='delete':
+    try:
+      data=request.POST
+      _id=data['id']
+      ImageModel.objects.get(id=_id).delete()
+      return HttpResponse('Image deleted')
+    except ImageModel.DoesNotExist:
+      return HttpResponse('Image does not exist.',status=404)
+    except KeyError:
+      return HttpResponse('Image id not provided',status=400)

@@ -7,20 +7,20 @@ def image_upload_path(instance,filename):
 
 
 class ImageModel(models.Model):
-  BEDROOM = 'B'
-  HALL = "H"
-  BALCONY = 'BA'
-  LIVING_ROOM = 'LR'
-  ENTRANCE = "E"
-  KITCHEN = "K"
-  BATHROOM = "BR"
-  BUILDING = "BU"
-  FLOOR = "F"
-  OUTSIDE = 'OU'
-  OTHER = 'O'
+  BEDROOM = '0'
+  HALL = "1"
+  BALCONY = '2'
+  LIVING_ROOM = '3'
+  ENTRANCE = "4"
+  KITCHEN = "5"
+  BATHROOM = "6"
+  BUILDING = "7"
+  FLOOR = "8"
+  OUTSIDE = '9'
+  OTHER = '10'
   LODGING_TAG_CHOICES = (
     (BEDROOM,'Bedroom'),
-    (HALL, 'H'),
+    (HALL, 'Hall'),
     (BALCONY, 'Balcony'),
     (LIVING_ROOM,'Living Room'),
     (ENTRANCE,'Entrance'),

@@ -17,6 +17,30 @@
   <input type="checkbox" class="custom-control-input" id="tableDefaultCheck1">
   <label class="custom-control-label" for="tableDefaultCheck1">Check 1</label>
 </div> {% endcomment %}
+<script>
+  var type = '{{sublodging | full_form:"type"}}';
+  var rent = '{{sublodging.rent}}';
+  var region = '{{sublodging.region}}';
+  var available_from = '{{sublodging.available_from}}';
+  var title = '{{sublodging.title}}';
+  var images_url = [{% for image in sublodging.images.all %}'{{image.image.url}}',{% endfor %}];
+  var images_tag = [{% for image in sublodging.images.all %}"{{image | full_form:'image_tag'}}",{% endfor %}];
+  function addEvent(el,obj){
+    if(el){
+      el.addEventListener('click',function(){
+        window.display_full_screen_carousel(
+          obj.images_url,
+          obj.rent,
+          obj.region,
+          obj.type,
+          obj.available_from,
+          obj.title,
+          obj.images_tag
+        );
+      });
+    }
+  }
+</script>
 <div class="row m-0 ad-container">
   <div class="col-12 col-md-6">
     <div class="ad-title">
@@ -33,17 +57,15 @@
           {% if forloop.first %}
           <div class="carousel-item active">
             <div class="view">
-              <img class="d-block w-100 cursor-zoom-in" src="{{image.image_mobile.url}}"  alt="{{sublodging.title}}"
-                onclick="display_full_screen_carousel([{% for image in sublodging.images.all %}'{{image.image.url}}',{% endfor %}],'{{sublodging.rent}}','{{sublodging.region}}','{{sublodging | full_form:'type' }}','{{sublodging.available_from}}','{{sublodging.title}}')">
+              <img class="d-block w-100 cursor-zoom-in" src="{{image.image_mobile.url}}"  alt="{{sublodging.additional_details}}">
           {% else %}
           <div class="carousel-item">
             <div class="view">
-              <img class="d-block w-100 cursor-zoom-in" src="" data-src="{{image.image_mobile.url}}" alt="{{sublodging.title}}"
-                onclick="display_full_screen_carousel([{% for image in sublodging.images.all %}'{{image.image.url}}',{% endfor %}],'{{sublodging.rent}}','{{sublodging.region}}','{{sublodging | full_form:'type' }}','{{sublodging.available_from}}','{{sublodging.title}}')">
+              <img class="d-block w-100 cursor-zoom-in" src="" data-src="{{image.image_mobile.url}}" alt="{{sublodging.additional_details}}">
           {% endif %}
             </div>
             <div class="carousel-caption">
-              Image tag here
+              {{image | full_form:'image_tag'}}
             </div>
           </div>
         {% endfor %}
@@ -57,10 +79,31 @@
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
         <span class="sr-only">Next</span>
       </a>
-      <div class="zoom-icon text-white pink darken-1 p-1" onclick="display_full_screen_carousel([{% for image in sublodging.images.all %}'{{image.image.url}}',{% endfor %}],'{{sublodging.rent}}','{{sublodging.region}}','{{sublodging | full_form:'type' }}','{{sublodging.available_from}}','{{sublodging.title}}')">
+      <div class="zoom-icon text-white pink darken-1 p-1">
         <small><i class="fa fa-search-plus"></i> Zoom</small>
       </div>
       {% endif %}
+      <script>
+        try { 
+          throw {
+            images_url: images_url,
+            rent: rent,
+            region: region,
+            type: type,
+            available_from: available_from,
+            title: title,
+            images_tag: images_tag
+          } 
+        }
+        catch(obj){
+          $('.carousel img').each(function(){
+            addEvent(this,obj);
+          });
+          $('.zoom-icon').each(function(){
+            addEvent(this,obj);
+          });
+        }
+      </script>
     </div>
     <div class="mt-3">
       <div>
@@ -86,6 +129,10 @@
       </table>
     </div>
     <div>
+      <button class="btn btn-secondary" onclick="openMap()">Open Address in Map</button>
+    </div>
+    {% if sublodging.additional_details != "" %}
+    <div>
       <div>
         <div class="heading">Additional Details</div>
       </div>
@@ -98,6 +145,7 @@
         </tbody>
       </table>
     </div>
+    {% endif %}
   </div>
   <div class="col-12 col-md-6">
     <div class="basic-details indigo lighten-5 float-left w-100">
@@ -115,114 +163,128 @@
       </div>
     </div>
     <div class="p-2 w-100 float-left">
-        <div class="details">
-          <div>
-            <div class="heading">Basic Details</div>
-          </div>
-          <table class="table table-borderless">
-            <tbody>
-              <tr>
-                <th class="text-center">
-                  <div class="detail-label">
-                    Furnishing
-                  </div>
-                  <div>
-                    {{sublodging|full_form:'furnishing'}}
-                  </div>
-                </th>
-                <th class="text-center">
-                  <div class="detail-label">
-                    Area
-                  </div>
-                  <div>
-                    {{sublodging.area}}
-                    {{sublodging | full_form:'area_unit'}}
-                  </div>
-                </th>
-              </tr>
-              <tr>
-                <th class="text-center">
-                  <div class="detail-label">
-                    Flooring
-                  </div>
-                  <div>
-                    {{sublodging|full_form:'flooring'}}
-                  </div>
-                </th>
-                <th class="text-center">
-                  <div class="detail-label">
-                    Floor
-                  </div>
-                  <div>
-                    {% if sublodging.ground_floor %}
-                    Ground Floor
-                    {% elif sublodging.top_floor %}
-                    Top Floor
-                    {% else %}
-                    {{sublodging.floor_no}}<sup>{{sublodging.floor_no|style_number}}</sup> floor <small>(Total floors: {{sublodging.total_floors}})</small>
-                    {% endif %}
-                  </div>
-                </th>
-              </tr>
-              <tr>
-                <th class="text-center">
-                  <div class="detail-label">
-                    Facilities
-                  </div>
-                  <div>
-                    {{sublodging|full_form:'facilities'}}
-                  </div>
-                </th>
-                <th class="text-center">
-                  <div class="detail-label">
-                    Type
-                  </div>
-                  <div>
-                    {{sublodging|full_form:'type'}}
-                  </div>
-                </th>
-              </tr>
-            </tbody>
-          </table>
+      <div class="details mb-3">
+        <div>
+          <div class="heading">Basic Details</div>
         </div>
+        <div class="row">
+          <div class="text-center p-3 blue-grey lighten-4 col-12 col-md-6">
+            <div class="detail-label">
+              Furnishing
+            </div>
+            <div>
+              {{sublodging|full_form:'furnishing'}}
+            </div>
+          </div>
+          <div class="text-center p-3 col-12 col-md-6">
+            <div class="detail-label">
+              Area
+            </div>
+            <div class="input-group justify-content-center">
+              <div class="input-group-prepend">
+                <span class="input-group-text fs-1" id="area">{{sublodging.area}}</span>
+              </div>
+              <select id="area_unit" class="fs-1" style="width: 110px" name="area_unit"></select>
+            </div>
+          </div>
+          <div class="text-center p-3 col-12 col-md-6">
+            <div class="detail-label">
+              Flooring
+            </div>
+            <div>
+              {{sublodging|full_form:'flooring'}}
+            </div>
+          </div>
+          <div class="text-center p-3 blue-grey lighten-4 col-12 col-md-6">
+            <div class="detail-label">
+              Floor
+            </div>
+            <div>
+              {% if sublodging.ground_floor %}
+              Ground Floor
+              {% elif sublodging.top_floor %}
+              Top Floor
+              {% else %}
+              {{sublodging.floor_no}}<sup>{{sublodging.floor_no|style_number}}</sup> floor <small>(Total floors: {{sublodging.total_floors}})</small>
+              {% endif %}
+            </div>
+          </div>
+          <div class="text-center p-3 blue-grey lighten-4 col-12 col-md-6">
+            <div class="detail-label">
+              Facilities
+            </div>
+            <div>
+              {% for facility in sublodging|full_form:'facilities' %}
+              <i class="fa fa-{{facility.icon}}"></i> {{facility.value}} <br>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="text-center p-3 col-12 col-md-6">
+            <div class="detail-label">
+              Type
+            </div>
+            <div>
+              {{sublodging|full_form:'type'}}
+            </div>
+          </div>
+        </div>
+      </div>
         <div class="rooms">
           <div>
             <div class="heading">Rooms Detail</div>
           </div>
-          <table class="table table-bordered table-responsive">
+          <table class="table table-sm table-bordered table-responsive">
             <tbody>
               <tr>
                 <th>Bathrooms</th>
-                <th>Bedrooms</th>
+                <th>Rooms</th>
                 <th>Balconies</th>
                 <th>Halls</th>
-                <th>Other rooms</th>
               </tr>
               <tr>
                 <td>{{sublodging.bathrooms}}</td>
-                <td>{{sublodging.bedrooms}}</td>
+                <td>{{sublodging.rooms}}</td>
                 <td>{{sublodging.balconies}}</td>
                 <td>{{sublodging.halls}}</td>
-                <td>{{sublodging.other_rooms}}</td>
               </tr>
             </tbody>
           </table>
-        </div>
-        <div class="additional-details text-black-50 mb-3">
-          <div class="heading-container">
-            <div class="heading">Additional Details</div>
-          </div>
-          <div class="content">
-            {{sublodging.additional_details}}
-          </div>
         </div>
         <div class="booking-amount">
           <div>
             <div class="heading">Rental Details</div>
           </div>
-          <table class="table table-bordered">
+          {% if sublodging.advance_rent_of_months > 1 %}
+          <div>
+            Rent of {{sublodging.advance_rent_of_months}} in advance
+          </div>
+          {% endif %}
+          <table class="table table-bordered table-striped">
             <tbody>
               <tr>
+                <th>Charge</th>
+                <th>Amount</th>
+                <th>Per Month</th>
+              </tr>
+              {% for charge in sublodging.charges.all %}
+              <tr>
+                <th class="text-capitalize">
+                  {{charge.description}}
+                </th>
+                <td>
+                  <i class="fa fa-inr"></i>
+                  {{charge.amount}}
+                </td>
+                <td>
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="rent" 
+                      {% if charge.is_per_month %}checked{% endif %} disabled>
+                    <label class="custom-control-label" for="rent"></label>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% comment %} <tr>
                 <th>
                   Security deposit
                 </th>
@@ -230,8 +292,8 @@
                   <i class="fa fa-inr"></i>
                   {{sublodging.security_deposit}}
                 </td>
-              </tr>
-              <tr>
+              </tr> {% endcomment %}
+              {% comment %} <tr>
                 <th>
                   Booking amount
                 </th>
@@ -239,25 +301,55 @@
                   <i class="fa fa-inr"></i>
                   {{sublodging.booking_amount}}
                 </td>
-              </tr>
+              </tr> {% endcomment %}
               <tr>
                 <th>
-                  Rent per month
+                  Rent
                 </th>
                 <td>
                   <i class="fa fa-inr"></i>
                   {{sublodging.rent}}
                 </td>
-              </tr>
-              <tr class="green text-white">
-                <th>
-                  Total booking amount
-                </th>
                 <td>
-                  <i class="fa fa-inr"></i>
-                  {{sublodging.security_deposit | add:sublodging.booking_amount | add:sublodging.rent}}
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="rent" checked disabled>
+                    <label class="custom-control-label" for="rent"></label>
+                  </div>
                 </td>
               </tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <table class="table table-bordered">
+            <tbody>
+              <tr class="green lighten-4">
+                  <th class="text-capitalize">
+                    Every month amount
+                  </th>
+                  <td>
+                    <i class="fa fa-inr"></i>
+                    {{sublodging.get_per_month_amount}}
+                  </td>
+                </tr>
+                <tr class="green lighten-4">
+                  <th class="text-capitalize">
+                    First month amount
+                  </th>
+                  <td>
+                    <i class="fa fa-inr"></i>
+                    {{sublodging.get_first_month_amount}}
+                  </td>
+                </tr>
+                <tr class="green text-white">
+                  <th class="text-capitalize">
+                    Total
+                  </th>
+                  <td>
+                    <i class="fa fa-inr"></i>
+                    {{sublodging.get_first_month_amount}}
+                  </td>
+                </tr>
             </tbody>
           </table>
         </div>
@@ -265,6 +357,14 @@
           <button class="btn btn-success">Book Now</button>
         </div>
     </div>
+  </div>
+  <div>
+  <script>
+    var latlng = '{{sublodging.latlng}}';
+  </script>
+  {% comment %} <iframe width="600" height="450" frameborder="0" style="border:0" 
+  src="https://www.google.com/maps/embed/v1/directions?origin=&destination={{sublodging.latlng}}&key=AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ" 
+  allowfullscreen></iframe> {% endcomment %}
   </div>
 </div>
 {% endblock %}

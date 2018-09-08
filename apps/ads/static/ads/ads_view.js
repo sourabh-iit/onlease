@@ -69,6 +69,9 @@ function initialize_masonry(){
   });
   $grid.imagesLoaded().progress( function() {
     $grid.masonry('layout');
+    setTimeout(function(){
+      $grid.masonry('layout');
+    },2000);
   });
   set_carousel();
 }
@@ -103,7 +106,7 @@ function resetSearchBox(){
   </select>
   `;
   var business_desktop = `
-  <select name="business" id="id_business" class="col-2">
+  <select name="business" id="id_business" class="col-2 p-0">
     <option value="PROPERTY" {% if business == 'PROPERTY' %}selected{% endif %}>Property</option>
     <option value="MATES" {% if business == 'MATES' %}selected{% endif %}>Mates</option>
   </select>
@@ -135,4 +138,7 @@ $(document).ready(function(){
   $(window).resize(()=>{
     resize();
   });
+  $('.carousel').on('slid.bs.carousel', function(){
+    $grid.masonry('layout');
+  })
 });

@@ -5,14 +5,54 @@ var url="", height=150, width=150;
 var ad_mode = false;
 var val = 0;
 var prefix;
-var fileReader = new FileReader();
-var filterType = /^(?:image\/gif|image\/jpeg|image\/jpeg|image\/jpeg|image\/png|image\/svg\+xml|image\/x\-icon|image\/x\-rgb)$/i;
-var max_width = 2000;
-var max_height = 2000;
-var file = [];
 var upload_image_url;
 var regions_url = window.API_PREFIX + 'locations/regions2/';
 var charge_form_id=1;
+var tagList=[
+  {value: '', text: 'Choose tag'},
+  {value:'0',text:'Bedroom'},
+  {value:'1',text:'Hall'},
+  {value:'2',text:'Balcony'},
+  {value:'3',text:'Living room'},
+  {value:'4',text:'Entrance'},
+  {value:'5',text:'Kitchen'},
+  {value:'6',text:'Bathroom'},
+  {value:'7',text:'Building'},
+  {value:'8',text:'Floor'},
+  {value:'9',text:'Outside view'},
+  {value:'10',text:'Other'},
+];
+var area_units = [
+  'Sq. Gaj',
+  'Sq. Ft.',
+  'Sq. Yds',
+  'Sq. Meter',
+  'Acre',
+  'Marla',
+  // 'Bigha',
+  'Kanal',
+  // 'Grounds',
+  'Ares',
+  'Biswa',
+  // 'Gunta',
+  'Hectares'
+];
+var conversion_value = [
+  1,
+  0.112188,
+  1.00969,
+  1.20758,
+  4886.92,
+  30.5433,
+  // ,
+  610.865,
+  // ,
+  120.758,
+  150,
+  // ,
+  12075.8
+  
+];
 
 function getCookie(name) {
   var cookieValue = null;
@@ -37,17 +77,77 @@ function shortForm(str){
   return str.substr(0,10)+'...';
 }
 
+function create_spinner($element){
+  $element.append(`
+    <div id="spinner-container">
+      <i class="fa fa-spinner fa-spin"></i>
+    </div>
+  `);
+}
+
+function remove_spinner($element){
+  $element.find('#spinner-container').remove();
+}
+
+function remove_loading(form=null){
+  if(!form){
+    remove_spinner($(document));
+  } else{
+    remove_spinner($(form));
+  }
+}
+
+function show_loading(form=null){
+  if(!form){
+    create_spinner($(document));
+  } else {
+    create_spinner($(form).find('.modal-dialog'));
+  }
+}
+
+var loadingLocation = false;
+
 function getCurrentLocation(ev,input_id){
+  var $el=$(ev.target);
   ev.preventDefault();
+  if(loadingLocation){
+    return
+  }
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(function(position){
       var lat=position.coords.latitude;
       var lng=position.coords.longitude;
-      var geocoder = new google.maps.Geocoder;
-      geocoder.geocode({location: {lat:parseFloat(lat),lng:parseFloat(lng)}},function(res){
-        $('#'+input_id).val(res[0].formatted_address);
-        $('#'+input_id).trigger('change');
+      $.ajax({
+        url: window.current_location_url,
+        method: 'POST',
+        data: {
+          lat: lat,
+          lng: lng,
+        },
+        beforeSend: function(){
+          $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
+          loadingLocation=true;
+        },
+        success: function(res){
+          $('#property_address').val(res.result[0].formatted_address);
+          $('#property_latlng').val(lat+','+lng);
+          $('#property_latlng').trigger('change');
+          create_and_display_success_message('Location added');
+        },
+        error: function(res){
+          create_and_display_error_message(res.responseJSON.errors['__all__'][0]);
+          display_errors(res,$('#modalPropertyAdForm'));
+        },
+        complete: function(){
+          $el.children('#spinner').remove();
+          loadingLocation = false;
+        }
       });
+      // var geocoder = new google.maps.Geocoder;
+      // geocoder.geocode({location: {lat:parseFloat(lat),lng:parseFloat(lng)}},function(res){
+      //   $('#'+input_id).val(res[0].formatted_address);
+      //   $('#'+input_id).trigger('change');
+      // });
     })
   } else {
     alert("Cannot access your location");
@@ -56,25 +156,56 @@ function getCurrentLocation(ev,input_id){
 
 function create_charge_form(event,prefix){
   event.preventDefault();
-  $(event.target).parent().prepend(`
-    <div class="row w-100 mt-3">
-      <div class="md-form col-4 p-1">
-        <i class="fa fa-inr prefix grey-text"></i>
-        <input type="text" id="${prefix}_charge_amount_${charge_form_id}" class="form-control ${prefix}_charge_amount">
-        <label for="${prefix}_charge_amount_${charge_form_id}">Amount</label>
-      </div>
-      <div class="md-form col-4 p-1">
-        <input type="text" id="${prefix}_charge_description_${charge_form_id}" class="form-control ${prefix}_charge_description">
-        <label for="${prefix}_charge_description_${charge_form_id}">Description</label>
-      </div>
-      <div class="flex-vertical-center">
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="${prefix}_charge_is_per_month_${charge_form_id}">
-          <label class="custom-control-label ${prefix}_charge_is_per_month" for="${prefix}_charge_is_per_month_${charge_form_id}">Per month</label>
-        </div>
+  var el=event.target;
+  var other_charge_form=`
+  <div class="row col-12 w-100 mt-3 other_charges_container">
+    <div class="md-form col-12 col-md-4 p-1">
+      <i class="fa fa-inr prefix grey-text"></i>
+      <input type="text" id="${prefix}_charge_amount_${charge_form_id}" class="form-control" data-id="${prefix}_charge_amount">
+      <label for="${prefix}_charge_amount_${charge_form_id}">Amount</label>
+    </div>
+    <div class="md-form col-12 col-md-5 p-1">
+      <input type="text" id="${prefix}_charge_description_${charge_form_id}" class="form-control" data-id="${prefix}_charge_description">
+      <label for="${prefix}_charge_description_${charge_form_id}">Description</label>
+    </div>
+    <div class="flex-vertical-center col-12 col-md-3 p-0">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="${prefix}_charge_is_per_month_${charge_form_id}" data-id="${prefix}_charge_is_per_month">
+        <label class="custom-control-label" for="${prefix}_charge_is_per_month_${charge_form_id}">Per month</label>
       </div>
     </div>
-  `);
+  </div>`;
+  $(el).parent().before(other_charge_form);
+  
+  var key=prefix+'_other_charges';
+  var data=localStorage.getItem(key);
+  var data_to_store;
+  if(!data || JSON.parse(data).constructor!=Array){
+    data_to_store=[];
+  } else {
+    data_to_store=JSON.parse(data);
+  }
+  data_to_store.push(other_charge_form);
+  localStorage.setItem(key,JSON.stringify(data_to_store));
+  
+  key=prefix+'_other_charges_fields';
+  $(el).parent().prev().find('input','checkbox').each(function(){
+    $(this).change(function(){
+      data=localStorage.getItem(key);
+      if(!data || JSON.parse(data).constructor!=Object){
+        data_to_store={};
+      } else {
+        data_to_store=JSON.parse(data);
+      }
+      if ($(this).attr("type") == 'checkbox' || $(this).attr("type") == 'radio') {
+        data_to_store[this.id] = $(this).attr("checked");
+      } else {
+        data_to_store[this.id] = $(this).val();
+      }
+      localStorage.setItem(key,JSON.stringify(data_to_store));
+    });
+  });
+  
   charge_form_id++;
 }
 
@@ -97,13 +228,13 @@ function get_selectize_configurations(value,remove_button=true){
     render = Object.assign(render,{
       item: function(item,escape){
         return `
-        <div class="item active" data-value="${item.id} ">
+        <div class="item active" data-value="${item.id}">
           ${shortForm(item.region)}
           <a href="javascript:void(0)" class="remove" tabindex="-1" title="Remove">×</a>
         </div>
         `;
       }
-    })
+    });
   }
   return {
     valueField: 'id',
@@ -140,30 +271,33 @@ function remove_all_messages(form){
 }
 
 function display_errors(data,form){
-    let errors = {};
-    if(data.responseJSON){
-        errors = data.responseJSON.errors;
-    } else {
-        errors['__all__'] = ['unknown error occurred.'];
-    }
-    remove_all_messages(form);
-    var ul = document.createElement('ul');
-    ul.className = "p-0";
-    ul.style.listStyle = 'none';
-    for(let error_key in errors){
-        for(let error in errors[error_key]){
-            var li = document.createElement('li');
-            li.className = "alert alert-danger";
-            $(li).html(
-                errors[error_key] + 
-                `<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>`
-            );
-            ul.append(li);
-        }
-    }
-    $(form).find('.modal-body').prepend(ul);
+  let errors = {};
+  if(data.responseJSON){
+    errors = data.responseJSON.errors;
+  } else {
+    errors['__all__'] = ['unknown error occurred.'];
+  }
+  remove_all_messages(form);
+  create_and_display_error_message(('Error(s) occurred.'))
+  var globalErrors = errors['__all__'];
+  delete errors['__all__'];
+  var validator = $(form).validate();
+  validator.showErrors(errors);
+  var ul = document.createElement('ul');
+  ul.className = "p-0";
+  ul.style.listStyle = 'none';
+  for(let error of globalErrors){
+    var li = document.createElement('li');
+    li.className = "alert alert-danger";
+    $(li).html(
+      `${error} 
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>`
+    );
+    ul.append(li);
+  }
+  $(form).find('.modal-body').prepend(ul);
 }
 
 function display_message(form,message){
@@ -181,6 +315,20 @@ function display_message(form,message){
 function create_and_display_success_message(message){
     var div = document.createElement('div');
     div.className = "alert alert-success alert-body";
+    $(div).html(message+`
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    `);
+    $(div).delay(3000).fadeOut(function(){
+        $(this).remove();
+    })
+    $('body').append(div);
+}
+
+function create_and_display_error_message(message){
+    var div = document.createElement('div');
+    div.className = "alert alert-danger alert-body";
     $(div).html(message+`
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
@@ -222,9 +370,9 @@ function login_form_validation(){
                 let data = {
                     username: $('#login_username').val(),
                     password: $('#login_password').val(),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 let url = window['API_PREFIX']+'account/login/';
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -245,6 +393,7 @@ function login_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
             }
         }
@@ -290,13 +439,13 @@ function enter_number_form_validation(){
             if($(form).valid()){
                 var data = {
                     mobile_number: $('#enter_mobile_number').val(),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 if(!add_number){
                     var url = API_PREFIX + 'account/request-otp/';
                 } else {
                     var url = API_PREFIX + 'account/add-number/add-number';
                 }
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -309,6 +458,7 @@ function enter_number_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
                 
             }
@@ -331,13 +481,13 @@ function verify_number_form_validation(){
             if($(form).valid()){
                 var data = {
                     otp: $('#verify_otp').val(),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 if(!add_number){
                     var url = API_PREFIX + 'account/verify-number/';
                 } else {
                     var url = API_PREFIX + 'account/add-number/verify-number'
                 }
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -361,6 +511,7 @@ function verify_number_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
             }
         }
@@ -423,9 +574,9 @@ function register_form_validation(){
                     mobile_number: $('#register_mobile_number').val(),
                     password: $('#register_password').val(),
                     confirm_password: $('#register_confirm_password').val(),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/register/';
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -439,6 +590,7 @@ function register_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
             }
         }
@@ -506,9 +658,9 @@ function roomie_ad_form_validation(){
                     'share': $('#roomie_share').val(),
                     'gender': $('#roomie_gender').val(),
                     'image_ids': getSelect2Values($('#id_images')),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'roomie/create/';
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -520,10 +672,36 @@ function roomie_ad_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
             }
         }
     });
+}
+
+function create_charges_data(prefix){
+  var $charges_amount=$(`[data-id=${prefix}_charge_amount]`);
+  var $charges_description=$(`[data-id=${prefix}_charge_description]`);
+  var $charges_is_per_month=$(`[data-id=${prefix}_charge_is_per_month]`);
+  var data=[];
+  var i=0;
+  $charges_amount.each(function(el){
+    data.push({
+      amount: $charges_amount[i].value,
+      description: $charges_description[i].value,
+      is_per_month: $charges_is_per_month[i].checked,
+    });
+    i++;
+  });
+  return JSON.stringify(data);
+}
+
+function convert_area_to_gaj(area, no_of_gaj) {
+  return parseFloat(area)*parseFloat(no_of_gaj);
+}
+
+function convert_to_rqeuested_unit(area, no_in_a_gaj) {
+  return +(parseFloat(area)/parseFloat(no_in_a_gaj)).toFixed(3);
 }
 
 
@@ -535,90 +713,96 @@ function property_ad_form_validation(){
       width = 2000;
   });
   var propertyAdFormValidator = form.validate({
+      ignore: '.ignore',
       rules: {
-          title: {
-              alphabets_or_digits_only: true,
-              maxlength: 70,
-              required: true,
-          },
-          type: {
-            required: true,
-          },
-          flooring: {
-            required:true,
-          },
-          halls: {
-            required: true,
-          },
-          other_rooms: {
-            required: true,
-          },
-          bedrooms: {
-            required: true,
-          },
-          floor_no: {
-            required: true,
-            // less_than_total_floors: true,
-            numbers_only: true,
-          },
-          total_floors: {
-            required: true,
-            numbers_only: true,
-          },
-          bathrooms: {
-            required: true,
-          },
-          balconies: {
-            required: true,
-          },
-          property_type_other: {
-            required: {
-              depends: function(element){
-                return $('#property_type option:selected').text().toLowerCase()=='other';
-              }
+        title: {
+          slug: true,
+          maxlength: 70,
+          required: true,
+        },
+        region: {
+          required: true,
+        },
+        address: {
+          required: true,
+        },
+        available_from: {
+          required: true,
+          date: true,
+        },
+        total_floors: {
+          required: true,
+          digits: true,
+        },
+        floor_no: {
+          required: true,
+          less_than_total_floors: true,
+          digits: true,
+        },
+        type: {
+          required: true,
+        },
+        property_type_other: {
+          required: {
+            depends: function (element) {
+              return $('#property_type option:selected').text().toLowerCase() == 'other';
             }
-          },
-          rent: {
-              required: true,
-              numbers_only: true
-          },
-          // property_image: {
-          //   minlength: 3,
-          // },
-          booking_amount: {
-            required: true,
-            numbers_only: true,
-          },
-          additional_details: {
-            required: true,
-          },
-          property_flooring_other: {
-            required: {
-              depends: function(element){
-                return $('#property_flooring option:selected').text().toLowerCase()=='other';
-              }
-            }
-          },
-          security_deposit: {
-            required: true,
-            numbers_only: true,
-          },
-          area: {
-            required: true,
-            numbers_only: true,
-          },
-          available_from: {
-            required: true,
-          },
-          region: {
-            required: true,
-          },
-          address: {
-            required: true,
           }
+        },
+        furnishing: {
+          required: true,
+        },
+        facilities: {
+          required: false,
+        },
+        halls: {
+          required: true,
+        },
+        rooms: {
+          required: true,
+        },
+        bathrooms: {
+          required: true,
+        },
+        balconies: {
+          required: true,
+        },
+        area: {
+          required: true,
+          number: true,
+        },
+        flooring: {
+          required: true,
+        },
+        property_flooring_other: {
+          required: {
+            depends: function (element) {
+              return $('#property_flooring option:selected').text().toLowerCase() == 'other';
+            }
+          }
+        },
+        rent: {
+          required: true,
+          digits: true
+        },
+        advance_of_months: {
+          required: true,
+          digits: true
+        },
+        property_images: {
+          minlength: 3,
+        },
+      },
+      messages: {
+        property_images: {
+          minlength: jQuery.validator.format('Atleast {0} images required'),
+        }
       },
       errorPlacement: function(error, element){
-        if(element.prop('nodeName')=='SELECT'){
+        if(element.attr('name')=='property_images') {
+          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
+          $('#property_add_image').after(error);
+        } else if(element.prop('nodeName')=='SELECT'){
           error.css({'margin':'0.5rem 0 0 0','margin-left':'0px'});
           element.next().after(error[0]);
         } else if(element.attr('name')=='area'){
@@ -630,52 +814,56 @@ function property_ad_form_validation(){
       },
       errorElement: 'div',
       submitHandler: function(form,e){
-          e.preventDefault();
-          e.stopPropagation();
-          propertyAdFormValidator.form();
-          if($(form).valid()){
-              var data = {
-                  'title': $('#property_title').val(),
-                  'region': $('#property_region').val(),
-                  'lodging_type': $('#property_type').val(),
-                  'lodging_type_other': $('#property_type_other').val(),
-                  'total_floors': $('#property_total_floors').val(),
-                  'floor_no': $('#property_floor_no').val(),
-                  'furnishing': $('#property_furnishing').val(),
-                  'facilities': $('#property_facilities').val(),
-                  'rent': $('#property_rent').val(),
-                  'available_from': $('#property_available_from').val(),
-                  'area': $('#property_area').val(),
-                  'area_unit': $('#property_measuring_unit').val(),
-                  'bathrooms': $('#property_bathrooms').val(),
-                  'other_rooms': $('#property_other_rooms').val(),
-                  'bedrooms': $('#property_bedrooms').val(),
-                  'balconies': $('#property_balconies').val(),
-                  'halls': $('#property_halls').val(),
-                  'security_deposit': $('#property_security_deposit').val(),
-                  'booking_amount': $('#property_booking_amount').val(),
-                  'flooring': $('#property_flooring').val(),
-                  'flooring_other': $('#property_other').val(),
-                  'additional_details':$('#property_additional_details').val(),
-                  'images': $('#property_images').val(),
-                  'address': $('#property_address').val(),
-                  'latlng': $('#property_latlng').val(),
-                  csrfmiddlewaretoken: csrf_token,
-              }
-              $.ajax({
-                  'type':'POST',
-                  'dataType':'json',
-                  'url': window.create_property_url,
-                  'data': data,
-                  traditional: true,
-              }).always((data)=>{
-                  if(data.status=='200'){
-                    create_and_display_success_message('Post added.')
-                  } else {
-                    display_errors(data,form);
-                  }
-              });
+        e.preventDefault();
+        e.stopPropagation();
+        propertyAdFormValidator.form();
+        if ($(form).valid()) {
+          var data = {
+            'title': $('#property_title').val(),
+            'region': $('#property_region').val(),
+            'address': $('#property_address').val(),
+            'latlng': $('#property_latlng').val(),
+            'available_from': $('#property_available_from').val(),
+            'total_floors': $('#property_total_floors').val(),
+            'floor_no': $('#property_floor_no').val(),
+            'lodging_type': $('#property_type').val(),
+            'lodging_type_other': $('#property_type_other').val(),
+            'furnishing': $('#property_furnishing').val(),
+            'facilities': $('#property_facilities').val(),
+            'bathrooms': $('#property_bathrooms').val(),
+            'balconies': $('#property_balconies').val(),
+            'rooms': $('#property_rooms').val(),
+            'halls': $('#property_halls').val(),
+            'area': convert_area_to_gaj($('#property_area').val(), $('#property_measuring_unit').val()),
+            'flooring': $('#property_flooring').val(),
+            'flooring_other': $('#property_other').val(),
+            'rent': $('#property_rent').val(),
+            'advance_rent_of_months': $('#property_advance_of_months').val(),
+            'other_charges': create_charges_data('property'),
+            'additional_details': $('#property_additional_details').val(),
+            'images': $('#property_images').val(),
           }
+          show_loading(form);
+          $.ajax({
+            'type': 'POST',
+            'dataType': 'json',
+            'url': window.create_property_url,
+            'data': data,
+            traditional: true,
+            success: function (res) {
+              console.log("success");
+              create_and_display_success_message('Post added.');
+              reset_form(e,true);
+            },
+            error: function (data) {
+              console.log("error")
+              display_errors(data, form);
+            },
+            complete: function (res) {  
+              remove_loading(form);
+            }
+          });
+        }
       }
   });
 }
@@ -720,9 +908,9 @@ function set_password_form_validation(){
                 var data = {
                     password: $('#set_password').val(),
                     confirm_password: $('#set_confirm_password').val(),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/reset-password/';
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -738,6 +926,7 @@ function set_password_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
             }
         }
@@ -788,9 +977,9 @@ function change_password_form_validation(){
                     current_password: $('#change_current_password').val(),
                     password: $('#change_password').val(),
                     confirm_password: $('#change_confirm_password').val(),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/change-password/';
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -805,6 +994,7 @@ function change_password_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
             }
         }
@@ -849,9 +1039,9 @@ function profile_form_validation(){
                     last_name: last_name,
                     detail: $('#profile_detail').val(),
                     type_of_roommate: $('#profile_type_of_roommate').val(),
-                    csrfmiddlewaretoken: csrf_token,
                 }
                 var url = API_PREFIX + 'account/save-profile/';
+                show_loading(form);
                 $.ajax({
                     'type':'POST',
                     'dataType':'json',
@@ -863,6 +1053,7 @@ function profile_form_validation(){
                     } else {
                         display_errors(data,form);
                     }
+                    remove_loading(form);
                 });
             }
         }
@@ -885,12 +1076,9 @@ function custom_validators(){
     jQuery.validator.addMethod('alphabets_only',function(value,element){
         return this.optional(element) || /^[a-zA-Z ]*$/.test(value);
     },'Can contain alphabets only.');
-    jQuery.validator.addMethod('numbers_only',function(value,element){
-        return this.optional(element) || /^[0-9]*$/.test(value);
-    },'Can contain digits only.');
-    jQuery.validator.addMethod('alphabets_or_digits_only',function(value,element){
-        return this.optional(element) || /^[a-zA-Z0-9 ]*$/.test(value);
-    },'Can contain alphabets and digits only.');
+    jQuery.validator.addMethod('slug',function(value,element){
+        return this.optional(element) || /^[-a-zA-Z0-9_ ]+$/.test(value);
+    },'Can contain alphabets, digits, hyphen, underscore and space only.');
     jQuery.validator.addMethod('one_value',function(value,element){
         if(value.length===1){
             return true;
@@ -905,7 +1093,7 @@ function custom_validators(){
       return true;
     },'Type other value.');
     jQuery.validator.addMethod('less_than_total_floors',function(value,element){
-      return $('#property_floor_no').val()<=$('#property_total_floors').val();
+      return $(element).val()<=$('#property_total_floors').val();
     },'Floor number cannot be greater than total floors.');
 }
 
@@ -974,16 +1162,17 @@ function set_custom_alerts(){
 
 function set_logout(){
     $('[data-action=logout]').click(function(){
+        show_loading();
         $.ajax({
             type: 'POST',
             url: window['API_PREFIX'] + 'account/logout/',
-            data: {csrfmiddlewaretoken:csrf_token},
             dataType: 'JSON'
         }).always((data)=>{
             create_and_display_success_message('Logging out');
             setTimeout(function(){
                 window.location.reload();
             },1000);
+            remove_loading();
         });
     });
 }
@@ -1006,135 +1195,230 @@ function create_options_from_array(j_el,text,value){
   }
 }
 
-fileReader.onload = function (event) {
-    var image = new Image();
-    image.onload=function(){
-        var canvas=document.createElement("canvas");
-        var context=canvas.getContext("2d");
-        if(max_width/max_height>image.width/image.height){
-            canvas.height = max_height;
-            canvas.width = (image.width/image.height)*max_height;
-        } else {
-            canvas.width = max_width;
-            canvas.height = (image.height/image.width)*max_width;
-        }
-        context.drawImage(image,
-            0,
-            0,
-            image.width,
-            image.height,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-        var dataURL = canvas.toDataURL('image/jpeg');
-        if(url==window.image_url){
-          max_height = 1000;
-          max_width = 1000;
-        }
-        $.ajax({
-            type:'POST',
-            url: upload_image_url,
-            data: {
-                'image': dataURL,
-                csrfmiddlewaretoken: csrf_token,
-            },
-            headers: {
-                'X-CSRFToken': window.csrf_token
-            }
-        }).done(function(res){
-            if(upload_image_url==window.image_url){
-              $('#profile').trigger('profile-updated',[res.id,res.url]);
-            }
-            $(file).val("");
-            var div = document.createElement('div');
-            div.className = 'flex';
-            var i = document.createElement('i');
-            i.className='fa fa-check-circle right';
-            div.appendChild(i);
-            $('#text_'+$(file).attr('id')).after(div);
-            var option = document.createElement('option');
-            $(option).val(res.id);
-            $(option).text(res.url_thumbnail);
-            $(option).attr('selected',true);
-            var image_id='#id_images';
-            if(window.prefix){
-              image_id='#'+window.prefix+'_images';
-            }
-            $(image_id).append(option);
-            $(image_id).trigger('change');
-            $(image_id+'_contain').append(`<img src="${res.url_thumbnail}">`);
-        }).fail(function(err){
-            console.log(err);
-        }).always(function(data){
-            // console.log(data);
-        });
+function initialize_editable(id,_this,obj={},callback=()=>{}){
+  var options = {
+    type: 'select',
+    pk: id,
+    url: window.tag_url,
+    title: 'Choose tag',
+    source: tagList,
+    mode: 'inline',
+    emptytext: 'Add tag',
+    showbuttons: false,
+    success: (response, newValue)=>{
+      if(response===""){
+        callback(newValue);
+        $(_this).find(`[value=${id}]`).attr('data-tag',newValue);
+        $(_this).trigger('change');
+      }
+    },
+    params: {
+      csrfmiddlewaretoken: window.getCookie('csrftoken')
     }
-    image.src=event.target.result;
-};
+  };
+  $('#tag_'+id).editable(Object.assign(options,obj));
+}
 
-var loadImageFile = function (id,url=window.roomie_image_url) {
-    file=document.getElementById(id);
-    upload_image_url=url;
-    //check and retuns the length of uploded file.
-    if (file.files.length === 0) {
-        return; 
+function add_image_to_container(div,obj,$form,select){
+  $(div).append(`
+  <div class="uploaded_image_tag_container">
+    <img src="${obj.url}" id="image_${obj.value}">
+    <div>
+      <a href="#" id="tag_${obj.value}"></a>
+      <a href="#" id="delete_${obj.value}" class="red-text">Delete</a>
+    </div>
+  </div>
+  `);
+  $(div).find(`#delete_${obj.value}`).click(function($event){
+    delete_image($event,obj.value,$form);
+  });
+  $(select).append(`<option value="${obj.value}" selected="selected" data-tag="${obj.tag}">${obj.url}</option>`);
+  if(obj.tag){
+    initialize_editable(obj.value,select,{value: obj.tag});
+  } else {
+    initialize_editable(obj.value,select);
+  }
+}
+
+function destroy_modal($modal){
+  $modal.modal('dispose');
+  $modal.remove();
+}
+
+function create_modal_to_add_tag(res){
+  $('body').append(`
+    <div class="modal fade" id="add_tag" data-backdrop="static" >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Choose appropriate tag</h5>
+          </div>
+          <div class="modal-body">
+            <img src="${res.url_thumbnail}" alt="${res.id}">
+          </div>
+          <div class="modal-footer">
+            <a href="#" id="delete_${res.id}">Delete</a>
+            <a href="#" id="tag_${res.id}"></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+  var $modal_el = $('#add_tag');
+  $('#delete_'+res.id).click(function($event){
+    delete_image(event, res.id, null, ()=>{
+      destroy_modal($modal_el);
+    });
+  });
+  initialize_editable(res.id,$('#property_images'),{},(tag)=>{
+    var obj = {
+      value: res.id,
+      url: res.url_thumbnail,
+      tag: tag,
     }
-    
-    //Is Used for validate a valid file.
-    var uploadFile = document.getElementById(id).files[0];
-    if (!filterType.test(uploadFile.type)) {
-        alert("Please select a valid image."); 
-        return;
+    var div = $('#property_images_contain')[0];
+    if(!div){
+      div = create_images_container('property_images');
+      $('#property_images').after(div);
     }
-    
-    fileReader.readAsDataURL(uploadFile);
+    add_image_to_container(div,obj,$('#modalPropertyAdForm'),$('#property_images')[0]);
+    destroy_modal($modal_el);
+  });
+  $modal_el.modal('show');
+  // $('#add_tag').on('show.bs.modal',function(){
+  //   $('#add_tag').css('z-index','1052');
+  // });
+  // $('#add_tag').on('hide.bs.modal',function(){
+  //   $('#add_tag').css('z-index','1000');
+  // });
+  $modal_el.on('hidden.bs.modal',function(){
+    destroy_modal($modal_el);
+  });
+}
+
+function get_image_id(form=null){
+  if(form){
+    if(form[0].id=='modalPropertyAdForm'){
+      return '#property_images';
+    }
+  }
+  var image_id='#id_images';
+  if(window.prefix){
+    image_id='#'+window.prefix+'_images';
+  }
+  return image_id;
+}
+
+var loadImageFile = function (event,url=window.roomie_image_url) {
+  var file = event.target;
+
+  //check and retuns the length of uploded file.
+  if (file.files.length === 0) {
+    return;
+  }
+
+  var filterType = /^(?:image\/gif|image\/jpeg|image\/jpeg|image\/jpeg|image\/png|image\/svg\+xml|image\/x\-icon|image\/x\-rgb)$/i;
+
+  //Is Used for validate a valid file.
+  var uploadFile = file.files[0];
+  if (!filterType.test(uploadFile.type)) {
+    alert("Please select a valid image.");
+    return;
+  }
+
+  var fileReader = new FileReader();
+  var max_width = 2000;
+  var max_height = 2000;
+
+  fileReader.readAsDataURL(uploadFile);
+
+  fileReader.onload = function (event) {
+    var image = new Image();
+    image.onload = function () {
+      var canvas = document.createElement("canvas");
+      var context = canvas.getContext("2d");
+      if (max_width / max_height > image.width / image.height) {
+        canvas.height = max_height;
+        canvas.width = (image.width / image.height) * max_height;
+      } else {
+        canvas.width = max_width;
+        canvas.height = (image.height / image.width) * max_width;
+      }
+      context.drawImage(image,
+        0,
+        0,
+        image.width,
+        image.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+      var dataURL = canvas.toDataURL('image/jpeg');
+      if (url == window.image_url) {
+        max_height = 1000;
+        max_width = 1000;
+      }
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: {
+          'image': dataURL,
+          
+        },
+        headers: {
+          'X-CSRFToken': window.getCookie('csrftoken')
+        }
+      }).done(function (res) {
+        if (url == window.image_url) {
+          $('#profile').trigger('profile-updated', [res.id, res.url]);
+          return;
+        }
+        create_modal_to_add_tag(res);
+      }).fail(function (err) {
+        $(file).after(`<div class="error">${err}</div>`);
+      }).always(function (data) {
+        $(file).remove();
+        // console.log(data);
+      });
+    }
+    image.src = event.target.result;
+  };
+}
+
+function set_prefix(id){
+  var arr=id.split('_');
+  var prefix=null;
+  if(arr.length>2){
+    prefix = arr.slice(0,-2).join('_');
+  }
+  return prefix;
 }
 
 function enable_add_image(){
   $('span').filter(function(){
     return this.id.match(/add_image$/);
   }).click(function(){
-      var name = 'image-'+val+'-image';
-      var id = "id_"+name;
-      var image_input = `
-      <div class="uploader">
-          <label class="fileContainer pd-1 btn btn-outline-primary btn-sm waves-effect waves-light active">
-              Choose files
-              <input type="file" id="`+id+`" name=`+name+` onchange="loadImageFile('`+id+`')" class="d-none">
-          </label>
-          <input type="text" disabled id=text_`+id+` class="form-control" padding-0 placeholder="upload your image">
-      </div>`;
-      var arr=this.id.split('_');
-      prefix=null;
-      if(arr.length>2){
-        prefix = arr.slice(0,-2).join('_');
-      }
-      var id_image_container = 'images_container';
-      if(prefix){
-        id_image_container = prefix+'_'+id_image_container;
-      }
-      $('#'+id_image_container).append(image_input);
-      $("input[id="+id+"]").on('change',function(e){
-        $("input[id=text_"+id+"]").attr('placeholder',e.target.files[0].name);
-      });
-      val++;
+    var name = this.id+'_file';
+    var id = "id_"+name;
+    set_prefix(this.id);
+    $('#'+id).remove();
+    $(this).after(`<input type="file" id=${id} name=${name} onchange="loadImageFile(event)" class="d-none">`);
+    var $file_input = $('#'+id);
+    $file_input[0].click();
   });
 }
 
 function formToString(filledForm,select_ids) {
   formObject = new Object;
   filledForm.find("input, select, textarea").each(function() {
+    var id=this.id;
     if (this.id) {
-      elem = $(this);
+      $elem = $(this);
       if(select_ids.includes(this.id)){
         list = [];
         $(this).find('option[selected]').each(function(){
-          list.push({
-            id: $(this).val(),
-            region: $(this).text(),
-          });
+          list.push($('#'+id)[0].selectize.options[$(this).val()]);
         });
         formObject[this.id] = list;
       } else if(this.id.match(/_images$/)){
@@ -1142,59 +1426,149 @@ function formToString(filledForm,select_ids) {
         $(this).find('option[selected]').each(function(){
           obj.push({
             value: $(this).val(),
-            url: $(this).text()
+            url: $(this).text(),
+            tag: $(this).attr('data-tag'),
           });
         });
         formObject[this.id]=obj;
       }
       else {
-        if (elem.attr("type") == 'checkbox' || elem.attr("type") == 'radio') {
-          formObject[this.id] = elem.attr("checked");
+        if ($elem.attr("type") == 'checkbox' || $elem.attr("type") == 'radio') {
+          formObject[this.id] = $elem.is(":checked");
         } else {
-          formObject[this.id] = elem.val();
+          formObject[this.id] = $elem.val();
         }
       }
     }
   });
   formString = JSON.stringify(formObject);
-  create_and_display_success_message('saved')
+  create_and_display_success_message('saved');
   return formString;
+}
+
+function delete_from_localstorage(image_id,$form){
+  if(!$form){
+    return
+  }
+  var key = get_image_id($form).slice(1);
+  var form_id = $form[0].id;
+  var obj = JSON.parse(localStorage.getItem(form_id));
+  var index = obj[key].findIndex(element=>element.value==image_id);
+  obj[key].splice(index,1);
+  localStorage.setItem(form_id, JSON.stringify(obj));
+}
+
+function delete_image(event,image_id,$form=null,callback=()=>{}){
+  event.preventDefault();
+  $.confirm({
+    text: 'Are you sure you want to delete this image?',
+    confirm: function(){
+      $.ajax({
+        type: 'POST',
+        url: window.delete_image_url,
+        data: {
+          
+          id: image_id,
+        },
+        success: function(res){
+          create_and_display_success_message('Image deleted');
+          callback();
+        },
+        error: function(res){
+          create_and_display_error_message(res);
+        },
+        complete: function(res){
+          if(res.status==404 || res.status==200){
+            delete_from_localstorage(image_id,$form);
+            if($form){
+              $(event.target).parent().parent().remove();
+            }
+          }
+        }
+      });
+    },
+  });
+}
+
+function create_images_container(id) {  
+  var div = document.createElement('div');
+  div.id = id+'_contain';
+  div.className = 'images_container';
+  return div;
 }
 
 function stringToForm(formString, unfilledForm, select_ids) {
   if(!formString){
-    return
+    return;
   }
   formObject = JSON.parse(formString);
   unfilledForm.find("input, select, textarea").each(function() {
       if (this.id) {
-        id = this.id;
-        elem = $(this);
+        var id = this.id;
+        var $elem = $(this);
         if(select_ids.includes(id)){
           var items = formObject[id];
           for(var i in items){
-            $('#'+id).append(`<option value=${items[i].id} selected="selected">${items[i].region}</option>`);
-          }
+            if(items[i]){
+              $('#'+id)[0].selectize.addOption(items[i]);
+              $('#'+id)[0].selectize.addItem(items[i].id);
+            }
+          }          
         } else if(id.match(/_images$/)){
-          var div = document.createElement('div');
-          div.id = id+'_contain';
-          div.className = 'images_container';
-          for(var i in formObject[id]){
-            $(div).append(`<img src="${formObject[id][i].url}">`);
-            $(this).append(`<option value="${formObject[id][i].value}" selected="selected">${formObject[id][i].url}</option>`);
+          if(formObject[id].length>0){
+            var div = create_images_container(id);
+            $(this).after(div);
+            for(var i in formObject[id]){
+              var obj=formObject[id][i];
+              try {throw obj}
+              catch(newObj){
+                add_image_to_container(div,newObj,unfilledForm,this);
+              }
+            }
+            $(this).after('<div class="w-100 images-added-heading">Images added by you</div>');
           }
-          $(this).after(div);
-          $(this).after('<div class="w-100 images-added-heading">Images added by you</div>');
         }
         else {
-          if (elem.attr("type") == "checkbox" || elem.attr("type") == "radio" ) {
-            elem.attr("checked", formObject[id]);
+          if ($elem.attr("type") == "checkbox" || $elem.attr("type") == "radio" ) {
+            $elem.prop("checked", !!formObject[id]);
           } else {
-            elem.val(formObject[id]).trigger('change');
+            $elem.val(formObject[id]).trigger('change');
+            if($elem[0].selectize){
+              if(formObject[id] && formObject[id].constructor === Array){
+                for(var i in formObject[id]){
+                  $elem[0].selectize.addItem(formObject[id][i]);
+                }
+              } else {
+                $elem[0].selectize.addItem(formObject[id]);
+              }
+            }
           }
         }
       }
   });
+
+  if(unfilledForm.attr('id')=='modalPropertyAdForm'){
+    $el = $('#other_charges_button');
+    var htmlString=localStorage.getItem('property_other_charges');
+    if(!htmlString){
+      return
+    }
+    var htmlList=JSON.parse(htmlString);
+    if(!htmlList || htmlList.constructor!==Array){
+      return
+    }
+    for(var html of htmlList){
+      $el.parent().before(html);
+      charge_form_id++;
+      $el.parent().prev().find('input','checkbox').each(function(){
+        if($(this).attr("type") == "checkbox" || $(this).attr("type") == "radio" ){
+          $(this).prop('checked',!!formObject[this.id]);
+        } else {
+          $(this).val(formObject[this.id]).trigger('change');
+        }
+      });
+    }
+  }
 }
 
 function resend_otp(){
@@ -1207,10 +1581,10 @@ function resend_otp(){
   } else {
     data = {
       mobile_number: $('#enter_mobile_number').val(),
-      csrfmiddlewaretoken: csrf_token,
     }
   }
   var url = API_PREFIX + 'account/request-otp/';
+  show_loading(form);
   $.ajax({
     'type':'POST',
     'dataType':'json',
@@ -1222,6 +1596,7 @@ function resend_otp(){
     } else {
       display_errors(data,form);
     }
+    remove_loading(form);
   });
 }
 
@@ -1232,6 +1607,51 @@ function initialize_auto_save(form_id,select_ids){
       localStorage.setItem(form_id,formToString($('#'+form_id),select_ids));
     });
   });
+}
+
+function delete_form(data,form_id,event,$form,post=false){
+  if(data && JSON.parse(data).constructor==Object){
+    if(!post){
+      var imageList;
+      data=JSON.parse(data);
+      if(form_id=='modalPropertyAdForm'){
+        imageList=data['property_images'];
+      } else {
+        imageList=data['id_images'];
+      }
+      for(var image_id of imageList){
+        delete_image(event,image_id);
+      }
+    }
+    localStorage.removeItem(form_id);
+    if(form_id=='modalPropertyAdForm'){
+      localStorage.removeItem('property_other_charges');
+      localStorage.removeItem('property_other_charges_fields');
+    }
+    create_and_display_success_message("Form has been reset");
+    setTimeout(function(){
+      window.location.href="/";
+    },2000);
+  }
+}
+
+function reset_form(event,post=false){
+  event.preventDefault();
+  var $el=$(event.target);
+  var $form=$($el.closest('form')[0]);
+  var form_id=$form.attr('id');
+  var data=localStorage.getItem(form_id);
+  if(!post){
+    $.confirm({
+      title: "Are you sure you want to reset form?",
+      text: "All data will be deleted.",
+      confirm: function(){
+        delete_form(data,form_id,event,$form);
+      }
+    });
+  } else {
+    delete_form(data,form_id,event,$form,post);
+  }
 }
 
 function initialize_form_selectize(){
@@ -1245,92 +1665,96 @@ function initialize_form_selectize(){
     $('select:not([hidden=true])').selectize({
       copyClassesToDropdown: false,
     });
+    initialize_auto_save('modalPropertyAdForm',['property_region']);
+    initialize_auto_save('modalRoomieAdForm',['roomie_regions']);
   });
 }
 
-function display_full_screen_carousel(ad_images,rent,location,type,available_from,title){
+function display_full_screen_carousel(ad_images,rent,location,type,available_from,title,images_tag){
   $('#full_screen_carousel_modal').remove();
   var carousel = `
-  <div class="modal fade full_screen" id="full_screen_carousel_modal"  tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="full_screen_carousel_modal-title">
-          ${title}
-          </h5>
-          <div class="zoom-container">
-            <i class="fa fa-search-plus" id="full_screen_carousel_zoom-in"></i>
-            <i class="fa fa-search-minus" id="full_screen_carousel_zoom-out"></i>
-            <i class="fa fa-refresh" id="full_screen_carousel_reset"></i>
-          </div>
-          <button type="button" class="close btn btn-danger" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span> close
-          </button>
-        </div>
-        <div class="modal-body">
-          <div id="full_screen_carousel" class="carousel slide carousel-fade carousel-thumbnails" data-ride="false">
-            <div class="carousel-inner" role="listbox">
-              <div class="carousel-item active">
-                <div class="view">
-                  <img class="d-block w-100" src="${ad_images[0]}">
-                </div>
-              </div>
-              `
-  for(var i in ad_images){
-    if(i>0){
-      carousel += `
-              <div class="carousel-item">
-                <div class="view">
-                  <img class="d-block" src="" data-src="${ad_images[i]}">
-                </div>
-              </div>
-      `
-    }
-  }
-              `
+    <div class="modal fade full_screen" id="full_screen_carousel_modal"  tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="full_screen_carousel_modal-title">
+            <small>1/${images_tag.length}</small> ${images_tag[0]}
+            </h4>
+            <div class="zoom-container">
+              <i class="fa fa-search-plus" id="full_screen_carousel_zoom-in"></i>
+              <i class="fa fa-search-minus" id="full_screen_carousel_zoom-out"></i>
+              <i class="fa fa-refresh" id="full_screen_carousel_reset"></i>
             </div>
-  `
-  if(ad_images.length>1){
-    carousel += `
-          <a class="carousel-control-prev" href="#full_screen_carousel" role="button" data-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-          </a>
-          <a class="carousel-control-next" href="#full_screen_carousel" role="button" data-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-          </a>`;
-  }
-  carousel += 
-          `<ol class="carousel-indicators">
-            <li data-target="#full_screen_carousel" data-slide-to="0" class="active"></li>
-            `
-  for(var i in ad_images){
-    if(i>0){
-      carousel += `
-            <li data-target="#full_screen_carousel" data-slide-to="0"></li>
-      `
+            <button type="button" class="close btn btn-danger" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="full_screen_carousel" class="carousel slide carousel-fade carousel-thumbnails" data-ride="false">
+              <div class="carousel-inner" role="listbox">
+                <div class="carousel-item active">
+                  <div class="view">
+                    <img class="d-block w-100" src="${ad_images[0]}">
+                  </div>
+                </div>
+                `
+    for(var i in ad_images){
+      if(i>0){
+        carousel += `
+                <div class="carousel-item">
+                  <div class="view">
+                    <img class="d-block" src="" data-src="${ad_images[i]}">
+                  </div>
+                </div>
+        `
+      }
     }
-  }
-            `
-          </ol>
+                `
+              </div>
+    `
+    if(ad_images.length>1){
+      carousel += `
+            <a class="carousel-control-prev" href="#full_screen_carousel" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#full_screen_carousel" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="sr-only">Next</span>
+            </a>`;
+    }
+    carousel += 
+            `<ol class="carousel-indicators">
+              <li data-target="#full_screen_carousel" data-slide-to="0" class="active"></li>
+              `
+    for(var i in ad_images){
+      if(i>0){
+        carousel += `
+              <li data-target="#full_screen_carousel" data-slide-to="0"></li>
+        `
+      }
+    }
+              `
+            </ol>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-`
+  `;
   $('body').append(carousel);
   $('#full_screen_carousel_modal').modal({
     show:true,
   });
   $('#full_screen_carousel').carousel('pause');
   $('#full_screen_carousel').off('slide.bs.carousel');
+  var $title = $('#full_screen_carousel_modal').find('.modal-title');
   $('#full_screen_carousel').on('slide.bs.carousel',function(event){
     var $img = $(event.relatedTarget).children().children('img');
     if($img.attr('data-src')){
       $img.attr('src',$img.attr('data-src'));
     }
+    $title.html(`<small>${event.to+1}/${images_tag.length}</small> ${images_tag[event.to]}`);
   });
   initialize_panzoom();
 }
@@ -1371,20 +1795,66 @@ function set_carousel(){
   });
 }
 
+function show_indeterminate_progess(){
+  // $(document).ajaxStart(function(){
+  //   $('body').append(`
+  //     <div id="spinner-container" class="d-flex align-items-center justify-content-center">
+  //       <i class="fa fa-spinner fa-spin"></i>
+  //     </div>
+  //   `);
+  //   setTimeout(()=>{},1000);
+  // });
+  // $(document).ajaxStop(function(){
+  //   $('#spinner-container').remove();
+  // });
+}
+
 function csrfSafeMethod(method) {
   // these HTTP methods do not require CSRF protection
   return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
-$('document').ready(function(){
+function create_options_for_property_form_fields(){
+  create_options(1,20,$('#property_total_floors'));
+  create_options(1,20,$('#property_floor_no'));
+  create_options(0,6,$('#property_bathrooms'));
+  create_options(0,6,$('#property_rooms'));
+  create_options(0,6,$('#property_halls'));
+  create_options(0,6,$('#property_balconies'));
+  create_options_from_array($('#property_measuring_unit'), area_units, conversion_value);
+  create_options_from_array($('#property_flooring'),
+    ['Marble','Vitrified Tile','Vinyl','Hardwood','Granite','Bamboo','Concrete','Laminate','Linoleum','Tarrazzo','Brick','Other'],
+    ['M','VT','V','H','G','B','C','L','LI','T','BR','O']
+  );
+}
 
-  // $.ajaxSetup({
-  //   beforeSend: function(xhr, settings) {
-  //     if (!csrfSafeMethod(settings.type)) {
-  //       xhr.setRequestHeader("X-CSRFToken", csrf_token);
-  //     }
-  //   },
-  // });
+function initialize_other_select(){
+  $('[data-target=other]').change(function(){
+    var id = this.id;
+    if($('#'+id+' option:selected').text().toLowerCase()=='other'){
+      var label = $(this).attr('data-label');
+      var el = `
+      <div class="md-form mt-0 col-12 col-md-6 mb-4" id="`+id+'_other_container'+`">
+        <input type="text" class="form-control" name="`+id+'_other'+`" id=`+id+'_other'+`>
+        <label for=`+id+`>`+label+`</label> 
+      </div>
+      `;
+      $(this).parent().after(el);
+    } else {
+      $('#'+id+'_other_container').remove();
+    }
+  });
+}
+
+$('document').ready(function(){
+  
+  $(document).ajaxSend(function (event, jqxhr, settings) {
+    settings.data += '&csrfmiddlewaretoken=' + window.getCookie('csrftoken');
+  })
+
+  // $(document).ajaxComplete(function (event, xhr, settings) {
+  //   debugger
+  // })
 
   $(window).resize(set_footer);
 
@@ -1429,7 +1899,7 @@ $('document').ready(function(){
   $('[data-action=verify-number]').click(function(){
       add_number = false;
       if(mobile_number!=""){
-          $enter_mobile_number.val(mobile_number);
+        $enter_mobile_number.val(mobile_number);
       }
   });
 
@@ -1448,49 +1918,23 @@ $('document').ready(function(){
       $($('#modalRoomieAdForm .modal-body').children('div')[1]).removeClass('d-none');
   });
 
-  $('[data-target=other]').change(function(){
-    var id = this.id;
-    if($('#'+id+' option:selected').text().toLowerCase()=='other'){
-      var label = $(this).attr('data-label');
-      var el = `
-      <div class="md-form mt-0 col-12 col-md-6 mb-4" id="`+id+'_other_container'+`">
-        <input type="text" class="form-control" name="`+id+'_other'+`" id=`+id+'_other'+`>
-        <label for=`+id+`>`+label+`</label> 
-      </div>
-      `;
-      $(this).parent().after(el);
-    } else {
-      $('#'+id+'_other_container').remove();
-    }
-  });
+  initialize_other_select();
 
   $('#property_available_from').Zebra_DatePicker({
     default_position: 'below',
     show_icon: false,
     open_on_focus: true,
     format: 'd-m-Y',
-    direction: [1,15],
+    direction: [1,30],
     container: $('#datepicker-container'),
+    show_clear_date: true,
+    show_select_today: true,
     onSelect: function(){
       $('#property_available_from').trigger('change');
     }
   });
 
-  create_options(1,20,$('#property_total_floors'));
-  create_options(1,20,$('#property_floor_no'));
-  create_options(0,6,$('#property_bathrooms'));
-  create_options(0,6,$('#property_bedrooms'));
-  create_options(0,6,$('#property_halls'));
-  create_options(0,6,$('#property_other_rooms'));
-  create_options(0,6,$('#property_balconies'));
-  create_options_from_array($('#property_measuring_unit'),
-    ['Gaj','Sq. Ft.','Sq. Yds','Sq. Meter','Acre','Marla','Bigha','Kanal','Grounds','Ares','Biswa','Guntha','Hectares'],
-    ['G','SF','SY','SM','A','M','B','K','GR','AR','BI','GU','H']
-  );
-  create_options_from_array($('#property_flooring'),
-    ['Marble','Vitrified Tile','Vinyl','Hardwood','Granite','Bamboo','Concrete','Laminate','Linoleum','Tarrazzo','Brick','Other'],
-    ['M','VT','V','H','G','B','C','L','LI','T','BR','O']
-  );
+  create_options_for_property_form_fields();
 
   // var options = $('#id_images option:selected');
   // if(options.length>0){
@@ -1504,7 +1948,6 @@ $('document').ready(function(){
 
   enable_add_image();
 
-
   $('#upload-image').click(function(e){
     e.preventDefault();
     $('#profile').click();
@@ -1516,10 +1959,9 @@ $('document').ready(function(){
     $('#profile-photo').css({'display':'block'});
   });
 
-  initialize_auto_save('modalPropertyAdForm',['property_region']);
-  initialize_auto_save('modalRoomieAdForm',['roomie_regions']);
-
   initialize_form_selectize();
 
   set_carousel();
+
+  show_indeterminate_progess();
 });

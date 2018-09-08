@@ -39,10 +39,7 @@
 	max-width: 270px!important;
 }
 .filter-nav{
-  width: 90%!important;
   align-self: center;
-  margin-top: 0.2rem;
-  margin-bottom: 1rem;
 }
 #main-container{
   display: flex;

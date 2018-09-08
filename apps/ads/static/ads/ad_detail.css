@@ -31,3 +31,7 @@
 .table-borderless th, .table-borderless td{
   border: none;
 }
+#map{
+  width: 100%;
+  height: 500px;
+}

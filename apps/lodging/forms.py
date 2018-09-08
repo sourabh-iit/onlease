@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from .models import Lodging, CommonlyUsedLodgingModel
+from .models import Lodging, CommonlyUsedLodgingModel, Charge
 from .utils import clean_data
 from apps.locations.models import Region
 
@@ -75,10 +75,6 @@ class LodgingCreateForm(forms.ModelForm):
     return clean_data(data)
 
 
-widgets = {
-  'additional_details': forms.Textarea(attrs={'rows':4, 'cols':15}),
-}
-
 
 class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsMixinForm,forms.ModelForm):
     
@@ -89,18 +85,30 @@ class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsM
   class Meta:
     model = CommonlyUsedLodgingModel
     fields = ('lodging_type','lodging_type_other','total_floors','floor_no',
-        'furnishing','facilities','rent','area','area_unit','bathrooms','bedrooms',
-        'balconies','other_rooms','halls',
-        'flooring','additional_details','title','available_from','region','latlng')
-    widgets = widgets
+        'furnishing','facilities','rent','area','bathrooms','rooms',
+        'balconies','halls','flooring','flooring_other','additional_details','title',
+        'available_from','region','latlng')
 
   def clean_title(self):
     data = self.cleaned_data.get('title')
     return clean_data(data)
 
-  def clean_facilities(self):
-    return self.request.POST.getlist('facilities[]')
+  # def clean_facilities(self):
+  #   return self.request.POST.getlist('facilities')
 
 
 CommonlyUsedLodgingCreateForm.base_fields.update(AdCommonFieldsForm.base_fields)
 CommonlyUsedLodgingCreateForm.base_fields.update(LodgingCommonFieldsForm.base_fields)
+
+class ChargeForm(forms.ModelForm):
+
+  class Meta:
+    model = Charge
+    fields = ('amount','description','is_per_month')
+
+  def save(self, lodging, commit=True):
+    m = super(ChargeForm, self).save(commit=False)
+    m.lodging = lodging
+    if commit:
+      m.save()
+    return m

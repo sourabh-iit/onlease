@@ -241,9 +241,10 @@ def ad_detail_view(request):
   try:
     business = request.GET.get('business')
     if business=='PROPERTY':
-      sublodging = CommonlyUsedLodgingModel.objects.prefetch_related('lodging','images','region').get(id=request.GET.get('id'))
+      sublodging = CommonlyUsedLodgingModel.objects.prefetch_related('lodging','images','region','charges').get(id=request.GET.get('id'))
       lodging = sublodging.lodging
       return render(request,'ads/ad_detail.html',{'lodging':lodging,'sublodging':sublodging})
+    return HttpResponse('');
   except Lodging.DoesNotExist:
     messages.error(request,'Ad does not exist or has been deleted.')
     return HttpResponseRedirect('/')
