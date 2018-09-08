@@ -1883,6 +1883,9 @@ $('document').ready(function(){
   
   $(document).ajaxSend(function (event, jqxhr, settings) {
     settings.data += '&csrfmiddlewaretoken=' + window.getCookie('csrftoken');
+    if (settings.type == "POST") {
+      jqxhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+    }
   })
 
   // $(document).ajaxComplete(function (event, xhr, settings) {
