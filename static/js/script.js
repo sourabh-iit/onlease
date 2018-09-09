@@ -132,11 +132,11 @@ function getCurrentLocation(ev,input_id){
           $('#property_address').val(res.result[0].formatted_address);
           $('#property_latlng').val(lat+','+lng);
           $('#property_latlng').trigger('change');
-          create_and_display_success_message('Location added');
+          toastr.success('Address added successfully');
         },
         error: function(res){
-          if(res.responseJSON && errors in res.responseJSON && '__all__' in res.responseJSON){
-            create_and_display_error_message(res.responseJSON.errors['__all__'][0]);
+          if(res.responseJSON && 'errors' in res.responseJSON && '__all__' in res.responseJSON){
+            toastr.error(res.responseJSON.errors['__all__'][0]);
           }
           display_errors(res,$('#modalPropertyAdForm'));
         },
@@ -280,7 +280,7 @@ function display_errors(data,form){
     errors['__all__'] = ['unknown error occurred.'];
   }
   remove_all_messages(form);
-  create_and_display_error_message(('Error(s) occurred.'))
+  toastr.error(('Error(s) occurred.'))
   var globalErrors = errors['__all__'];
   delete errors['__all__'];
   var validator = $(form).validate();
@@ -314,34 +314,6 @@ function display_message(form,message){
         </button>`
     );
     $(form).find('.modal-body').prepend(div);
-}
-
-function create_and_display_success_message(message){
-    var div = document.createElement('div');
-    div.className = "alert alert-success alert-body";
-    $(div).html(message+`
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    `);
-    $(div).delay(3000).fadeOut(function(){
-        $(this).remove();
-    })
-    $('body').append(div);
-}
-
-function create_and_display_error_message(message){
-    var div = document.createElement('div');
-    div.className = "alert alert-danger alert-body";
-    $(div).html(message+`
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    `);
-    $(div).delay(3000).fadeOut(function(){
-        $(this).remove();
-    })
-    $('body').append(div);
 }
 
 function login_form_validation(){
@@ -505,7 +477,7 @@ function verify_number_form_validation(){
                             $('#modalSetPasswordForm').modal('show');
                         } else {
                             if(add_number){
-                                create_and_display_success_message('Mobile number added.')
+                                toastr.success('My Profile','New mobile number added.')
                             } else {
                                 display_message(form,'Registered successfully.');
                                 setTimeout(()=>{
@@ -856,8 +828,7 @@ function property_ad_form_validation(){
             'data': data,
             traditional: true,
             success: function (res) {
-              console.log("success");
-              create_and_display_success_message('Post added.');
+              toastr.success('Success!','New post added.');
               reset_form(e,true);
             },
             error: function (data) {
@@ -1176,7 +1147,7 @@ function set_logout(){
         }
       }).always((data)=>{
         remove_loading();
-        create_and_display_success_message('Logged out');
+        toastr.success('Success!','Logged out');
         setTimeout(function(){
           window.location.reload();
         },0);
@@ -1248,7 +1219,7 @@ function add_image_to_container(div,obj,$form,select){
 }
 
 function destroy_modal($modal){
-  $modal.modal('dispose');
+  $modal.modal('hide');
   $modal.remove();
 }
 
@@ -1342,7 +1313,7 @@ var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
   var div = document.createElement('div');
   div.className="progress";
   var progress_bar = document.createElement('div');
-  progress_bar.className="progress-bar";
+  progress_bar.className="progress-bar orange darken-3 progress-bar-striped progress-bar-animated";
   $(div).append(progress_bar);
   $(file).after(div);
 
@@ -1390,14 +1361,13 @@ var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
             if(e.lengthComputable) {
               var pct = (e.loaded / e.total) * 100;
               $(progress_bar).css('width',pct+'%');
-              $(progress_bar).text(pct+'%');
-              debugger
+              $(progress_bar).text(parseInt(pct)+'%');
             } else {
               console.error('Content length not reported');
             }
           }
         }).done(function (res) {
-          create_and_display_success_message("Image Uploaded");
+          toastr.success('Success!',"Image Uploaded",);
           if (_type == 'profile') {
             $('#profile').trigger('profile-updated', [res.id, res.url]);
             return;
@@ -1478,7 +1448,7 @@ function formToString(filledForm,select_ids) {
     }
   });
   formString = JSON.stringify(formObject);
-  create_and_display_success_message('saved');
+  toastr.success('Form has been saved');
   return formString;
 }
 
@@ -1507,11 +1477,11 @@ function delete_image(event,image_id,$form=null,callback=()=>{}){
           id: image_id,
         },
         success: function(res){
-          create_and_display_success_message('Image deleted');
+          toastr.success('Image has been deleted');
           callback();
         },
         error: function(res){
-          create_and_display_error_message(res);
+          toastr.error('Error!',res);
         },
         complete: function(res){
           if(res.status==404 || res.status==200){
@@ -1664,7 +1634,7 @@ function delete_form(data,form_id,event,$form,post=false){
       localStorage.removeItem('property_other_charges');
       localStorage.removeItem('property_other_charges_fields');
     }
-    create_and_display_success_message("Form has been reset");
+    toastr.success('Success!',"Form has been reset");
     setTimeout(function(){
       window.location.href="/";
     },2000);
@@ -1686,7 +1656,7 @@ function reset_form(event,post=false){
       }
     });
   } else {
-    delete_form(data,form_id,event,$form,post);
+    delete_form(datdesa,form_id,event,$form,post);
   }
 }
 
@@ -2010,4 +1980,11 @@ $('document').ready(function(){
   set_carousel();
 
   show_indeterminate_progess();
+
+  $('#modalPropertyAdForm').on('hidden.bs.modal',function(){
+    $('.modal-backdrop').remove();
+  });
+
+  toastr.options.closeButton = true;
+  toastr.options.progressBar = true;
 });

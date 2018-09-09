@@ -36,7 +36,7 @@ def regions_view(request):
 def current_location_view(request):
   data = request.POST
   if not (data.get('lat') and data.get('lng')):
-    return JsonResponse({'errors':'Latitude and Longitude values are missing.'},status=400)
+    return JsonResponse({'errors':{'__all__':['Latitude and Longitude values are missing.']}},status=400)
   gmaps_exception=googlemaps.exceptions
   try:
     gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
