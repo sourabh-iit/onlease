@@ -13,6 +13,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 import time
 
@@ -271,6 +272,7 @@ def loginView(request):
             form = LoginForm()
     return render(request,'user/login.html',{'form':form})
 
+@ensure_csrf_cookie
 @not_logged_in
 def loginView_ajax(request):
     if request.method=='POST':
