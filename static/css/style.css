@@ -294,10 +294,6 @@ select.btn.btn-outline-primary{
     z-index: 9999;
     width: fit-content;
 }
-.alternate_mobile_number{
-    display: flex;
-    flex-direction: column;
-}
 /* .row{
   width: auto!important;
 } */
@@ -464,6 +460,9 @@ div#new_ads_circle {
 #datepicker-container{
   position: relative;
   margin-left: 1.5rem;
+}
+#modalEnterNumberForm {
+  z-index: 1501;
 }
 .light-brown-text {
   color: #3b2d3a!important;

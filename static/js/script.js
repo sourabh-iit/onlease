@@ -268,6 +268,9 @@ function get_selectize_configurations(value,remove_button=true){
 }
 
 function remove_all_messages(form){
+  if(!form){
+    return;
+  }
   $(form).find('.modal-body').find('ul').remove();
   $(form).find('.modal-body').find('div.alert').remove();
 }
@@ -411,44 +414,141 @@ function enter_number_form_validation(){
         },
         errorElement: 'div',
         submitHandler: function(form,e){
-            e.preventDefault();
-            enterNumberFormValidator.form();
-            if($(form).valid()){
-                var data = {
-                    mobile_number: $('#enter_mobile_number').val(),
-                }
-                if(!add_number){
-                    var url = API_PREFIX + 'account/request-otp/';
-                } else {
-                    var url = API_PREFIX + 'account/add-number/add-number';
-                }
-                show_loading(form);
-                $.ajax({
-                    'type':'POST',
-                    'dataType':'json',
-                    'url': url,
-                    'data': data,
-                }).always((data)=>{
-                    if(data.status=='200'){
-                        $('#modalEnterNumberForm').modal('hide');
-                        $('#modalVerifyNumberForm').modal('show');
-                    } else {
-                        display_errors(data,form);
-                    }
-                    remove_loading(form);
-                });
-                
+          e.preventDefault();
+          enterNumberFormValidator.form();
+          if($(form).valid()){
+            var data = {
+              mobile_number: $('#enter_mobile_number').val(),
             }
+            if(!add_number){
+              var url = API_PREFIX + 'account/request-otp/';
+            } else {
+              var url = API_PREFIX + 'account/add-number/add-number';
+            }
+            show_loading(form);
+            $.ajax({
+              'type':'POST',
+              'dataType':'json',
+              'url': url,
+              'data': data,
+            }).done((data)=>{
+              $('#modalEnterNumberForm').modal('hide');
+              $('#modalVerifyNumberForm').modal('show');
+            }).fail((data)=>{
+              display_errors(data,form);
+            }).always(()=>{
+              remove_loading(form);
+            });
+          }
         }
     });
 }
+
+function create_inline_loading_element(){
+  var span = document.createElement('span');
+  $(span).append('&nbsp;<i class="fa fa-spinner fa-spin"></i>');
+  return span;
+}
+
+$.prototype.hasAttr = function(attr){
+  var attr = this[0].getAttribute(attr);
+  if(typeof attr != undefined && attr != false){
+    return true;
+  }
+  return false;
+}
+
+function toggle_add_new_number_button(){
+  var num_alternate_numbers = $('.alternate_mobile_number').length;
+  var $add_new_number = $('#add_new_number');
+  if(num_alternate_numbers<3){
+    $add_new_number.removeAttr('disabled');
+    $add_new_number.removeClass('disabled');
+  } else {
+    $add_new_number.attr('disabled',"");
+    $add_new_number.addClass('disabled');
+  }
+}
+
+function delete_number(event,mobile_number){
+  event.preventDefault();
+  $.confirm({
+    title: 'Delete  '+mobile_number,
+    text: 'Are you sure you want to delete this number? <br> This action cannot be undone.',
+    confirm: function(){
+      var el = event.target;
+      var loading_el = create_inline_loading_element();
+      $(el).append(loading_el);
+      $.ajax({
+        url: window.API_PREFIX+'account/add-number/delete-number',
+        data: {
+          mobile_number: mobile_number
+        },
+        type: 'POST'
+      }).done((data)=>{
+        $(el).parent().parent().remove();
+        toastr.success('Successfully deleted', 'Delete '+mobile_number);
+        toggle_add_new_number_button();
+      }).fail((data)=>{
+        toastr.error('Cannot delete this number','Delete '+mobile_number);
+        display_errors(data);
+      }).always(()=>{
+        $(loading_el).remove();
+      });
+    }
+  });
+}
+
+function Input(_id,className,label=null,prefix=null,disabled=false) {
+  this.element = document.createElement('input');
+  this.$element = $(this.element);
+  var updateValue = (value)=>{
+    this.$element.val(value);
+    this.$element.trigger('change');
+  };
+  this.element.className = className;
+  if(disabled){
+    this.$element.attr('disabled','');
+  }
+  if(label){
+    this.label = document.createElement('label');
+    $(this.label).attr('for',_id);
+    $(this.label).text(label);
+  }
+  if(prefix){
+    this.prefix = document.createElement('i');
+    this.prefix.className = 'prefix grey-text fa fa-'+prefix;
+  }
+}
+
+function create_alternate_mobile_number_container(mobile_number,$el){
+  var count = $('.alternate_mobile_number').length+1;
+  var id = 'profile_alternate_mobile_number_'+count;
+  var alternate_mobile_number_container = `
+  <div class="container-fluid mb-4 row">
+    <div class="md-form col-12 col-md-6">
+      <i class="fa fa-mobile prefix grey-text"></i>
+      <input type="text" id="${id}" value="${mobile_number}" 
+        class="form-control alternate_mobile_number"
+        disabled>
+      <label for="${id}">Alternate Mobile number ${count}</label>
+    </div>
+    <div class="col-12 col-md-6 d-flex align-items-center">
+      <button class="btn danger-color btn-sm"
+        onclick="delete_number(event,${mobile_number})">Delete</button>
+    </div>
+  </div>`;
+  $el.after(alternate_mobile_number_container);
+  $('#'+id).trigger('change');
+}
+
 function verify_number_form_validation(){
     var form = $('#modalVerifyNumberForm');
     var verifyNumberFormValidator = form.validate({
         rules: {
             otp: {
-                required: true,
-                otp: true
+              required: true,
+              otp: true
             }
         },
         errorElement: 'div',
@@ -470,25 +570,26 @@ function verify_number_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                }).always((data)=>{
-                    if(data.status=='200'){
-                        $('#modalVerifyNumberForm').modal('hide');
-                        if(set_password){
-                            $('#modalSetPasswordForm').modal('show');
-                        } else {
-                            if(add_number){
-                                toastr.success('My Profile','New mobile number added.')
-                            } else {
-                                display_message(form,'Registered successfully.');
-                                setTimeout(()=>{
-                                    window.location.reload();
-                                },1000);
-                            }
-                        }
+                }).done((data)=>{
+                  $('#modalVerifyNumberForm').modal('hide');
+                  if(set_password){
+                    $('#modalSetPasswordForm').modal('show');
+                  } else {
+                    if (add_number) {
+                      toastr.success('New mobile number added', 'Add '+mobile_number);
+                      create_alternate_mobile_number_container(data.mobile_number,$('#alternate_mobile_numbers'));
+                      toggle_add_new_number_button();
                     } else {
-                        display_errors(data,form);
+                      display_message(form, 'Registered successfully.');
+                      setTimeout(() => {
+                        window.location.reload();
+                      }, 1000);
                     }
-                    remove_loading(form);
+                  }
+                }).fail((data)=>{
+                  display_errors(data,form);
+                }).always(()=>{
+                  remove_loading(form);
                 });
             }
         }
@@ -1102,7 +1203,7 @@ function set_footer(){
     var offset = $('footer').offset();
     var windowHeight = $(window).height();
     if(offset.top<windowHeight){
-        $('footer').css({'position': 'relative','top':windowHeight-offset.top-$('#preloader').height,'width':'100%'});
+        $('footer').css({'position': 'relative','top':windowHeight-offset.top,'width':'100%'});
     }
     var height = $('#center').height();
     $('#center').css({'margin-top':(windowHeight/2-height/2-$('body').css('padding-top'))+'px'});
@@ -1854,12 +1955,12 @@ function initialize_other_select(){
 
 $('document').ready(function(){
 
-  $.ajaxSetup({
-    xhrFields: {
-       withCredentials: true
-    },
-    crossDomain: true
-  })
+  // $.ajaxSetup({
+  //   xhrFields: {
+  //      withCredentials: true
+  //   },
+  //   crossDomain: true
+  // })
   
   $(document).ajaxSend(function (event, jqxhr, settings) {
     settings.data += '&csrfmiddlewaretoken=' + window.getCookie('csrftoken');
@@ -1906,10 +2007,11 @@ $('document').ready(function(){
 
   var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
 
-  $('[data-action=add-number]').click(function(){
-      add_number = true;
-      mobile_number = $enter_mobile_number.val();
-      $enter_mobile_number.val('');
+  $('[data-action=add-number]').click(function(event){
+    event.preventDefault();
+    add_number = true;
+    mobile_number = $enter_mobile_number.val();
+    $enter_mobile_number.val('');
   });
 
   $('[data-action=verify-number]').click(function(){
@@ -1987,4 +2089,13 @@ $('document').ready(function(){
 
   toastr.options.closeButton = true;
   toastr.options.progressBar = true;
+
+  $('.modal').on('hidden.bs.modal',function(){
+    remove_all_messages($(this));
+  });
+
+  $('.modal').on('show.bs.modal',function(){
+    var num_visible_modals = $('.modal.show').length;
+    $(this).css('z-index',1050+num_visible_modals);
+  })
 });

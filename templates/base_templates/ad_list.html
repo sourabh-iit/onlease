@@ -50,7 +50,7 @@
     </div>
 
         
-    <div id="main-container" class="display">
+    <div id="main-container">
 
       {% include 'nav.html' %}
 
@@ -85,10 +85,6 @@
     {% block script %}{% endblock %}
 
     <script>
-      $(document).ready(function(){
-        $('#preloader').toggleClass('display');
-        $('#main-container').toggleClass('display');
-      });
       var regions_selected = {{regions | safe}};
     </script>
 

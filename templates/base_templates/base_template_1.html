@@ -24,7 +24,7 @@
     {% include 'common_global_elements.html' %}
 
         
-    <div id="main-container" class="display">
+    <div id="main-container">
 
       {% include 'nav.html' %}
                 
@@ -36,13 +36,6 @@
 
     {% include 'common_script.html' %}
     {% block script %}{% endblock %}
-
-    <script>
-      $(document).ready(function(){
-        $('#preloader').toggleClass('display');
-        $('#main-container').toggleClass('display');
-      });
-    </script>
 
   </body>
 </html>

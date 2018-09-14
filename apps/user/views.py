@@ -12,6 +12,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.password_validation import validate_password
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.core.exceptions import ObjectDoesNotExist
 
 import time
 
@@ -443,6 +444,11 @@ def contact_view_ajax(request):
                 form.add_error(None,e)
         return JsonResponse({'errors':form.errors},status=400)
 
+def clear_session_data(request, *args):
+    for arg in args:
+        if request.session.get(arg):
+            del request.session[arg]
+
 @require_POST
 @login_required
 def add_mobile_number_ajax(request,action):
@@ -452,10 +458,13 @@ def add_mobile_number_ajax(request,action):
             if form.is_valid():
                 try:
                     mobile_number = form.cleaned_data.get('mobile_number')
-                    if User.objects.filter(mobile_number=mobile_number).count()>0 or MobileNumber.objects.filter(value=mobile_number,is_verified=True).count()>0:
+                    if User.objects.filter(mobile_number=mobile_number).count()>0 or \
+                      MobileNumber.objects.filter(value=mobile_number,is_verified=True).count()>0:
                         raise ViewException('This mobile number is already linked with another account')
+                    if request.user.mobile_numbers.count()>=3:
+                        raise ViewException('You cannot add more than 3 numbers')
                     send_and_save_otp(request,form)
-                    return HttpResponse(status=200)
+                    return JsonResponse({'mobile_number': mobile_number},status=200)
                 except ViewException as e:
                     form.add_error(None,e)
                 return JsonResponse({'errors':form.errors},status=400)
@@ -463,27 +472,44 @@ def add_mobile_number_ajax(request,action):
             form = ValidateOtpForm(request.POST)
             try:
                 if form.is_valid():
+                    # check expiry of otp
                     if time.time()-request.session['time']>60*3:
                         raise ViewException('OTP has expired')
+                    # too many invalid attempts
                     if request.session['attempts']>=3:
                         raise ViewException('Too many invalid attempts')
                     if form.cleaned_data['otp'] != request.session.get('otp'):
+                        # increase invalid attempts
                         request.session['attempts']+=1
                         raise ViewException('Invalid OTP entered')
+                    if request.user.mobile_numbers.count()>=3:
+                        raise ViewException('You cannot add more than 3 numbers')
+                    mobile_number = request.session['mobile_number']
                     mobile_number_obj = MobileNumber.objects.create(
-                        value=request.session['mobile_number'],
+                        value=mobile_number,
                         user=request.user,
                         is_verified=True)
-                    request.user.is_verified = True
-                    request.user.save()
-                    del request.session['otp']
-                    del request.session['attempts']
-                    del request.session['time']
-                    return HttpResponse(status=200)
+                    # if user not verfied then set as verified. This is user's first mobile number verified
+                    if (not request.user.is_verified):
+                        request.user.is_verified = True
+                        request.user.save()
+                    # clear session variables not required anymore
+                    clear_session_data(request,'otp','attempts','time','mobile_number')
+                    return JsonResponse({'mobile_number': mobile_number},status=200)
             except ViewException as e:
                 form.add_error(None, e)
             return JsonResponse({'errors':form.errors},status=400)
-    return JsonResponse({'errors':['invalid action.']},status=400)
+        elif action=='delete-number':
+            form = MobileNumberForm(request.POST)
+            if form.is_valid():
+                mobile_number = form.cleaned_data['mobile_number']
+                try:
+                    request.user.mobile_numbers.filter(value=mobile_number,is_verified=True).delete()
+                    return JsonResponse({'mobile_number':mobile_number})
+                except ObjectDoesNotExist:
+                    return JsonResponse({'errors':{'__all__':['Mobile number not found']}})
+            return JsonResponse({'errors':form.errors},status=400)
+    return JsonResponse({'errors':{'__all__':['invalid action.']}},status=400)
 
 @require_POST
 @login_required

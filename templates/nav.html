@@ -31,11 +31,6 @@
         aria-haspopup="true" aria-expanded="true">
         <i class="fa fa-user-circle-o"></i> {{user.mobile_number}} </a>
       <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalChangePasswordForm">
-          Change password</a>
-        <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-action="add-number" 
-          data-target="#modalEnterNumberForm">
-          Add mobile number</a>
         <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalUserProfileForm">
           My Profile</a>
         {% if not user.is_verified %}

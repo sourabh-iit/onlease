@@ -26,6 +26,12 @@
           <small>Upload a 270x250 image for best result.</small>
         </div>
 
+        <div class="mb-4">
+          <button class="btn bg-one btn-sm" type="button"
+            data-target="#modalChangePasswordForm" 
+            data-toggle="modal">Change Password</button>
+        </div>
+
         <div class="md-form col-12 col-md-10 mb-4">
           <i class="fa fa-user prefix grey-text"></i>
           <input type="text" class="form-control" placeholder="e.g. Vinit Dhyania" {% if user.first_name or user.last_name %} value="{% if user.first_name %}{{user.first_name}}{% endif %} {% if user.last_name %}{{user.last_name}}{% endif %}"
@@ -33,20 +39,51 @@
           <label for="profile_name">Full Name</label>
         </div>
 
-        <div class="md-form col-12 col-md-6 mb-4">
-          <i class="fa fa-mobile prefix grey-text"></i>
-          <input type="text" value="{{user.mobile_number}}" id="profile_mobile_number" class="form-control" disabled>
-          <label for="profile_mobile_number">Mobile number</label>
+        <div class="row container-fluid mb-4">
+          <div class="md-form col-12 col-md-6">
+            <i class="fa fa-mobile prefix grey-text active"></i>
+            <input type="text" value="{{user.mobile_number}}" id="profile_mobile_number" class="form-control" disabled="">
+            <label for="profile_mobile_number" class="active">Mobile number</label>
+          </div>
+          <div class="col-12 col-md-6 d-flex align-items-center">
+            <button class="btn bg-one btn-primary btn-sm {% if user.mobile_numbers.count >= 3 %}disabled{% endif %}"
+              data-action="add-number" data-target="#modalEnterNumberForm"
+              data-toggle="modal" id="add_new_number">
+              Add new number
+            </button>
+          </div>
         </div>
 
-        {% for mobile in user.mobile_numbers.all %}
-        <div class="md-form col-12 col-md-6 mb-4 alternate_mobile_number">
-          <i class="fa fa-mobile prefix grey-text"></i>
-          <input type="text" id="profile_alternate_mobile_number_{{forloop.counter}}" value="{{mobile.value}}" class="form-control"
-            disabled>
-          <label for="profile_alternate_mobile_number_{{forloop.counter}}">Alternate Mobile number {{forloop.counter}}</label>
+        <div class="card">
+          <div class="card-header" id="">
+            <div class="mb-0">
+              <button type="button" class="btn btn-link" data-toggle="collapse"
+                data-target="#alt_mobile_numbers">Alternate Mobile Numbers 
+                <i class="fa fa-chevron-down" style="color: inherit!important;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="collapse" id="alt_mobile_numbers">
+            <div class="card-body">
+              {% for mobile in user.mobile_numbers.all %}
+              <div class="row container-fluid mb-4">
+                <div class="md-form col-12 col-md-6">
+                  <i class="fa fa-mobile prefix grey-text"></i>
+                  <input type="text" id="profile_alternate_mobile_number_{{forloop.counter}}" 
+                    value="{{mobile.value}}" class="form-control alternate_mobile_number"
+                    disabled>
+                  <label for="profile_alternate_mobile_number_{{forloop.counter}}">Alternate Mobile number {{forloop.counter}}</label>
+                </div>
+                <div class="col-12 col-md-6 d-flex align-items-center">
+                  <button class="btn danger-color btn-sm"
+                    onclick="delete_number(event,{{mobile.value}})">Delete</button>
+                </div>
+              </div>
+              {% endfor %}
+              <div class="d-none" id="alternate_mobile_numbers"></div>
+            </div>
+          </div>
         </div>
-        {% endfor %}
 
         <div class="md-form mb-4 col-12 col-md-6">
           <i class="fa fa-envelope prefix grey-text"></i>
