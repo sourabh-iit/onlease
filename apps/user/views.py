@@ -14,6 +14,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core import serializers
 
 import time
 
@@ -247,7 +248,7 @@ def loginView(request):
                 username = form.cleaned_data.get('username')
                 password = form.cleaned_data.get('password')
                 # authenticate user using django's inbuilt authenticate function
-                user = authenticate(username=username,password=password)
+                user = authenticate(request,username=username,password=password)
                 if not user:
                     raise ViewException('Invalid mobile number/email and password combination')
                 # checks on user
@@ -293,7 +294,10 @@ def loginView_ajax(request):
                 # log user in
                 login(request,user)
                 # redirect to required view
-                return HttpResponse(status=200)
+                return HttpResponse(serializers.serialize('json',[user],
+                  fields=('mobile_number','email','first_name','last_name','detail','gender',
+                  'type_of_roommate')
+                ))
         except ViewException as e:
             form.add_error(None,e);
         return JsonResponse({'errors':form.errors},safe=False,status=400)

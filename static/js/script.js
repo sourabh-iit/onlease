@@ -127,23 +127,20 @@ function getCurrentLocation(ev,input_id){
         beforeSend: function(){
           $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
           loadingLocation=true;
-        },
-        success: function(res){
-          $('#property_address').val(res.result[0].formatted_address);
-          $('#property_latlng').val(lat+','+lng);
-          $('#property_latlng').trigger('change');
-          toastr.success('Address added successfully');
-        },
-        error: function(res){
-          if(res.responseJSON && 'errors' in res.responseJSON && '__all__' in res.responseJSON){
-            toastr.error(res.responseJSON.errors['__all__'][0]);
-          }
-          display_errors(res,$('#modalPropertyAdForm'));
-        },
-        complete: function(){
-          $el.children('#spinner').remove();
-          loadingLocation = false;
         }
+      }).done((res)=>{
+        $('#property_address').val(res.result[0].formatted_address);
+        $('#property_latlng').val(lat+','+lng);
+        $('#property_latlng').trigger('change');
+        toastr.success('Address added successfully');
+      }).fail((res)=>{
+        if(res.responseJSON && 'errors' in res.responseJSON && '__all__' in res.responseJSON){
+          toastr.error(res.responseJSON.errors['__all__'][0]);
+        }
+        display_errors(res,$('#modalPropertyAdForm'));
+      }).complete((res)=>{
+        $el.children('#spinner').remove();
+        loadingLocation = false;
       });
       // var geocoder = new google.maps.Geocoder;
       // geocoder.geocode({location: {lat:parseFloat(lat),lng:parseFloat(lng)}},function(res){
@@ -358,22 +355,21 @@ function login_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
+                }).done((data)=>{
+                  display_message(form,'Logging in.');
+                  if(window.location.pathname=='/account/login'){
+                    setTimeout(()=>{
+                      window.location.href = "/";
+                    },1000);
+                  } else {
+                    setTimeout(()=>{
+                      window.location.reload();
+                    },1000);
+                  }
+                }).fail((data)=>{
+                  display_errors(data,form);
                 }).always((data)=>{
-                    if(data.status=='200'){
-                        display_message(form,'Logging in.');
-                        if(window.location.pathname=='/account/login'){
-                          setTimeout(()=>{
-                            window.location.href = "/";
-                          },1000);
-                        } else {
-                          setTimeout(()=>{
-                            window.location.reload();
-                          },1000);
-                        }
-                    } else {
-                        display_errors(data,form);
-                    }
-                    remove_loading(form);
+                  remove_loading(form);
                 });
             }
         }
@@ -806,7 +802,6 @@ function property_ad_form_validation(){
         },
         available_from: {
           required: true,
-          date: true,
         },
         total_floors: {
           required: true,

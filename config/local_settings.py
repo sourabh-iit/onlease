@@ -5,10 +5,13 @@ import os
 
 SECRET_KEY = '_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#'
 
+NG_ROK = 'c8927ad7'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'localhost:8000', 'localhost:8001','127.0.0.1']
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'localhost:8000', 'localhost:8001','127.0.0.1',
+  '192.168.43.197',NG_ROK+'.ngrok.io']
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
