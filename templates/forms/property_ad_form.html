@@ -1,4 +1,6 @@
-<form class="modal fade" id="modalPropertyAdForm" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+<form class="modal fade" id="modalPropertyAdForm" 
+  data-backdrop="static" tabindex="-1" role="dialog" 
+  aria-labelledby="myModalLabel" aria-hidden="true"
   novalidate>
   <div class="modal-dialog full-width modal-lg" role="document">
     <div class="modal-content">
@@ -12,21 +14,31 @@
 
         <div class="md-form mb-4 col-12 m-5px" style="margin-top: 1rem!important">
           <i class="fa fa-tag prefix grey-text"></i>
-          <input type="text" name="title" id="property_title" class="form-control" length="70">
+          <input type="text" name="title" 
+            id="property_title" class="form-control" length="70">
           <label for="property_title">Title</label>
         </div>
 
         {% comment %} General details {% endcomment %}
         <div class="group-heading mb-4">General details</div>
         <div class="mb-4 col-12 col-lg-10 m-5px">
-          <select name="region" id="property_region" data-placeholder="Search location"></select>
+          <select name="region" id="property_region" 
+            data-placeholder="Search location"></select>
           <label for="property_region">Location</label>
         </div>
         <div class="md-form mt-0 mb-4" role="group" aria-label="Basic example">
-          <input type="text" name="address" id="property_address" class="form-control" id="property_location" placeholder="Type address or use current location" aria-label="location name" aria-describedby="current-location">
+          <input type="text" name="address" 
+            id="property_address" 
+            class="form-control" 
+            id="property_location" 
+            placeholder="Type address or use current location" 
+            aria-label="location name" 
+            aria-describedby="current-location">
           <label for="property_address">Address</label>
           <div>
-            <button class="input-group-text btn bg-one btn-primary btn-sm" onclick="getCurrentLocation(event,'property_address')" id="current-location">
+            <button class="input-group-text btn bg-one btn-primary btn-sm" 
+              onclick="getCurrentLocation(event,'property_address')" 
+              id="current-location">
               <i class="fa fa-map-marker mr-1"></i>
               Use current location</button>
           </div>
@@ -34,7 +46,8 @@
         <input type="hidden" name="property_latlng" id="property_latlng">
         <div class="md-form mb-4 col-12 col-md-6 m-5px">
           <i class="fa fa-calendar prefix grey-text"></i>
-          <input type="text" name="available_from" id="property_available_from" class="form-control" required>
+          <input type="text" name="available_from" id="property_available_from" 
+            class="form-control" required>
           <label for="property_available_from">Date of availability</label>
           <div id="datepicker-container"></div>
         </div>
@@ -55,7 +68,8 @@
         {% comment %} Property details {% endcomment %}
         <div class="group-heading mb-4">Property details</div>
         <div class="mb-4 col-12 col-md-6 m-5px">
-          <select name="lodging_type" id="property_type" data-target="other" data-label="Property type">
+          <select name="lodging_type" id="property_type" 
+            data-target="other" data-label="Property type">
             <option value="">Choose type</option>
             <option value="F">Flat</option>
             <option value="H">House</option>
@@ -75,7 +89,8 @@
           <label for="property_furnishing">Furnishing</label>
         </div>
         <div class="mb-4 col-12 col-md-6 m-5px">
-          <select name="facilities" id="property_facilities" multiple="multiple" data-placeholder="Select facilities">
+          <select name="facilities" id="property_facilities" 
+            multiple="multiple" data-placeholder="Select facilities">
             <option value="A">Air conditioner</option>
             <option value="P">Parking</option>
             <option value="K">Kitchen</option>
@@ -106,15 +121,19 @@
           </select>
           <label for="property_halss">Total Halls</label>
         </div>
-        <div class="input-group md-form mb-4 col-12 col-md-8 m-5px" role="group" aria-label="Area with unit" required>
+        <div class="input-group md-form mb-4 col-12 col-md-8 m-5px" 
+          role="group" aria-label="Area with unit" required>
           <label for="property_area" style="top: 0">Area (built up)</label>
           <input type="text" name="area" id="property_area" class="form-control p-0">
-          <span class="input-group-append" style="width:100px">
-            <select name="measuring_unit" style="width:100%" id="property_measuring_unit"></select>
+          <span class="input-group-append" style="width:110px">
+            <select name="measuring_unit" style="width:100%" id="property_measuring_unit">
+              <option value="">Choose unit</option>
+            </select>
           </span>
         </div>
         <div class="mb-4 col-12 col-md-6 m-5px">
-          <select name="flooring" id="property_flooring" data-target="other" data-label="Flooring type">
+          <select name="flooring" id="property_flooring" 
+            data-target="other" data-label="Flooring type">
             <option value="">Choose flooring type</option>
           </select>
           <label for="property_flooring">Flooring</label>
@@ -129,11 +148,15 @@
             <label for="property_rent">Rent (per month)</label>
         </div>
         <div class="md-form col-12 col-md-6 m-5px">
-          <input type="number" name="advance_rent_of_months" id="property_advance_of_months" min="1" class="form-control" required>
+          <input type="number" name="advance_rent_of_months" 
+            id="property_advance_of_months" min="1" 
+            class="form-control" required>
           <label for="property_advance_of_months">Advance rent of months</label>
         </div>
         <div class="col-12 mb-4 mt-0">
-          <button class="btn btn-primary btn-sm bg-one" onclick="create_charge_form(event,'property')" id="other_charges_button">
+          <button class="btn btn-primary btn-sm bg-one" 
+            onclick="create_charge_form(event,'property')" 
+            id="other_charges_button">
             Add more charges
           </button>
           <input type="hidden" name="other_charges">
@@ -144,8 +167,10 @@
         <div class="group-heading mb-4">Additional details</div>
         <div class="md-form m-5px" style="margin-top: 1rem!important">
           <i class="fa fa-pencil prefix grey-text"></i>
-          <textarea rows="3" length="1000" placeholder="e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished."
-            class="md-textarea form-control" name="additional_details" id="property_additional_details"></textarea>
+          <textarea rows="3" length="1000" 
+            placeholder="e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished."
+            class="md-textarea form-control" name="additional_details" 
+            id="property_additional_details"></textarea>
           <label for="property_additional_details">Additional details</label>
         </div>
         {% comment %} Additional details {% endcomment %}
@@ -155,7 +180,9 @@
         <select name="property_images" hidden="true" id="property_images" multiple="mutiple"></select>
         <div class="form-row">
           <div class="col-12">
-            <span class='btn btn-md btn-default text-white ml-0 mt-3 bg-one' id="property_add_image">
+            <span class='btn btn-md btn-default text-white ml-0 mt-3 bg-one'
+              name="add_image"
+              id="property_add_image">
               <i class="fa fa-file-image-o icon"></i> Add image</span>
           </div>
         </div>
@@ -165,10 +192,10 @@
       </div>
       <div class="modal-footer">
         <div class="text-center col-12 mt-4">
-          <button class="btn btn-primary" type="submit">Post</button>
+          <button class="btn color-2" type="submit">Post</button>
           <button class="red white-text btn"
              type="reset"
-             onclick="reset_form(event)">
+             onclick="confirm_reset_form(event)">
              Reset</button>
         </div>
       </div>

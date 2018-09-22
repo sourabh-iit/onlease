@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # for custom widgets
     'django.forms',
+    'rest_framework',
     # external library to add class in django template tags
     'widget_tweaks',
     'apps.user',
@@ -34,12 +35,11 @@ INSTALLED_APPS = [
     'apps.ads',
     'apps.home',
     'apps.image',
-    # 'apps.transactions',
+    'apps.transactions',
     'apps.locations',
     # 'apps.legal',
     'apps.roommate',
     # framework for rest apis
-    # 'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -147,3 +147,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 GOOGLE_MAPS_API_KEY=os.environ.get('GOOGLE_MAPS_API_KEY')
+
+ADMINS_LIST = ['98997612536'] 

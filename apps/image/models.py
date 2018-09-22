@@ -18,6 +18,7 @@ class ImageModel(models.Model):
   FLOOR = "8"
   OUTSIDE = '9'
   OTHER = '10'
+  DINING_ROOM = '11'
   LODGING_TAG_CHOICES = (
     (BEDROOM,'Bedroom'),
     (HALL, 'Hall'),
@@ -29,7 +30,8 @@ class ImageModel(models.Model):
     (BUILDING, 'Building'),
     (FLOOR, 'Floor'),
     (OUTSIDE, 'Outside View'),
-    (OTHER, 'Other')
+    (OTHER, 'Other'),
+    (DINING_ROOM, 'Dining Room')
   )
   content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE,null=True)
   object_id = models.CharField(max_length=100,null=True)

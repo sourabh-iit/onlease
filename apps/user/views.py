@@ -64,7 +64,7 @@ def request_otp_ajax(request):
                 if user.is_authenticated and user.mobile_number!=form.cleaned_data.get('mobile_number'):
                     raise ViewException('Mobile number does not match')
                 send_and_save_otp(request,form)
-                return HttpResponse(status=200)
+                return JsonResponse({'mobile_number':form.cleaned_data.get('mobile_number')})
         except ViewException as e:
             form.add_error(None,e)
     return JsonResponse({'errors':form.errors},status=400)
@@ -133,12 +133,12 @@ def verfiy_number_ajax(request):
             if form.is_valid():
                 # no testcase for expiration till now
                 # expiry time of an otp
-                if time.time()-request.session['time']>60*3:
+                if time.time()-request.session.get('time')>60*3:
                     raise ViewException('OTP has expired')
                 # maximum number of attempts allowed on an otp
-                if request.session['attempts']>=3:
+                if request.session.get('attempts')>=3:
                     raise ViewException('Too many invalid attempts')
-                if form.cleaned_data['otp'] != request.session.get('otp'):
+                if form.cleaned_data.get('otp') != request.session.get('otp'):
                     request.session['attempts']+=1
                     # warning for number of invalid attempts
                     raise ViewException('Invalid OTP entered')
@@ -146,16 +146,19 @@ def verfiy_number_ajax(request):
                 if request.user.is_authenticated:
                     request.user.is_verified=True
                     request.user.save()
-                    del request.session['time']
+                    if 'time' in request.session:
+                      del request.session['time']
                 else:
                     # set verfied as true and time of verification to prevent misuse
                     request.session['verified']=True
                     request.session['time']=time.time()
                 # delete not required session keys
-                del request.session['otp']
-                del request.session['attempts']
+                if 'otp' in request.session:
+                  del request.session['otp']
+                if 'attempts' in request.session:
+                  del request.session['attempts']
                 # if it is for password reset, then redirect to reset_password_view
-                return HttpResponse(status=200)
+                return JsonResponse({'mobile_number':form.cleaned_data.get('mobile_number')})
         except ViewException as e:
             form.add_error(None, e)
         return JsonResponse({'errors':form.errors},status=400)
@@ -293,6 +296,8 @@ def loginView_ajax(request):
                     raise ViewException('Account is not active. Contact admin for further information')
                 # log user in
                 login(request,user)
+                if request.user.mobile_number in settings.ADMINS_LIST:
+                    request['admin'] = request.user.mobile_number
                 # redirect to required view
                 return HttpResponse(serializers.serialize('json',[user],
                   fields=('mobile_number','email','first_name','last_name','detail','gender',

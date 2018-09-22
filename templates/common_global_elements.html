@@ -1,13 +1,12 @@
 {% load static %}
 
-<div class="dropdown ads_circle_dropdown_container mobile">
-  <div class="ads_circle bg-info z-depth-3" data-toggle="dropdown" id="new_ads_circle" aria-expanded="false">
+<div class="ads_circle_dropdown_container mobile">
+  <div class="ads_circle color-3 z-depth-3" 
+    data-toggle="modal"
+    data-target="#modalPropertyAdForm"
+    id="new_ads_circle" 
+    aria-expanded="false">
     <span>New</span>&nbsp;
-    <i class="fa fa-caret-up"></i>
-  </div>
-  <div class="dropdown-menu dropdown-menu-top" aria-labelledby="new_ads_circle">
-    <a class="dropdown-item waves-effect waves-light text-capitalized" data-target="#modalPropertyAdForm" data-toggle="modal">Property</a>
-    <a class="dropdown-item waves-effect waves-light text-capitalized" data-target="#modalRoomieAdForm" data-toggle="modal">Mates</a>
   </div>
 </div>
 

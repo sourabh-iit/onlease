@@ -13,19 +13,19 @@
 {% block content %}
 <div class="container d-flex">
   <img src="{% static 'images/kari-shea-180802-unsplash_desktop.jpg' %}" alt="">
-  <div class="business z-depth-2 col-12 col-md-10 col-lg-9 col-xl-8">
+  <div class="business z-depth-2 col-12 col-md-10 col-lg-9 transparent col-xl-8 color-1">
     <form novalidate class="w-100" name="searchForm" action="{% url 'ads:ads-view' %}" method='GET'>
-      <div class="business-choices">
+      <!-- {% comment %}<div class="business-choices">
         <div class="business-choice active" id="property">Property</div>
         <div class="business-choice" id="mates">Mates</div>
-      </div>
-      {% comment %} {{form.types}} {% endcomment %}
+      </div> {%endcomment%} -->
+      <!-- {% comment %} {{form.types}} {% endcomment %} -->
 
 
       {{form.business}}
 
       <div class="input-group mt-2 row ml-0 mr-0 d-flex justify-content-center">
-        {% comment %}
+        <!-- {% comment %}
         <div class="input-group-prepend col-3 p-0">
           <span class="input-group-text w-100" id="search-filter">
             Add Filters
@@ -51,11 +51,17 @@
               </div>
             </div>
           </div>
-        </div> {% endcomment %}
+        </div> {% endcomment %} -->
         <div id="location_search_container" class="text-align-left">
-            <select name="regions" id="id_region" class="w-100 h-40" multiple="multiple" data-placeholder="Search location..."></select>
+            <select name="regions" 
+              id="id_region" 
+              class="w-100 h-40" 
+              multiple="multiple" 
+              data-placeholder="Search location...">
+            </select>
         </div>
-        <button type="submit" id="search_button" class="h-40 btn btn-default m-0 search">Search</button>
+        <button type="submit" id="search_button" 
+          class="h-40 btn color-2 m-0 search">Search</button>
       </div>
     </form>
   </div>

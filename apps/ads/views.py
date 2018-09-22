@@ -4,10 +4,13 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.db.models import Prefetch
+from rest_framework.renderers import JSONRenderer
+
 
 from apps.roommate.models import RoomieAd
 from apps.locations.models import Region
 from apps.lodging.models import CommonlyUsedLodgingModel, Lodging
+from apps.lodging.serializers import CommonLodgingSerializer
 
 User = get_user_model()
 
@@ -22,26 +25,34 @@ def ads_view(request):
       'images','region').filter(region__in=regions)
     business='PROPERTY'
     template_name='property_ads_view.html'
+    data = CommonLodgingSerializer(ads)
   regions = Region.objects.select_related('state','district').filter(id__in=regions)
   regions_selected = []
   for region in regions:
-    regions_selected.append({'id':region.id,'region':region.name,'state':region.state.name,'district':region.district.name})
+    regions_selected.append({
+      'id':region.id,'region':region.name,
+      'state':region.state.name,'district':region.district.name})
   context = {
     'ads': ads,
     'business':  business,
-    'regions': regions_selected
+    'regions': regions_selected,
+    'data': JSONRenderer().render(data)
   }
   return render(request,'ads/'+template_name,context)
-  messages.error(request,'Invalid request')
-  return HttpResponseRedirect(reverse('home:front-page'))
 
 def ad_detail_view(request):
   try:
     business = request.GET.get('business')
     if business=='PROPERTY':
-      sublodging = CommonlyUsedLodgingModel.objects.prefetch_related('lodging','images','region','charges').get(id=request.GET.get('id'))
+      sublodging = CommonlyUsedLodgingModel.objects.\
+        prefetch_related('lodging','images','region','charges').\
+        get(id=request.GET.get('id'))
       lodging = sublodging.lodging
-      return render(request,'ads/ad_detail.html',{'lodging':lodging,'sublodging':sublodging})
+      return render(request,'ads/ad_detail.html',{
+        'lodging':lodging,
+        'sublodging':sublodging,
+        'data': JSONRenderer().render(CommonLodgingSerializer(sublodging))
+      })
     return HttpResponse('');
   except Lodging.DoesNotExist:
     messages.error(request,'Ad does not exist or has been deleted.')

@@ -33,6 +33,28 @@ function calcRoute() {
   }
 }
 
+function book_now(event){
+  var loading_icon;
+  $el = $(event.target);
+  $.ajax({
+    type: 'POST',
+    url: window.book_now_url,
+    data: {},
+    dataType: 'json',
+    beforeSend: function(){
+      loading_icon = window.create_inline_loading_element();
+      $el.append(loading_icon);
+    }
+  }).done(function(res){
+    toastr.info('Redirecting to secure payment gateway');
+    window.location.href = res.url;
+  }).fail(function(res){
+    display_global_errors(res);
+  }).always(function(){
+    $(loading_icon).remove();
+  });
+}
+
 function openMap() {
   var modal = `
     <div class="modal fade" data-backdrop="static" id="mapModal">

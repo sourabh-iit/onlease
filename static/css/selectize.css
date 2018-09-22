@@ -331,3 +331,12 @@
   opacity: 0.5;
   background-color: #fafafa;
 }
+
+.loading-icon {
+  position: absolute;
+  right: 5;
+  display: none!important;
+}
+.loading .fa-spinner {
+  display: inline-block!important;
+}

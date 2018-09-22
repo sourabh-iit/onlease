@@ -20,7 +20,7 @@
           <i class="fa fa-user-circle-o" id="profile-icon"></i>
           {% endif %}
           <input type="file" name="profile" id="profile" onchange="loadImageFile(event,window.image_url,'profile')">
-          <a id="upload-image" class="btn btn-default btn-md">
+          <a id="upload-image" class="btn bg-one btn-md">
             Upload Photo
           </a>
           <small>Upload a 270x250 image for best result.</small>
@@ -93,19 +93,25 @@
 
         <div class="md-form mb-4 col-12 col-md-10">
           <i class="fa fa-pencil prefix grey-text"></i>
-          <textarea type="text" class="md-textarea form-control" rows="3" placeholder="e.g. I work at codegenesys." name="detail" id="profile_detail">{% if user.detail %}{{user.detail}}{% endif %}</textarea>
-          <label for="profile_detail">Describe yourself</label>
+          <textarea type="text" class="md-textarea form-control" 
+            rows="3" placeholder="e.g. I work at codegenesys." 
+            name="detail" id="profile_detail">
+            {% if user.detail %}{{user.detail}}{% endif %}</textarea>
+          <label for="profile_detail">Your Description</label>
         </div>
 
-        <div class="md-form col-12 col-md-10">
+        <!-- <div class="md-form col-12 col-md-10">
           <i class="fa fa-pencil prefix grey-text"></i>
-          <textarea type="text" class="md-textarea form-control" rows="3" placeholder="e.g. I want a working room partner." name="type_of_roommate"
-            id="profile_type_of_roommate">{% if user.type_of_roommate %}{{user.type_of_roommate}}{% endif %}</textarea>
+          <textarea type="text" class="md-textarea form-control" 
+            rows="3" placeholder="e.g. I want a working room partner." 
+            name="type_of_roommate"
+            id="profile_type_of_roommate">
+            {% if user.type_of_roommate %}{{user.type_of_roommate}}{% endif %}</textarea>
           <label for="profile_detail">What type of roommate do you want?</label>
-        </div>
+        </div> -->
       </div>
       <div class="modal-footer d-flex justify-content-center">
-        <button class="btn btn-primary" type="submit">Save</button>
+        <button class="btn color-2" type="submit">Save</button>
       </div>
     </div>
   </div>

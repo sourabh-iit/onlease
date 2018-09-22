@@ -1,61 +1,43 @@
-{% extends 'navbar.html' %}
-{% load widget_tweaks %}
-{% block title %}Successful transaction{% endblock %}
-{% load static %}
+{% extends "base_templates/base_template_1.html" %} 
+{% load widget_tweaks %} 
+{% block title %}Successful transaction{% endblock%}
+{% load static %} 
 
 {% block head %}
-    <link rel="stylesheet" href="{% static 'transactions/success.css' %}">
-{% endblock %}
+<link rel="stylesheet" href="{% static 'transactions/success.css' %}"> 
+{% endblock %} 
 
 {% block content %}
-
 <div class="container-fluid d-flex justify-content-center mt-5">
-    {% if success %}
-    <div class="sub-container">
-        <div class="success-message text-capitalize">
-            Thank You.
-        </div>
-        <div class="card mt-3">
-            <div class="card-body">
-                <p class="card-text successfull-transaction">
-                    <i class="fa fa-check-circle"></i> You transaction was successfull.
-                </p>
-                <p class="card-text">Transation id: 
-                    <strong>{{transaction.id}}</strong>
-                </p>
-                <p class="card-text">Merchant id: 
-                    <strong>{{transaction.payment_id}}</strong>
-                </p>
-                <p class="card-text">
-                    Contact details are available in 
-                    <a href="{% url 'dashboard:home' %}">Dashboard</a>
-                </p>
-            </div>
-            <div class="card-footer">
-                <small>
-                    We will soon send you confirmation message and contact details to your 
-                registered mobile number.
-                </small>
-                
-            </div>
-        </div>
-        <div class="card mt-4">
-            <div class="card-body">
-                <div class="card-text">
-                    <strong>Note:</strong>
-                </div>
-                <div class="card-text text-muted">
-                    <ol>
-                        <li>Request for refund is now available in your dashboard.</li>
-                        <li>This option will be available for limited time period only.</li>
-                        <li>Keep in mind that some amount will be deducted from total amount as service charge.</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
+  <div class="sub-container">
+    <div class="card mt-3">
+      <div class="card-header">
+        {% if success %}
+        <div class="success-message text-capitalize text-center">Thank You</div>
+        {% else %}
+        <div class="fail-message text-capitalize text-center">Sorry</div>
+        {% endif %}
+      </div>
+      <div class="card-body text-center">
+        <h2 class="card-text fs-5">
+          {% if success %}
+          <i class="fa fa-check-circle"></i> Your transaction of <i class="fa fa-inr mr-1"></i>
+          {{transaction.amount}} was successfull.
+          {% else %}
+          <i class="fa fa-times-circle"></i> Your transaction of <i class="fa fa-inr mr-1"></i>
+          {{transaction.amount}} was unsuccessfull.
+          {% endif %}
+        </h2><br>
+        <p class="card-text fs-3">Transation id:
+          <strong>{{transaction.trans_id}}</strong>
+        </p><br>
+      </div>
+      {% if success %}
+      <div class="card-footer text-center">
+          We will soon send you confirmation message and contact details to your registered mobile number.
+      </div>
+      {% endif %}
     </div>
-    {% else %}
-    
-    {% endif %}
+  </div>
 </div>
 {% endblock %}

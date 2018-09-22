@@ -5,7 +5,7 @@ import os
 
 SECRET_KEY = '_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#'
 
-NG_ROK = 'c8927ad7'
+NG_ROK = 'ab9b8d32'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -29,7 +29,7 @@ DATABASES = {
 
 INSTAMOJO_API_KEY = 'test_6789fe46ddf86acf17557f8d030'
 INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
-INSTAMOJO_SALT = '1d83a8d73aa84093857eb269fd825d67'
+INSTAMOJO_SALT = b'1d83a8d73aa84093857eb269fd825d67'
 INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
 
 RECIPIENTS = ['sourabh7singh@gmail.com']
@@ -50,7 +50,7 @@ EMAIL_HOST_USER = os.environ.get('GMAIL_EMAIL')
 EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')
 EMAIL_USE_TLS = True
 
-BASE_URL = 'http://localhost:8000'
+BASE_URL = 'http://192.168.43.197:8000'
 
 LANGUAGE_CODE = 'hi-IN'
 

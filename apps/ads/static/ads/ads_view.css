@@ -30,9 +30,9 @@
   justify-content: space-evenly;
 }
 #ads_wrapper{
-  justify-content: space-evenly;
   margin: 0;
   margin-bottom: 2rem;
+  padding: 20px;
 }
 #ads_wrapper .card{
   margin-top: 1rem;

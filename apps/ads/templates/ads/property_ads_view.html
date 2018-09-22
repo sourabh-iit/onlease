@@ -48,12 +48,16 @@
             {% for image in ad.images.all %}
               {% if forloop.first %}
               <div class="carousel-item active">
-                <div class="view">
-                  <img class="d-block w-100 cursor-zoom-in" src="{{image.image_thumbnail.url}}"  alt="{{ad.title}}">
+                <div class="view justify-content-center minh-200 align-items-center d-flex">
+                  <img class="d-block cursor-zoom-in" 
+                    src="{{image.image_thumbnail.url}}"  alt="{{ad.title}}">
               {% else %}
               <div class="carousel-item">
-                <div class="view">
-                  <img class="d-block w-100 cursor-zoom-in" src="" data-src="{{image.image_thumbnail.url}}" alt="{{ad.title}}">
+                <div class="view justify-content-center minh-200 align-items-center d-flex">
+                  <img class="d-block cursor-zoom-in" 
+                    src="{% static 'images/Spinner-1s-51px.gif' %}" 
+                    data-src="{{image.image_thumbnail.url}}" 
+                    alt="{{ad.title}}">
               {% endif %}
               <script>
                 var url = '{{image.image_thumbnail.url}}';

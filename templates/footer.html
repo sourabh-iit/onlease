@@ -5,69 +5,72 @@
     <div class="row wow">
 
       <div class="col-md-4">
-        <p class="column-title white-text">
-          <strong>USEFUL LINKS</strong>
-        </p>
-        <ul class="list-unstyled">
-          {% comment %}
-          <li>
-            <a href="{% url 'dashboard:home' %}">Dashboard</a>
-          </li> {% endcomment %}
-          <li>
-            <a href="{% url 'user:login' %}">Log in</a>
-          </li>
-          <li>
-            <a href="{% url 'user:register' %}">Register</a>
-          </li>
-          <li>
-            <a>Add new property for mates</a>
-          </li>
-          <li>
-            <a>Add new property for tenants</a>
-          </li>
-        </ul>
+        <div>
+          <p class="column-title white-text">
+            <strong>USEFUL LINKS</strong>
+          </p>
+          <ul class="list-unstyled">
+            {% comment %}
+            <li>
+              <a href="{% url 'dashboard:home' %}">Dashboard</a>
+            </li> {% endcomment %}
+            <li>
+              <a href="{% url 'user:login' %}">Log in</a>
+            </li>
+            <li>
+              <a href="{% url 'user:register' %}">Register</a>
+            </li>
+            <li>
+              <a>Add new property</a>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div class="col-md-4">
-        <p class="column-title white-text text-uppercase">
-          <strong>Sponsor</strong>
-        </p>
-        <ul class="list-unstyled">
-          <li>
-            <a href="https://msg91.com/startups/?utm_source=startup-banner">
-              <img src="https://msg91.com/images/startups/msg91Badge.png" width="120" height="90" 
-                    title="MSG91 - SMS for Startups" alt="Bulk SMS - MSG91">
-            </a>
-          </li>
-        </ul>
+        <div>
+          <p class="column-title white-text text-uppercase">
+            <strong>Sponsor</strong>
+          </p>
+          <ul class="list-unstyled">
+            <li>
+              <a href="https://msg91.com/startups/?utm_source=startup-banner">
+                <img src="https://msg91.com/images/startups/msg91Badge.png" width="120" height="90" 
+                      title="MSG91 - SMS for Startups" alt="Bulk SMS - MSG91">
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div class="col-md-4">
-        <p class="column-title white-text text-uppercase">
-          <strong>contact</strong>
-        </p>
-        <ul class="list-unstyled">
-          <li>
-            <a href="{% url 'user:contact' %}">
-              <i class="fa fa-envelope"></i>
-              Send Email
-            </a>
-          </li>
-          <li>
-            <i class="fa fa-whatsapp"></i>
-            9050183280
-          </li>
-          <li>
-            <i class="fa fa-phone"></i>
-            9050183280
-          </li>
-          <li>
-            <a target="_blank" href="https://tawk.to/chat/5adef5845f7cdf4f05338e80/default/?$_tawk_popout=true" 
-                class="btn btn-deep-orange btn-sm">
-              <i class="fa fa-comments"></i> Chat with us
-            </a>
-          </li>
-        </ul>
+        <div>
+          <p class="column-title white-text text-uppercase">
+            <strong>contact</strong>
+          </p>
+          <ul class="list-unstyled">
+            <li>
+              <a href="{% url 'user:contact' %}">
+                <i class="fa fa-envelope"></i>
+                Send Email
+              </a>
+            </li>
+            <li>
+              <i class="fa fa-whatsapp"></i>
+              9050183280
+            </li>
+            <li>
+              <i class="fa fa-phone"></i>
+              9050183280
+            </li>
+            <li>
+              <a target="_blank" href="https://tawk.to/chat/5adef5845f7cdf4f05338e80/default/?$_tawk_popout=true" 
+                  class="btn color-4 btn-sm">
+                <i class="fa fa-comments"></i> Chat with us
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>

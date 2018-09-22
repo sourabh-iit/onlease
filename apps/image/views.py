@@ -99,7 +99,7 @@ def image_action_view(request,action):
       data=request.POST
       _id=data['id']
       ImageModel.objects.get(id=_id).delete()
-      return HttpResponse('Image deleted')
+      return JsonResponse({'success':'true','status':200})
     except ImageModel.DoesNotExist:
       return HttpResponse('Image does not exist.',status=404)
     except KeyError:

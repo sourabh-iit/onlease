@@ -7,7 +7,7 @@
   <ul class="navbar-nav ml-auto">
     {% if user.is_authenticated %}
     <li class="nav-item dropdown desktop">
-      <a class="nav-link dropdown-toggle waves-effect waves-light btn btn-sm btn-info" id="newAdsLink" data-toggle="dropdown" aria-haspopup="true"
+      <!-- {% comment %}<a class="nav-link dropdown-toggle waves-effect waves-light btn btn-sm btn-info" id="newAdsLink" data-toggle="dropdown" aria-haspopup="true"
         aria-expanded="true">
         New Ad
       </a>
@@ -24,12 +24,25 @@
         <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
         {% endif %} Mates
         </a>
-      </div>
+      </div>{% endcomment %} -->
+      <a class="desktop nav-link color-4 waves-effect waves-light btn btn-sm btn-info" 
+        {% if not user.is_verified %}
+        data-target="#modalLoginForm"
+        {% else %}
+        data-target="#modalPropertyAdForm"
+        {% endif %}
+        id="newProperty" 
+        data-toggle="modal"
+        aria-haspopup="true"
+        aria-expanded="true">
+        New Ad
+      </a>
     </li>
     <li class="nav-item dropdown-md">
-      <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" id="navbarDropdownMenuLink" data-toggle="dropdown"
+      <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" 
+        id="navbarDropdownMenuLink" data-toggle="dropdown"
         aria-haspopup="true" aria-expanded="true">
-        <i class="fa fa-user-circle-o"></i> {{user.mobile_number}} </a>
+        <i class="fa fa-user-circle-o fs-4"></i></a>
       <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
         <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalUserProfileForm">
           My Profile</a>
@@ -45,16 +58,24 @@
     </li>
     {% else %}
     <li class="nav-item">
-      <a class="dropdown-item waves-effect btn btn-info btn-sm" data-toggle="modal" data-target="#modalLoginForm">
-        New ad</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalLoginForm">
-        <i class="fa fa-sign-in"></i> Log In</a>
+      <a class="nav-link waves-effect fs-3-5 waves-light text-capitalized mobile" 
+        data-toggle="modal" 
+        data-target="#modalLoginForm">
+        <i class="fa fa-sign-in"></i></a>
+      <a class="nav-link waves-effect waves-light d-flex align-items-center text-capitalized desktop" 
+        data-toggle="modal" 
+        data-target="#modalLoginForm">
+        <i class="fa fa-sign-in"></i>&nbsp;Login</a>
     </li>
     <li class="nav-item {% block register_active %}{% endblock %}">
-      <a class="nav-link waves-effect waves-light btn btn-sm btn-default text-capitalized" data-toggle="modal" data-target="#modalRegisterForm">
-        <i class="fa fa-user-plus"></i> Register</a>
+      <a class="nav-link waves-effect waves-light fs-3-5 text-capitalized mobile" 
+        data-toggle="modal" 
+        data-target="#modalRegisterForm">
+        <i class="fa fa-user-plus"></i></a>
+      <a class="nav-link waves-effect d-flex align-items-center waves-light text-capitalized desktop" 
+        data-toggle="modal" 
+        data-target="#modalRegisterForm">
+        <i class="fa fa-user-plus"></i>&nbsp;Register</a>
     </li>
     {% endif %}
   </ul>

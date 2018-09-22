@@ -31,9 +31,9 @@ def lodging_create_view_ajax(request):
           try:
             image = ImageModel.objects.get(id=image_id)
           except ImageModel.DoesNotExist:
-            raise ValidationError('Image(s) does not exist')
+            continue
           if image.content_object is not None:
-            raise ValidationError('Image(s) is/are already associated with another property.')
+            raise ValidationError('Image(s) is/are already associated with another property. Try resetting form.')
           image.content_object = sublodging
           image.save()
         for other_charge in json.loads(data.get('other_charges')):

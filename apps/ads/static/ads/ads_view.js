@@ -3,13 +3,18 @@ var desktopElements = [], mobileElements = [];
 
 function display_sender_profile(sender_name="User",profile_image,detail,type_of_roommate){
 	var html = `
-	<div class="modal fade" id="modalSenderProfile" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+  <div class="modal fade" 
+    id="modalSenderProfile" 
+    tabindex="-1" role="dialog" 
+    aria-labelledby="myModalLabel" 
+    aria-hidden="true"
 		novalidate>
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header text-center">
 					<h4 class="modal-title w-100 font-weight-bold">`+sender_name+`'s Profile</h4>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" 
+            data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
@@ -24,12 +29,19 @@ function display_sender_profile(sender_name="User",profile_image,detail,type_of_
 	
           <div class="md-form col-12 col-md-10">
             <i class="fa fa-user prefix grey-text"></i>
-            <input type="text" id="sender_name" class="form-control" value="`+sender_name+`" disabled>
+            <input type="text" 
+              id="sender_name" 
+              class="form-control" 
+              value="`+sender_name+`" disabled>
           </div>
 	
 					<div class="md-form mb-4 col-12 col-md-10">
 						<i class="fa fa-pencil prefix grey-text"></i>
-						<textarea type="text" class="md-textarea form-control" name="sender_detail" id="sender_detail" disabled>`+detail+`</textarea>
+            <textarea type="text" 
+              class="md-textarea form-control" 
+              name="sender_detail" 
+              id="sender_detail" 
+              disabled>`+detail+`</textarea>
 					</div>
 	
 					<div class="md-form col-12 col-md-10">
@@ -86,14 +98,10 @@ function set_tooltip(){
 function resize(){
   var width = $(document).width();
   var padding;
-  if(width<576){
-    padding = (width-270)/2;
-  } else if(width<864){
-    padding = (width-2*270-20)/2;
-  } else if(width<1140){
-    padding = (width-3*270-2*20)/2;
+  if(width<600){
+    padding=(width-270)/2;
   } else {
-    padding = (width-4*270-3*20)/2;
+    padding='20';
   }
   $('#ads_wrapper').css({'padding-left':padding+'px'});
 }
@@ -101,18 +109,24 @@ function resize(){
 function resetSearchBox(){
   var business_mobile = `
   <select name="business" id="id_business" class="col-12">
-    <option value="PROPERTY" {% if business == 'PROPERTY' %}selected{% endif %}>Property</option>
-    <option value="MATES" {% if business == 'MATES' %}selected{% endif %}>Mates</option>
+    <option value="PROPERTY" {% if business == 'PROPERTY' %}
+      selected{% endif %}>Property</option>
+    <option value="MATES" {% if business == 'MATES' %}
+      selected{% endif %}>Mates</option>
   </select>
   `;
   var business_desktop = `
   <select name="business" id="id_business" class="col-2 p-0">
-    <option value="PROPERTY" {% if business == 'PROPERTY' %}selected{% endif %}>Property</option>
-    <option value="MATES" {% if business == 'MATES' %}selected{% endif %}>Mates</option>
+    <option value="PROPERTY" {% if business == 'PROPERTY' %}
+      selected{% endif %}>Property</option>
+    <option value="MATES" {% if business == 'MATES' %}
+      selected{% endif %}>Mates</option>
   </select>
   `;
   var region_element = `
-  <select name="regions" id="id_region" multiple="multiple" style='width:100%;border-radius:0;' data-placeholder="Search location..."></select>
+  <select name="regions" id="id_region" 
+    multiple="multiple" style='width:100%;border-radius:0;' 
+    data-placeholder="Search location..."></select>
   `;
   var windowWidth = $(window).width();
   if(windowWidth<768){
@@ -125,7 +139,8 @@ function resetSearchBox(){
 }
 
 function redirect_to_ad_detail_view(id){
-  window.location.href = window.detail_view_url+'?business='+$('#id_business').val()+'&id='+id;
+  window.location.href = window.detail_view_url+
+    '?business='+$('#id_business').val()+'&id='+id;
 }
 
 $(document).ready(function(){

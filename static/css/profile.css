@@ -21,10 +21,6 @@ input[id='profile'] {
   display: none;
 }
 
-#upload-image {
-  visibility: hidden;
-}
-
 .name_mobile_number {
   display: flex;
   flex-direction: unset;

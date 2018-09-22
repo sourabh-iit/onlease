@@ -164,6 +164,9 @@ class CommonlyUsedLodgingModel(models.Model):
       total += int(charge.amount)
     return total
 
+  def get_booking_amount(self):
+    return int(self.rent)//8
+
   def save(self, *args, **kwargs):
     if self.title:
       self.slug = slugify(self.title)
@@ -172,7 +175,6 @@ class CommonlyUsedLodgingModel(models.Model):
         self.top_floor=True
       elif self.floor_no==1:
         self.ground_floor=True
-    self.rent=str(int(self.rent)+int(self.rent)//10)
     if not self.advance_rent_of_months==0:
       self.advance_rent_of_months = 1
     super(CommonlyUsedLodgingModel, self).save(*args, **kwargs)

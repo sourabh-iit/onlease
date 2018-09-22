@@ -11,15 +11,16 @@ var charge_form_id=1;
 var tagList=[
   {value: '', text: 'Choose tag'},
   {value:'0',text:'Bedroom'},
-  {value:'1',text:'Hall'},
-  {value:'2',text:'Balcony'},
-  {value:'3',text:'Living room'},
-  {value:'4',text:'Entrance'},
+  {value:'3',text:'Living Room'},
   {value:'5',text:'Kitchen'},
   {value:'6',text:'Bathroom'},
+  {value:'4',text:'Entrance'},
+  {value:'1',text:'Hall'},
+  {value:'2',text:'Balcony'},
   {value:'7',text:'Building'},
   {value:'8',text:'Floor'},
-  {value:'9',text:'Outside view'},
+  {value:'9',text:'Outside View'},
+  {value:'11',text:'Dining Room'},
   {value:'10',text:'Other'},
 ];
 var area_units = [
@@ -105,6 +106,10 @@ function show_loading(form=null){
   }
 }
 
+function show_my_ads(){
+  
+}
+
 var loadingLocation = false;
 
 function getCurrentLocation(ev,input_id){
@@ -138,7 +143,7 @@ function getCurrentLocation(ev,input_id){
           toastr.error(res.responseJSON.errors['__all__'][0]);
         }
         display_errors(res,$('#modalPropertyAdForm'));
-      }).complete((res)=>{
+      }).always((res)=>{
         $el.children('#spinner').remove();
         loadingLocation = false;
       });
@@ -153,25 +158,54 @@ function getCurrentLocation(ev,input_id){
   }
 }
 
+function remove_parent(event){
+  $(event.target).parent().parent().remove();
+}
+
 function create_charge_form(event,prefix){
   event.preventDefault();
   var el=event.target;
   var other_charge_form=`
-  <div class="row col-12 w-100 mt-3 other_charges_container">
+  <div class="row col-12 w-100 mt-3 other_charges_container container">
     <div class="md-form col-12 col-md-4 p-1">
       <i class="fa fa-inr prefix grey-text"></i>
-      <input type="text" id="${prefix}_charge_amount_${charge_form_id}" class="form-control" data-id="${prefix}_charge_amount">
-      <label for="${prefix}_charge_amount_${charge_form_id}">Amount</label>
+      <input type="text" 
+        id="${prefix}_charge_amount_${charge_form_id}" 
+        class="form-control"
+        data-name="charge_amount"
+        data-id="${prefix}_charge_amount">
+      <label for="${prefix}_charge_amount_${charge_form_id}">
+        Amount
+      </label>
     </div>
-    <div class="md-form col-12 col-md-5 p-1">
-      <input type="text" id="${prefix}_charge_description_${charge_form_id}" class="form-control" data-id="${prefix}_charge_description">
-      <label for="${prefix}_charge_description_${charge_form_id}">Description</label>
+    <div class="md-form col-12 col-md-4 p-1">
+      <input type="text" 
+        id="${prefix}_charge_description_${charge_form_id}" 
+        class="form-control" 
+        data-name="charge_description"
+        data-id="${prefix}_charge_description">
+      <label for="${prefix}_charge_description_${charge_form_id}">
+        Description
+      </label>
     </div>
-    <div class="flex-vertical-center col-12 col-md-3 p-0">
+    <div class="flex-vertical-center d-flex justify-content-center col-10 col-md-3 p-0">
       <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="${prefix}_charge_is_per_month_${charge_form_id}" data-id="${prefix}_charge_is_per_month">
-        <label class="custom-control-label" for="${prefix}_charge_is_per_month_${charge_form_id}">Per month</label>
+        <input type="checkbox" 
+          class="custom-control-input" 
+          id="${prefix}_charge_is_per_month_${charge_form_id}"
+          data-name="charge_is_per_month" 
+          data-id="${prefix}_charge_is_per_month">
+        <label class="custom-control-label" 
+          for="${prefix}_charge_is_per_month_${charge_form_id}">
+          Per month
+        </label>
       </div>
+    </div>
+    <div class="col-2 col-md-1 d-flex align-items-center justify-content-center">
+      <i 
+        class="cursor-pointer fa fa-times-circle red-text fa-lg"
+        onclick="remove_parent(event)">
+      </i>
     </div>
   </div>`;
   $(el).parent().before(other_charge_form);
@@ -188,7 +222,7 @@ function create_charge_form(event,prefix){
   localStorage.setItem(key,JSON.stringify(data_to_store));
   
   key=prefix+'_other_charges_fields';
-  $(el).parent().prev().find('input','checkbox').each(function(){
+  $(el).parent().prev().find('input,checkbox').each(function(){
     $(this).change(function(){
       data=localStorage.getItem(key);
       if(!data || JSON.parse(data).constructor!=Object){
@@ -204,6 +238,18 @@ function create_charge_form(event,prefix){
       localStorage.setItem(key,JSON.stringify(data_to_store));
     });
   });
+
+  get_form(event.target).validate();
+  $('#'+prefix+'_charge_amount_'+charge_form_id).rules('add',{
+    required: true
+  });
+  $('#'+prefix+'_charge_description_'+charge_form_id).rules('add',{
+    required: {
+      depends: function(){
+        return $('#'+prefix+'_charge_amount_'+charge_form_id).val()!='';
+      }
+    }
+  });
   
   charge_form_id++;
 }
@@ -215,7 +261,7 @@ function get_selectize_configurations(value,remove_button=true){
       <div class="option">
         ${escape(item.region)}, <small class="text-green">${escape(item.state)}</small>`;
       if(item.ads!=undefined && item.ads!=null && item.ads>-1 && value.toLowerCase()=='search'){
-        root += `<span class="ads_count badge badge-info">properties: ${escape(item.ads)}</span>`;
+        root += `<span class="ads_count badge color-4">properties: ${escape(item.ads)}</span>`;
       }
       root += '</div>';
       return root;
@@ -260,6 +306,9 @@ function get_selectize_configurations(value,remove_button=true){
         }
       });
     },
+    onInitialize: function(){
+      this.$control.append(`<i class="fa fa-spinner fa-pulse loading-icon"></i>`);
+    },
     plugins: plugins,
   }
 }
@@ -272,48 +321,110 @@ function remove_all_messages(form){
   $(form).find('.modal-body').find('div.alert').remove();
 }
 
-function display_errors(data,form){
-  let errors = {};
-  if(data.responseJSON){
-    errors = data.responseJSON.errors;
-  } else {
-    errors['__all__'] = ['unknown error occurred.'];
-  }
-  remove_all_messages(form);
-  toastr.error(('Error(s) occurred.'))
-  var globalErrors = errors['__all__'];
-  delete errors['__all__'];
-  var validator = $(form).validate();
-  validator.showErrors(errors);
+var alert_close_button = `&nbsp; 
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>`;
+
+function create_ul(){
   var ul = document.createElement('ul');
   ul.className = "p-0";
   ul.style.listStyle = 'none';
+}
+
+function show_form_global_errors(form,globalErrors){
+  var ul = create_ul();
   if(globalErrors){
     for(let error of globalErrors){
       var li = document.createElement('li');
       li.className = "alert alert-danger";
-      $(li).html(
-        `${error} 
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>`
-      );
+      $(li).html(`${error}${error_close_button}`);
       ul.append(li);
     }
   }
   $(form).find('.modal-body').prepend(ul);
 }
 
+function show_form_field_errors(form,errors){
+  var validator = $(form).validate();
+  validator.showErrors(errors);
+}
+
+function isDict(v) {
+  return typeof v==='object' && v!==null && !(v instanceof Array) && !(v instanceof Date);
+}
+
+function trace(data,key){
+  console.log(key+':',data);
+}
+
+function isArray(v){
+  return v instanceof Array;
+}
+
+function show_error(error,key){
+  if(key && key!='__all__' && key!='non_field_errors'){
+    toastr.error(error,key);
+  } else {
+    toastr.error(error,'Error');
+  }
+}
+
+function show_errors_in_list(list_of_errors,key=null){
+  for(var error of list_of_errors){
+    show_error(error,key);
+  }
+}
+
+function show_errors(errors,key=null){
+  if(isArray(errors)){
+    show_errors_in_list(errors,key);
+  } else {
+    show_error(errors,key);
+  }
+}
+
+function display_global_errors(res){
+  if(isDict(res)){
+    if('responseJSON' in res){
+      res = res.responseJSON;
+    } else {
+      res = res.responseText;
+    }
+    if('errors' in res){
+      for(var key in res.errors){
+        show_errors_in_list(res.errors[key],key);
+      }
+    } else {
+      show_error('Unknown error');
+    }
+  } else {
+    show_error(res);
+  }
+}
+
+function display_errors(data,form){
+  let errors = {};
+  if(data.responseJSON){
+    errors = data.responseJSON.errors;
+    toastr.error(('Error(s) occurred in form submission.'))
+  } else {
+    errors['__all__'] = ['unknown error occurred.'];
+    toastr.error(data.status+' error occurred.')
+  }
+  remove_all_messages(form);
+  var globalErrors = errors['__all__'];
+  delete errors['__all__'];
+  show_form_field_errors(form,errors);
+  show_form_global_errors(form, globalErrors);
+}
+
 function display_message(form,message){
   remove_all_messages(form);
-    var div = document.createElement('div');
-    div.className = "alert alert-success";
-    $(div).html(message+
-        `<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>`
-    );
-    $(form).find('.modal-body').prepend(div);
+  var div = document.createElement('div');
+  div.className = "alert alert-success";
+  $(div).html(message+alert_close_button);
+  $(form).find('.modal-body').prepend(div);
 }
 
 function login_form_validation(){
@@ -753,10 +864,10 @@ function roomie_ad_form_validation(){
     });
 }
 
-function create_charges_data(prefix){
-  var $charges_amount=$(`[data-id=${prefix}_charge_amount]`);
-  var $charges_description=$(`[data-id=${prefix}_charge_description]`);
-  var $charges_is_per_month=$(`[data-id=${prefix}_charge_is_per_month]`);
+function create_charges_data($form){
+  var $charges_amount=$form.find('[data-name=charge_amount]')
+  var $charges_description=$form.find('[data-name=charge_description]');
+  var $charges_is_per_month=$form.find('[data-name=charge_is_per_month]');
   var data=[];
   var i=0;
   $charges_amount.each(function(el){
@@ -778,166 +889,456 @@ function convert_to_rqeuested_unit(area, no_in_a_gaj) {
   return +(parseFloat(area)/parseFloat(no_in_a_gaj)).toFixed(3);
 }
 
+function get_value_using_selector($form,selector){
+  // get value of first element from given form using
+  // given seector
+  return get_element_using_selector($form,selector).val();
+}
 
-function property_ad_form_validation(){
-  var form =  $('#modalPropertyAdForm');
-  form.on('show.bs.modal',function(){
+function get_value_using_name($form,name){
+  return get_value_using_selector($form,'[name='+name+']');
+}
+
+function should_validate_other($form,name){
+  return $form.find('[name='+name+'] option:selected').first().text().toLowerCase()=='other';
+}
+
+function property_form_validation($form){
+  $form.on('show.bs.modal',function(){
       url = window.roomie_image_url;
       height = 2000;
-      width = 2000;
+      width = 12000;
   });
-  var propertyAdFormValidator = form.validate({
-      ignore: '.ignore',
-      rules: {
-        title: {
-          slug: true,
-          maxlength: 70,
-          required: true,
-        },
-        region: {
-          required: true,
-        },
-        address: {
-          required: true,
-        },
-        available_from: {
-          required: true,
-        },
-        total_floors: {
-          required: true,
-          digits: true,
-        },
-        floor_no: {
-          required: true,
-          less_than_total_floors: true,
-          digits: true,
-        },
-        type: {
-          required: true,
-        },
-        property_type_other: {
-          required: {
-            depends: function (element) {
-              return $('#property_type option:selected').text().toLowerCase() == 'other';
-            }
-          }
-        },
-        furnishing: {
-          required: true,
-        },
-        facilities: {
-          required: false,
-        },
-        halls: {
-          required: true,
-        },
-        rooms: {
-          required: true,
-        },
-        bathrooms: {
-          required: true,
-        },
-        balconies: {
-          required: true,
-        },
-        area: {
-          required: true,
-          number: true,
-        },
-        flooring: {
-          required: true,
-        },
-        property_flooring_other: {
-          required: {
-            depends: function (element) {
-              return $('#property_flooring option:selected').text().toLowerCase() == 'other';
-            }
-          }
-        },
-        rent: {
-          required: true,
-          digits: true
-        },
-        advance_of_months: {
-          required: true,
-          digits: true
-        },
-        property_images: {
-          minlength: 3,
-        },
+  var propertyFormValidator = $form.validate({
+    ignore: '.ignore',
+    rules: {
+      title: {
+        slug: true,
+        maxlength: 70,
+        required: true,
       },
-      messages: {
-        property_images: {
-          minlength: jQuery.validator.format('Choose atleast {0} images'),
+      region: {
+        required: true,
+      },
+      address: {
+        required: true,
+      },
+      available_from: {
+        required: true,
+      },
+      total_floors: {
+        required: true,
+        digits: true,
+      },
+      floor_no: {
+        required: true,
+        less_than_total_floors: true,
+        digits: true,
+      },
+      lodging_type: {
+        required: true,
+      },
+      property_type_other: {
+        required: {
+          depends: function (element) {
+            return should_validate_other($form,'lodging_type');
+          }
         }
       },
-      errorPlacement: function(error, element){
-        if(element.attr('name')=='property_images') {
-          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
-          $('#property_add_image').after(error);
-        } else if(element.prop('nodeName')=='SELECT'){
-          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px'});
-          element.next().after(error[0]);
-        } else if(element.attr('name')=='area'){
-          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
-          element.next().after(error[0]);
-        } else {
-          element.after(error[0]);
+      furnishing: {
+        required: true,
+      },
+      facilities: {
+        required: false,
+      },
+      halls: {
+        required: true,
+      },
+      rooms: {
+        required: true,
+      },
+      bathrooms: {
+        required: true,
+      },
+      balconies: {
+        required: true,
+      },
+      area: {
+        required: true,
+        number: true,
+      },
+      measuring_unit: {
+        required: {
+          depends: function(){
+            return get_value_using_name($form,'area')!="";
+          }
         }
       },
-      errorElement: 'div',
-      submitHandler: function(form,e){
-        e.preventDefault();
-        e.stopPropagation();
-        propertyAdFormValidator.form();
-        if ($(form).valid()) {
-          var data = {
-            'title': $('#property_title').val(),
-            'region': $('#property_region').val(),
-            'address': $('#property_address').val(),
-            'latlng': $('#property_latlng').val(),
-            'available_from': $('#property_available_from').val(),
-            'total_floors': $('#property_total_floors').val(),
-            'floor_no': $('#property_floor_no').val(),
-            'lodging_type': $('#property_type').val(),
-            'lodging_type_other': $('#property_type_other').val(),
-            'furnishing': $('#property_furnishing').val(),
-            'facilities': $('#property_facilities').val(),
-            'bathrooms': $('#property_bathrooms').val(),
-            'balconies': $('#property_balconies').val(),
-            'rooms': $('#property_rooms').val(),
-            'halls': $('#property_halls').val(),
-            'area': convert_area_to_gaj($('#property_area').val(), $('#property_measuring_unit').val()),
-            'flooring': $('#property_flooring').val(),
-            'flooring_other': $('#property_other').val(),
-            'rent': $('#property_rent').val(),
-            'advance_rent_of_months': $('#property_advance_of_months').val(),
-            'other_charges': create_charges_data('property'),
-            'additional_details': $('#property_additional_details').val(),
-            'images': $('#property_images').val(),
+      flooring: {
+        required: true,
+      },
+      property_flooring_other: {
+        required: {
+          depends: function (element) {
+            return should_validate_other($form,'flooring');
           }
-          show_loading(form);
-          $.ajax({
-            'type': 'POST',
-            'dataType': 'json',
-            'url': window.create_property_url,
-            'data': data,
-            traditional: true,
-            success: function (res) {
-              toastr.success('Success!','New post added.');
-              reset_form(e,true);
-            },
-            error: function (data) {
-              console.log("error")
-              display_errors(data, form);
-            },
-            complete: function (res) {  
-              remove_loading(form);
-            }
-          });
         }
+      },
+      rent: {
+        required: true,
+        digits: true
+      },
+      advance_of_months: {
+        required: true,
+        digits: true
+      },
+      property_images: {
+        minlength: 3,
+      },
+    },
+    messages: {
+      property_images: {
+        minlength: jQuery.validator.format('Choose atleast {0} images'),
+      },
+      measuring_unit: {
+        required: 'Measuring unit is required.'
       }
+    },
+    errorPlacement: function(error, element){
+      if(element.attr('name')=='measuring_unit'){
+        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
+        $(element).parent().after(error[0]);
+      }
+      else if(element.attr('name')=='property_images') {
+        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
+        element.parent().find('add_image').first().after(error[0]);
+      } else if(element.prop('nodeName')=='SELECT'){
+        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px'});
+        element.next().after(error[0]);
+      } else if(element.attr('name')=='area'){
+        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
+        element.next().after(error[0]);
+      } else {
+        element.after(error[0]);
+      }
+    },
+    errorElement: 'div',
+    submitHandler: function(form,e){
+      e.preventDefault();
+      e.stopPropagation();
+      propertyFormValidator.form();
+      if ($(form).valid()) {
+        var data = {
+          'title': get_value_using_name($(form),'title'),
+          'region': get_value_using_name($(form),'region'),
+          'address': get_value_using_name($(form),'address'),
+          'latlng': get_value_using_name($(form),'property_latlng'),
+          'available_from': get_value_using_name($(form),'available_from'),
+          'total_floors': get_value_using_name($(form),'total_floors'),
+          'floor_no': get_value_using_name($(form),'floor_no'),
+          'lodging_type': get_value_using_name($(form),'lodging_type'),
+          'lodging_type_other': get_value_using_name($(form),'property_type_other'),
+          'furnishing': get_value_using_name($(form),'furnishing'),
+          'facilities': get_value_using_name($(form),'facilities'),
+          'bathrooms': get_value_using_name($(form),'bathrooms'),
+          'balconies': get_value_using_name($(form),'balconies'),
+          'rooms': get_value_using_name($(form),'rooms'),
+          'halls': get_value_using_name($(form),'halls'),
+          'area': convert_area_to_gaj(get_value_using_name($(form),'area'), 
+                    get_value_using_name($(form),'measuring_unit')),
+          'flooring': get_value_using_name($(form),'flooring'),
+          'flooring_other': get_value_using_name($(form),'property_flooring_other'),
+          'rent': get_value_using_name($(form),'rent'),
+          'advance_rent_of_months': get_value_using_name($(form),'advance_rent_of_months'),
+          'other_charges': create_charges_data($(form)),
+          'additional_details': get_value_using_name($(form),'additional_details'),
+          'images': get_value_using_name($(form),'property_images'),
+        }
+        show_loading($(form));
+        $.ajax({
+          'type': 'POST',
+          'dataType': 'json',
+          'url': window.create_property_url,
+          'data': data,
+          traditional: true,
+        }).done((res)=>{
+          $(form).trigger('done',res);
+        }).fail((data)=>{
+          display_errors(data, form);
+        }).always(()=>{
+          remove_loading(form);
+        })
+      }
+    }
   });
+}
+
+function get_property_edit_form_html(data){
+  return `
+  <form class="modal fade" id="modalPropertyAdEditForm" 
+  data-backdrop="static" tabindex="-1" role="dialog" 
+  aria-labelledby="myModalLabel" aria-hidden="true"
+  novalidate>
+    <div class="modal-dialog full-width modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h4 class="modal-title w-100 font-weight-bold">Rent Your Property</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body mx-3 row">
+          <div class="md-form mb-4 col-12 m-5px" style="margin-top: 1rem!important">
+            <i class="fa fa-tag prefix grey-text"></i>
+            <input type="text" name="title"
+              value="${data.title}"
+              id="edit_property_title" class="form-control" length="70">
+            <label for="edit_property_title">Title</label>
+          </div>
+
+          <div class="group-heading mb-4">General details</div>
+          <div class="mb-4 col-12 col-lg-10 m-5px">
+            <select name="region" id="edit_property_region"
+            data-placeholder="Search location">
+              <option value="${data.region.id}" selected="selected">
+                ${data.region.name}
+              </option>
+            </select>
+            <label for="edit_property_region">Location</label>
+          </div>
+          <div class="md-form mt-0 mb-4" role="group" aria-label="Basic example">
+            <input type="text" name="address" 
+              id="edit_property_address" 
+              class="form-control"
+              value="${data.address}"
+              id="edit_property_location" 
+              placeholder="Type address or use current location" 
+              aria-label="location name" 
+              aria-describedby="current-location">
+            <label for="edit_property_address">Address</label>
+            <div>
+              <button class="input-group-text btn bg-one btn-primary btn-sm" 
+                onclick="getCurrentLocation(event,'edit_property_address')" 
+                id="edit-current-location">
+                <i class="fa fa-map-marker mr-1"></i>
+                Use current location</button>
+            </div>
+          </div>
+          <input type="hidden" name="property_latlng"
+            value="${data.latlng}"
+            id="edit_property_latlng">
+          <div class="md-form mb-4 col-12 col-md-6 m-5px">
+            <i class="fa fa-calendar prefix grey-text"></i>
+            <input type="text" name="available_from" id="edit_property_available_from" 
+            class="form-control" value="${data.available_from}" required>
+            <label for="edit_property_available_from">Date of availability</label>
+            <div id="edit_datepicker-container"></div>
+          </div>
+          <div class="col-12 mb-4 col-md-6 m-5px">
+            <select name="total_floors" id="edit_property_total_floors">
+              <option value="">Choose total floors</option>
+            </select>
+            <label for="edit_property_total_floors">Total floors</label>
+          </div>
+          <div class="col-12 mb-4 col-md-6 m-5px">
+            <select name="floor_no" id="edit_property_floor_no">
+              <option value="">Choose floor number</option>
+            </select>
+            <label for="edit_property_floor_no">Floor number</label>
+          </div>
+          
+          <div class="group-heading mb-4">Property details</div>
+          <div class="mb-4 col-12 col-md-6 m-5px">
+            <select name="lodging_type" id="edit_property_type" 
+              data-target="other" data-label="Property type">
+              <option value="">Choose type</option>
+              <option value="F">Flat</option>
+              <option value="H">House</option>
+              <option value="P">Paying guest</option>
+              <option value="R">Room(s)</option>
+              <option value="O">Other</option>
+            </select>
+            <label for="edit_property_type">Type</label>
+          </div>
+          <div class="mb-4 col-12 col-md-6 m-5px">
+            <select name="furnishing" id="edit_property_furnishing">
+              <option value="">Choose furnishing</option>
+              <option value="F">Fully Furnished</option>
+              <option value="S">Semi-Furnished</option>
+              <option value="U">UnFurnished</option>
+            </select>
+            <label for="edit_property_furnishing">Furnishing</label>
+          </div>
+          <div class="mb-4 col-12 col-md-6 m-5px">
+            <select name="facilities" id="edit_property_facilities" 
+              multiple="multiple" data-placeholder="Select facilities">
+              <option value="A">Air conditioner</option>
+              <option value="P">Parking</option>
+              <option value="K">Kitchen</option>
+            </select>
+            <label for="edit_property_facilities">Facilities</label>
+          </div>
+          <div class="col-12 mb-4 col-md-6 m-5px">
+            <select name="bathrooms" id="edit_property_bathrooms">
+              <option value="">Choose total bathrooms</option>
+            </select>
+            <label for="edit_poperty_bathrooms">Total Bathrooms</label>
+          </div>
+          <div class="col-12 mb-4 col-md-6 m-5px">
+            <select name="balconies" id="edit_property_balconies">
+              <option value="">Choose total balconies</option>
+            </select>
+            <label for="edit_property_balconies">Total Balconies</label>
+          </div>
+          <div class="col-12 mb-4 col-md-6 m-5px">
+            <select name="rooms" id="edit_property_rooms">
+              <option value="">Choose total rooms</option>
+            </select>
+            <label for="edit_property_rooms">Total Rooms</label>
+          </div>
+          <div class="col-12 mb-4 col-md-6 m-5px">
+            <select name="halls" id="edit_property_halls">
+              <option value="">Choose total halls</option>
+            </select>
+            <label for="edit_property_halss">Total Halls</label>
+          </div>
+          <div class="input-group md-form mb-4 col-12 col-md-8 m-5px" 
+            role="group" aria-label="Area with unit" required>
+            <label for="edit_property_area" style="top: 0">Area (built up)</label>
+            <input type="text" 
+            value="${data.area}"
+            name="area" id="edit_property_area" 
+            class="form-control p-0">
+            <span class="input-group-append" style="width:110px">
+              <select name="measuring_unit" style="width:100%" 
+              id="edit_property_measuring_unit">
+                <option value="">Choose unit</option>
+              </select>
+            </span>
+          </div>
+          <div class="mb-4 col-12 col-md-6 m-5px">
+            <select name="flooring" id="edit_property_flooring" 
+              data-target="other" data-label="Flooring type">
+              <option value="">Choose flooring type</option>
+            </select>
+            <label for="edit_property_flooring">Flooring</label>
+          </div>
+          
+          <div class="group-heading mb-4">Rent details</div>
+          <div class="md-form col-12 col-md-6 m-5px">
+              <i class="fa fa-inr prefix grey-text"></i>
+              <input type="text" 
+              value="${data.rent}"
+              name="rent" id="edit_property_rent" 
+              class="form-control" required>
+              <label for="edit_property_rent">Rent (per month)</label>
+          </div>
+          <div class="md-form col-12 col-md-6 m-5px">
+            <input type="number" name="advance_rent_of_months" 
+            value="${data.advance_rent_of_months}"
+            id="edit_property_advance_of_months" min="1" 
+            class="form-control" required>
+            <label for="edit_property_advance_of_months">
+              Advance rent of months</label>
+          </div>
+          <div class="col-12 mb-4 mt-0">
+            <button class="btn btn-primary btn-sm bg-one" 
+              onclick="create_charge_form(event,'edit_property')" 
+              id="edit_other_charges_button">
+              Add more charges
+            </button>
+            <input type="hidden" name="other_charges">
+          </div>
+          
+          <div class="group-heading mb-4">Additional details</div>
+          <div class="md-form m-5px" style="margin-top: 1rem!important">
+            <i class="fa fa-pencil prefix grey-text"></i>
+            <textarea rows="3" length="1000" 
+            value="${data.additional_details}"
+            placeholder="e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished."
+            class="md-textarea form-control" name="additional_details" 
+            id="property_additional_details"></textarea>
+            <label for="property_additional_details">Additional details</label>
+          </div>
+        
+          <div class="group-heading">Images</div>
+          <select name="property_images" 
+          hidden="true" id="property_images" 
+          multiple="mutiple"></select>
+          <div class="form-row">
+            <div class="col-12">
+              <span class='btn btn-md btn-default text-white ml-0 mt-3 bg-one'
+                name="add_image"
+                id="property_add_image">
+                <i class="fa fa-file-image-o icon"></i> Add image</span>
+            </div>
+          </div>
+          <input type="hidden" name="images">
+          
+        </div>
+        <div class="modal-footer">
+          <div class="text-center col-12 mt-4">
+            <button class="btn color-2" type="submit">Post</button>
+            <button class="red white-text btn"
+            type="delete"
+            onclick="delete_form(event)">
+            Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>`;
+}
+
+function show_modal(id){
+  $(id).modal('show');
+}
+
+function show_property_edit_form(data){
+  $('body').append(get_property_edit_form_html(data));
+  var $form = $('#modalPropertyAdEditForm');
+  show_modal('#modalPropertyAdEditForm');
+  create_options_for_property_form_fields($form);
+  select_option($form,data)
+  initialize_region_selectize($form);
+  initialize_facilities_selectize($form);
+  initialize_all_selects($form);
+}
+
+function edit_form_validation(){
+  var $form = $('#modalPropertyAdEditForm');
+  $form.on('done',function(data){
+    toastr.success('Information updated successfully','Saved');
+  });
+  profile_form_validation($form);
+}
+
+function set_reset_button_toggle($form){
+  var $reset = $form.find('button[type=reset]').first();
+  var filled=$form.find('input:filled,select:filled,textarea:filled').length;
+  if(filled==0){
+    $reset.attr('disabled','true');
+  }
+  $form.find('input,select,textarea').each(function(){
+    $(this).on('change',function(){
+      var filled=$form.find('input:filled,select:filled,textarea:filled').length;
+      if(filled==0){
+        $reset.attr('disabled','true');
+      } else {
+        $reset.removeAttr('disabled');
+      }
+    });
+  });
+}
+
+function property_ad_form_validation(){
+  var $form = $('#modalPropertyAdForm');
+  $form.on('done',function(data){
+    toastr.success('New post added','Success');
+    reset_form($form,true);
+  });
+  property_form_validation($form);
+  set_reset_button_toggle($form);
 }
 
 function set_password_form_validation(){
@@ -1110,7 +1511,7 @@ function profile_form_validation(){
                     first_name: first_name,
                     last_name: last_name,
                     detail: $('#profile_detail').val(),
-                    type_of_roommate: $('#profile_type_of_roommate').val(),
+                    // type_of_roommate: $('#profile_type_of_roommate').val(),
                 }
                 var url = API_PREFIX + 'account/save-profile/';
                 show_loading(form);
@@ -1555,39 +1956,45 @@ function delete_from_localstorage(image_id,$form){
   var key = get_image_id($form).slice(1);
   var form_id = $form[0].id;
   var obj = JSON.parse(localStorage.getItem(form_id));
+  if(!obj){
+    return
+  }
   var index = obj[key].findIndex(element=>element.value==image_id);
   obj[key].splice(index,1);
   localStorage.setItem(form_id, JSON.stringify(obj));
 }
 
+function send_image_delete_request(event,image_id,$form,callback=()=>{}){
+  $.ajax({
+    type: 'POST',
+    url: window.delete_image_url,
+    data: {
+      id: image_id,
+    }
+  }).done((res)=>{
+    toastr.success('Image has been deleted');
+    callback();
+  }).fail((res)=>{
+    toastr.error('Error!',res);
+  }).always((res)=>{
+    if(res.status==404 || res.status==200){
+      delete_from_localstorage(image_id,$form);
+      if($form){
+        $(get_image_id($form)).find('option[value='+image_id+']').remove();
+        $(get_image_id($form)).trigger('change');
+        $('#image_'+image_id).parent().remove();
+      }
+    }
+  });
+}
+
 function delete_image(event,image_id,$form=null,callback=()=>{}){
   event.preventDefault();
   $.confirm({
-    text: 'Are you sure you want to delete this image?',
+    title: 'Are you sure you want to delete this image?',
+    text: 'It will be deleted permanently.',
     confirm: function(){
-      $.ajax({
-        type: 'POST',
-        url: window.delete_image_url,
-        data: {
-          
-          id: image_id,
-        },
-        success: function(res){
-          toastr.success('Image has been deleted');
-          callback();
-        },
-        error: function(res){
-          toastr.error('Error!',res);
-        },
-        complete: function(res){
-          if(res.status==404 || res.status==200){
-            delete_from_localstorage(image_id,$form);
-            if($form){
-              $(event.target).parent().parent().remove();
-            }
-          }
-        }
-      });
+      send_image_delete_request(event,image_id,$form,callback);
     },
   });
 }
@@ -1662,7 +2069,7 @@ function stringToForm(formString, unfilledForm, select_ids) {
     for(var html of htmlList){
       $el.parent().before(html);
       charge_form_id++;
-      $el.parent().prev().find('input','checkbox').each(function(){
+      $el.parent().prev().find('input,checkbox').each(function(){
         if($(this).attr("type") == "checkbox" || $(this).attr("type") == "radio" ){
           $(this).prop('checked',!!formObject[this.id]);
         } else {
@@ -1692,12 +2099,11 @@ function resend_otp(){
     'dataType':'json',
     'url': url,
     'data': data,
+  }).done((data)=>{
+    display_message(form,'OTP has been resent.');
+  }).fail((data)=>{
+    display_errors(data,form);
   }).always((data)=>{
-    if(data.status=='200'){
-      display_message(form,'OTP has been resent.');
-    } else {
-      display_errors(data,form);
-    }
     remove_loading(form);
   });
 }
@@ -1711,62 +2117,95 @@ function initialize_auto_save(form_id,select_ids){
   });
 }
 
-function delete_form(data,form_id,event,$form,post=false){
-  if(data && JSON.parse(data).constructor==Object){
-    if(!post){
-      var imageList;
-      data=JSON.parse(data);
-      if(form_id=='modalPropertyAdForm'){
-        imageList=data['property_images'];
-      } else {
-        imageList=data['id_images'];
-      }
-      for(var image_id of imageList){
-        delete_image(event,image_id);
-      }
-    }
-    localStorage.removeItem(form_id);
-    if(form_id=='modalPropertyAdForm'){
-      localStorage.removeItem('property_other_charges');
-      localStorage.removeItem('property_other_charges_fields');
-    }
-    toastr.success('Success!',"Form has been reset");
-    setTimeout(function(){
-      window.location.href="/";
-    },2000);
-  }
+function get_form(element){
+  return $($(element).closest('form')[0]);
 }
 
-function reset_form(event,post=false){
-  event.preventDefault();
-  var $el=$(event.target);
-  var $form=$($el.closest('form')[0]);
+function reset_form($form){
   var form_id=$form.attr('id');
   var data=localStorage.getItem(form_id);
-  if(!post){
-    $.confirm({
-      title: "Are you sure you want to reset form?",
-      text: "All data will be deleted.",
-      confirm: function(){
-        delete_form(data,form_id,event,$form);
-      }
+  $form.find('input,textarea').each(function(){
+    $(this).val('');
+  });
+  $form.find('select:hidden').each(function(){
+    if(this.selectize){
+      this.selectize.clear();
+    }
+  });
+  localStorage.removeItem(form_id);
+  if(form_id=='modalPropertyAdForm'){
+    localStorage.removeItem('property_other_charges');
+    localStorage.removeItem('property_other_charges_fields');
+  }
+  if($form.validate().resetForm){
+    $form.validate().resetForm();
+  }
+  toastr.success('Success!',"Form has been reset");
+}
+
+function hard_reset_form(event){
+  event.preventDefault();
+  var $form=get_form(event.target);
+  var form_id=$form.attr('id');
+  var data=localStorage.getItem(form_id);
+  var imageList;
+  if(data && JSON.parse(data).constructor==Object) {
+    data=JSON.parse(data);
+    if(form_id=='modalPropertyAdForm'){
+      imageList=data['property_images'];
+    } else {
+      imageList=data['id_images'];
+    }
+    for(var image of imageList){
+      send_image_delete_request(event,image.value,$form);
+    }
+  }
+  reset_form($form);
+}
+
+function confirm_reset_form(event){
+  event.preventDefault();
+  $.confirm({
+    title: "Are you sure you want to reset form?",
+    text: "All data will be deleted permanently.",
+    confirm: function(){
+      hard_reset_form(event);
+    }
+  });
+}
+
+function initialize_region_selectize($form){
+  $form.find('[name=region]').first().selectize(
+    get_selectize_configurations('property',false)
+  );
+}
+
+function initialize_facilities_selectize($form){
+  $form.find('[name=facilities]').first().selectize({
+    plugins: ['remove_button'],
+    copyClassesToDropdown: false,
+  });
+}
+
+function initialize_all_selects($form=null){
+  var selector = 'select:not([hidden=true])';
+  if($form){
+    $form.find(selector).selectize({
+      copyClassesToDropdown: false,
     });
   } else {
-    delete_form(datdesa,form_id,event,$form,post);
+    $(selector).selectize({
+      copyClassesToDropdown: false,
+    });
   }
 }
 
 function initialize_form_selectize(){
   $(document).on('initialize_form_selectize',function(){
     $('#roomie_regions').selectize(get_selectize_configurations('roomie'));
-    $('#property_region').selectize(get_selectize_configurations('property',false));
-    $('#property_facilities').selectize({
-      plugins: ['remove_button'],
-      copyClassesToDropdown: false,
-    });
-    $('select:not([hidden=true])').selectize({
-      copyClassesToDropdown: false,
-    });
+    initialize_region_selectize($('#modalPropertyAdForm'));
+    initialize_facilities_selectize($('#modalPropertyAdForm'));
+    initialize_all_selects();
     initialize_auto_save('modalPropertyAdForm',['property_region']);
     initialize_auto_save('modalRoomieAdForm',['roomie_regions']);
   });
@@ -1795,8 +2234,8 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
             <div id="full_screen_carousel" class="carousel slide carousel-fade carousel-thumbnails" data-ride="false">
               <div class="carousel-inner" role="listbox">
                 <div class="carousel-item active">
-                  <div class="view">
-                    <img class="d-block w-100" src="${ad_images[0]}">
+                  <div class="view d-flex align-items-center justify-content-center">
+                    <img class="d-block" src="${ad_images[0]}">
                   </div>
                 </div>
                 `
@@ -1804,8 +2243,8 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
       if(i>0){
         carousel += `
                 <div class="carousel-item">
-                  <div class="view">
-                    <img class="d-block" src="" data-src="${ad_images[i]}">
+                  <div class="view d-flex align-items-center justify-content-center minh-800">
+                    <img class="d-block" src="${window.loading_icon_big}" data-src="${ad_images[i]}">
                   </div>
                 </div>
         `
@@ -1916,16 +2355,36 @@ function csrfSafeMethod(method) {
   return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
-function create_options_for_property_form_fields(){
-  create_options(1,20,$('#property_total_floors'));
-  create_options(1,20,$('#property_floor_no'));
-  create_options(0,6,$('#property_bathrooms'));
-  create_options(0,6,$('#property_rooms'));
-  create_options(0,6,$('#property_halls'));
-  create_options(0,6,$('#property_balconies'));
-  create_options_from_array($('#property_measuring_unit'), area_units, conversion_value);
-  create_options_from_array($('#property_flooring'),
-    ['Marble','Vitrified Tile','Vinyl','Hardwood','Granite','Bamboo','Concrete','Laminate','Linoleum','Tarrazzo','Brick','Other'],
+function select_option($form,data){
+  var field_name_list = ['total_floors','floor_no','bathrooms','rooms',
+    'halls','balconies','measuring_unit','flooring'];
+  for(var name of field_name_list){
+    $form.find('[name='+name+']').first().val(data[name]);
+  }
+}
+
+function get_element_using_selector($form,selector){
+  return $form.find(selector).first();
+}
+
+function get_element_using_name($form,name){
+  return get_element_using_selector($form,'[name='+name+']');
+}
+
+function create_options_for_property_form_fields($form){
+  create_options(1,20,get_element_using_name($form,'total_floors'));
+  create_options(1,20,get_element_using_name($form,'floor_no'));
+  create_options(0,6,get_element_using_name($form,'bathrooms'));
+  create_options(0,6,get_element_using_name($form,'rooms'));
+  create_options(0,6,get_element_using_name($form,'halls'));
+  create_options(0,6,get_element_using_name($form,'balconies'));
+  create_options_from_array(
+    get_element_using_name($form,'measuring_unit'), 
+    area_units, conversion_value
+  );
+  create_options_from_array(get_element_using_name($form,'flooring'),
+    ['Marble','Vitrified Tile','Vinyl','Hardwood','Granite',
+    'Bamboo','Concrete','Laminate','Linoleum','Tarrazzo','Brick','Other'],
     ['M','VT','V','H','G','B','C','L','LI','T','BR','O']
   );
 }
@@ -1948,14 +2407,65 @@ function initialize_other_select(){
   });
 }
 
-$('document').ready(function(){
+function set_validations(){
+  custom_validators();
+  register_form_validation();
+  login_form_validation();
+  verify_number_form_validation();
+  enter_number_form_validation();
+  set_password_form_validation();
+  change_password_form_validation();
+  profile_form_validation();
+  roomie_ad_form_validation();
+  property_ad_form_validation();
+}
 
-  // $.ajaxSetup({
-  //   xhrFields: {
-  //      withCredentials: true
-  //   },
-  //   crossDomain: true
-  // })
+function set_enter_number_form(){
+  var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
+  $('[data-action=add-number]').click(function(event){
+    event.preventDefault();
+    add_number = true;
+    mobile_number = $enter_mobile_number.val();
+    $enter_mobile_number.val('');
+  });
+  $('[data-action=verify-number]').click(function(){
+      add_number = false;
+      if(mobile_number!=""){
+        $enter_mobile_number.val(mobile_number);
+      }
+  });
+}
+
+function toggle_buttons(form){
+  if($(form).valid()){
+    $(form).find('button[type=submit]').each(function(){
+      $(this).removeAttr('disabled');
+    });
+  } else {
+    $(form).find('button[type=submit]').each(function(){
+      $(this).attr('disabled','');
+    });
+  }
+}
+
+function set_disable_submit_button(){
+  $('form.modal').each(function(index,element){
+    var form = this;
+    $(form).find('button[type=submit]').each(function(){
+      $(this).attr('disabled','');
+    });
+    $(form).find('input,select,textarea').each(function(){
+      $(this).change(function(){
+        toggle_buttons(form);
+      })
+    });
+    setTimeout(function(){
+      $(form).validate().resetForm();
+    },2000);
+  });
+}
+
+$('document').ready(function(){
   
   $(document).ajaxSend(function (event, jqxhr, settings) {
     settings.data += '&csrfmiddlewaretoken=' + window.getCookie('csrftoken');
@@ -1964,60 +2474,21 @@ $('document').ready(function(){
     };
   });
 
-  // $(document).ajaxComplete(function (event, xhr, settings) {
-  //   debugger
-  // })
-
+  set_footer();
   $(window).resize(set_footer);
 
-  custom_validators();
-
-  register_form_validation();
-
-  login_form_validation();
-
-  verify_number_form_validation();
-
-  enter_number_form_validation();
-
-  set_password_form_validation();
-
-  change_password_form_validation();
-
+  initialize_form_selectize();
   set_custom_alerts();
-
-  add_tawk_to();
-
-  set_footer();
-  
   set_character_count();
-
+  set_validations();
+  set_disable_submit_button();
+  add_tawk_to();
   set_logout();
-
-  profile_form_validation();
-
-  roomie_ad_form_validation();
-
-  property_ad_form_validation();
-
-  var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
-
-  $('[data-action=add-number]').click(function(event){
-    event.preventDefault();
-    add_number = true;
-    mobile_number = $enter_mobile_number.val();
-    $enter_mobile_number.val('');
-  });
-
-  $('[data-action=verify-number]').click(function(){
-      add_number = false;
-      if(mobile_number!=""){
-        $enter_mobile_number.val(mobile_number);
-      }
-  });
+  set_enter_number_form();
+  enable_add_image();
 
   $('#resend_otp').click(function(){
-    set_resend_otp();
+    resend_otp();
   });
 
   $('input[name=has_property]').change(function(event){
@@ -2030,9 +2501,7 @@ $('document').ready(function(){
       }
       $($('#modalRoomieAdForm .modal-body').children('div')[1]).removeClass('d-none');
   });
-
   initialize_other_select();
-
   $('#property_available_from').Zebra_DatePicker({
     default_position: 'below',
     show_icon: false,
@@ -2046,21 +2515,7 @@ $('document').ready(function(){
       $('#property_available_from').trigger('change');
     }
   });
-
-  create_options_for_property_form_fields();
-
-  // var options = $('#id_images option:selected');
-  // if(options.length>0){
-  //     $('#uploaded_images_container').css({'display':'block'});
-  //     $.each(options,function(i,option){
-  //         var img = document.createElement('img');
-  //         img.src = $(option).text();
-  //         $('#uploaded_images_container').append(img);
-  //     })
-  // }
-
-  enable_add_image();
-
+  create_options_for_property_form_fields($('#modalPropertyAdForm'));
   $('#upload-image').click(function(e){
     e.preventDefault();
     $('#profile').click();
@@ -2071,11 +2526,7 @@ $('document').ready(function(){
     $('#profile-icon').css({'display':'none'});
     $('#profile-photo').css({'display':'block'});
   });
-
-  initialize_form_selectize();
-
   set_carousel();
-
   show_indeterminate_progess();
 
   $('#modalPropertyAdForm').on('hidden.bs.modal',function(){
@@ -2092,5 +2543,5 @@ $('document').ready(function(){
   $('.modal').on('show.bs.modal',function(){
     var num_visible_modals = $('.modal.show').length;
     $(this).css('z-index',1050+num_visible_modals);
-  })
+  });
 });
