@@ -353,7 +353,7 @@ function show_form_global_errors(form,globalErrors){
       var li = document.createElement('li');
       li.className = "alert alert-danger";
       $(li).html(`${error}${alert_close_button}`);
-      ul.append(li);
+      $(ul).append(li);
     }
   }
   $(form).find('.modal-body').prepend(ul);
