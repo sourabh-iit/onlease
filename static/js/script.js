@@ -352,7 +352,7 @@ function show_form_global_errors(form,globalErrors){
     for(let error of globalErrors){
       var li = document.createElement('li');
       li.className = "alert alert-danger";
-      $(li).html(`${error}${error_close_button}`);
+      $(li).html(`${error}${alert_close_button}`);
       ul.append(li);
     }
   }
