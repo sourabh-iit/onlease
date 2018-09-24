@@ -344,6 +344,7 @@ function create_ul(){
   var ul = document.createElement('ul');
   ul.className = "p-0";
   ul.style.listStyle = 'none';
+  return ul;
 }
 
 function show_form_global_errors(form,globalErrors){
