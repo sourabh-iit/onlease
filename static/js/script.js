@@ -8,21 +8,7 @@ var prefix;
 var upload_image_url;
 var regions_url = window.API_PREFIX + 'locations/regions2/';
 var charge_form_id=1;
-var tagList=[
-  {value: '', text: 'Choose tag'},
-  {value:'0',text:'Bedroom'},
-  {value:'3',text:'Living Room'},
-  {value:'5',text:'Kitchen'},
-  {value:'6',text:'Bathroom'},
-  {value:'4',text:'Entrance'},
-  {value:'1',text:'Hall'},
-  {value:'2',text:'Balcony'},
-  {value:'7',text:'Building'},
-  {value:'8',text:'Floor'},
-  {value:'9',text:'Outside View'},
-  {value:'11',text:'Dining Room'},
-  {value:'10',text:'Other'},
-];
+
 var area_units = [
   'Sq. Gaj',
   'Sq. Ft.',
@@ -54,6 +40,38 @@ var conversion_value = [
   12075.8
   
 ];
+
+var Tags = {
+  tagList: [
+    {value: '', text: 'Choose tag'},
+    {value:'0',text:'Bedroom'},
+    {value:'3',text:'Living Room'},
+    {value:'5',text:'Kitchen'},
+    {value:'6',text:'Bathroom'},
+    {value:'4',text:'Entrance'},
+    {value:'1',text:'Hall'},
+    {value:'2',text:'Balcony'},
+    {value:'7',text:'Building'},
+    {value:'8',text:'Floor'},
+    {value:'9',text:'Outside View'},
+    {value:'11',text:'Dining Room'},
+    {value:'10',text:'Other'},
+  ],
+  get_tags: function(){
+    return this.tagList;
+  },
+  get_tag_text: function(value) {
+    for(var tag of this.tagList) {
+      if(tag.value==value){
+        return tag.text;
+      }
+    }
+  }
+}
+
+function type_full_form(value) {
+  return 'need to be done';
+}
 
 function getCookie(name) {
   var cookieValue = null;
@@ -104,10 +122,6 @@ function show_loading(form=null){
   } else {
     create_spinner($(form).find('.modal-dialog'));
   }
-}
-
-function show_my_ads(){
-  
 }
 
 var loadingLocation = false;
@@ -1670,13 +1684,458 @@ function create_options_from_array(j_el,text,value){
   }
 }
 
+function Modal(id,title){
+  this.modal = document.createElement('div');
+  this.modal_dialog = document.createElement('div');
+  this. modal_content = document.createElement('div');
+  this.modal_header = document.createElement('div');
+  this.modal.className = 'modal fade';
+  this.modal.id = id;
+  $(this.modal).attr('data-backdrop','static')
+  this.modal_dialog.className = 'modal-dialog';
+  this.modal_content.className = 'modal-content';
+  this.modal_header.className = 'modal-header';
+  this.modal_title = document.createElement('h5');
+  this.modal_title.className = 'modal-title';
+  $(this.modal_title).text(title);
+  $(this.modal_header).append(this.modal_title);
+  $(this.modal_header).append(`
+  <button type="button" class="close" 
+    data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>`);
+  this.modal_body = document.createElement('div');
+  this.modal_body.className = 'modal-body minh-500';
+  this.modal_footer = document.createElement('div');
+  this.modal_footer.className = 'modal-footer';
+  $(this.modal).append(this.modal_dialog);
+  $(this.modal_dialog).append(this.modal_content);
+  $(this.modal_content).append(this.modal_header)
+  .append(this.modal_body)
+  .append(this.modal_footer);
+}
+
+Modal.prototype = {
+  constructor: Modal,
+  replace_title: function (title){
+    $(this.modal_title).text(title);
+  },
+  replace_body: function (body) {
+    $(this.modal_body).html(body);
+  },
+  append_to_body: function (html){
+    $(this.modal_body).append(html);
+  },
+  get_modal: function (){
+    return this.modal;
+  },
+  append_to_footer: function(html){
+    $(this.modal_footer).append(html);
+  },
+  replace_footer: function(footer){
+    $(this.modal_footer).html(footer);
+  },
+  show: function(){
+    $(this.modal).modal('show');
+  },
+  add_class: function(_class){
+    $(this.modal).addClass(_class);
+  },
+  add_class_to_dialog: function(_class){
+    $(this.modal_dialog).addClass(_class);
+  },
+  remove_on_close: function(){
+    $(this.modal).on('hidden.bs.modal',()=>{
+      $(this.modal).remove();
+    });
+  }
+}
+
+function AdLink(text,icon) {
+  this.link_container = this.details = document.createElement('div');
+  this.link_container.className = 'col';
+  this.link_icon = document.createElement('i');
+  this.link_icon.className = icon;
+  $(this.link_container).append(this.link_icon).append('&nbsp;'+text);
+}
+
+AdLink.prototype = {
+  constructor: AdLink,
+  get_ad_link: function(){
+    return this.link_container;
+  },
+  add_click_event: function(func,arg){
+    $(this.link_container).click(function(){
+      func(arg);
+    })
+  }
+}
+
+function AdLinks(ad) {
+  this.container = document.createElement('div');
+  this.container.className = 'row m-0 links';
+  if(ad.images.length>0) {
+    this.zoom = new AdLink('Zoom','fa fa-search-plus');
+    $(this.container).append(this.zoom.get_ad_link());
+  }
+  this.view_details = new AdLink('View Details','fa fa-external-link');
+  this.view_details.add_click_event(redirect_to_ad_detail_view,ad.id)
+  $(this.container).append(this.view_details.get_ad_link());
+}
+
+AdLinks.prototype = {
+  constructor: AdLinks,
+  get_ad_links: function(){
+    return this.container;
+  }
+}
+
+function AdDetailItem(text,icon,value){
+  this.li = document.createElement('li');
+  this.li.className = 'col p-0 white-text';
+  this.text_container = document.createElement('div');
+  this.text_container.className = 'light-brown-text';
+  this.text = document.createElement('small');
+  this.value_container = document.createElement('div');
+  this.value_icon = document.createElement('i');
+  this.value_icon.className = icon+' pr-1';
+  if(text=='Rent'){
+    $(this.value_container).append(this.value_icon)
+    .append(value);
+    this.text.innerText = text;
+  } else {
+    $(this.value_container).append(value);
+    $(this.text).append(this.value_icon)
+    .append(text);
+  }
+  $(this.text_container).append(this.text);
+  $(this.li).append(this.text_container)
+  .append(this.value_container);
+}
+
+AdDetailItem.prototype = {
+  constructor: AdDetailItem,
+  get_ad_detail_item: function(){
+    return this.li;
+  }
+}
+
+function AdDetails(ad){
+  this.container = document.createElement('div');
+  this.container.className = 'rounded-bottom mdb-color lighten-3 text-center pt-3';
+  $(this.container).css('height','fit-content');
+  this.ul = document.createElement('ul');
+  this.ul.className='list-unstyled row p-0 ml-0 mr-0 font-small';
+  this.rent = new AdDetailItem('Rent','fa fa-inr',ad.rent);
+  if(ad.lodging_type=='O'){
+    this.type = new AdDetailItem('Type','fa fa-home',ad.lodging_type_other);
+  } else {
+    this.type = new AdDetailItem('Type','fa fa-home',type_full_form(ad.lodging_type));
+  }
+  this.available_from = new AdDetailItem('Available from','fa fa-clock-o',ad.available_from);
+  $(this.container).append(this.ul);
+  $(this.ul).append(this.rent.get_ad_detail_item())
+  .append(this.type.get_ad_detail_item())
+  .append(this.available_from.get_ad_detail_item());
+}
+
+AdDetails.prototype = {
+  constructor: AdDetails,
+  get_ad_details: function(){
+    return this.container;
+  }
+}
+
+function Card(){
+  this.card = document.createElement('div');
+  this.card.className = 'card mb-3';
+  this.card_body = document.createElement('div');
+  this.card_body.className = 'card-body p-0';
+  this.card_footer = document.createElement('div');
+  this.card_footer.className = 'card-footer';
+  this.card_title = document.createElement('h4');
+  this.card_title.className = 'card-title';
+  $(this.card).append(this.card_body);
+  // .append(this.card_footer);
+  // $(this.card_body).append(this.card_title);
+}
+
+Card.prototype = {
+  constructor: Card,
+  append_to_title: function(html){
+    $(this.card_title).append(html);
+  },
+  replace_title: function(html){
+    $(this.card_title).html(html);
+  },
+  append_to_body: function(html){
+    $(this.card_body).append(html);
+  },
+  replace_body:function(html){
+    $(this.card_body).html(html);
+  },
+  append_to_footer: function(html){
+    $(this.card_footer).append(html);
+  },
+  replace_footer:function(html){
+    $(this.card_footer).html(html);
+  },
+  add_classes: function(classes){
+    $(this.card).addClass(classes);
+  },
+  add_carousel: function (carousel) {
+    if($(this.card).children('img').length>0){
+      throw('Card image is already appended.')
+    }
+    $(this.card).prepend(carousel);
+  },
+  add_image: function (image){
+    if($(this.card).children('.carousel').length>0){
+      throw('Card carousel is already appended.')
+    }
+    $(this.card).prepend(image);
+  },
+  get_card: function(){
+    return this.card;
+  }
+}
+
+function CarouselIndicator(id,slide_to) {
+  this.indicator = document.createElement('li');
+  $(this.indicator).attr('data-target',id);
+  $(this.indicator).attr('data-slide-to',slide_to);
+  if(slide_to==0){
+    this.indicator.className='active';
+  }
+}
+
+CarouselIndicator.prototype = {
+  constructor: CarouselIndicator,
+  get_indicator: function(){
+    return this.indicator;
+  }
+}
+
+function CarouselItem(i,image){
+  this.item = document.createElement('div');
+  this.item.className = 'carousel-item';
+  if(i==0){
+    this.item.className = 'carousel-item active';
+  } else {
+    this.item.className = 'carousel-item';
+  }
+  this.img_element = new ImageCard(image.image_thumbnail,image.tag,i);
+  this.caption = document.createElement('div');
+  this.caption.className = 'carousel-caption';
+  $(this.caption).text(Tags.get_tag_text(image.tag));
+  $(this.item).append(this.img_element.get_image())
+  .append(this.caption);
+}
+
+CarouselItem.prototype = {
+  constructor: CarouselItem,
+  get_item: function(){
+    return this.item;
+  }
+}
+
+function CarouselControl(id){
+  this.control = document.createElement('a');
+  this.icon = document.createElement('span');
+  this.sr_only = document.createElement('span');
+  $(this.control).attr('href','#'+id);
+  $(this.control).attr('role','button');
+  this.icon.className = 'carousel-control';
+  $(this.icon).attr('aria-hidden','true');
+  this.sr_only.className='sr-only';
+  $(this.control).append(this.icon)
+  .append(this.sr_only);
+}
+
+CarouselControl.prototype = {
+  constructor: CarouselControl,
+  get_control: function(){
+    return this.control;
+  }
+}
+
+function CarouselControlNext(id){
+  CarouselControl.call(this,id);
+  this.control.className = 'carousel-control-next';
+  $(this.control).attr('data-slide','next');
+  $(this.icon).addClass('fa fa-chevron-right');
+  $(this.sr_only).text('Next');
+}
+CarouselControlNext.prototype = Object.create(CarouselControl.prototype);
+CarouselControlNext.prototype.constructor = CarouselControlNext;
+
+function CarouselControlPrev(id){
+  CarouselControl.call(this,id);
+  this.control.className = 'carousel-control-prev';
+  $(this.control).attr('data-slide','prev');
+  $(this.icon).addClass('fa fa-chevron-left');
+  $(this.sr_only).text('Prev');
+}
+CarouselControlPrev.prototype = Object.create(CarouselControl.prototype);
+CarouselControlPrev.prototype.constructor = CarouselControlPrev;
+
+function Carousel(id,images){
+  this.carousel = document.createElement('div');
+  this.carousel_inner = document.createElement('div');
+  this.carousel_indicators = document.createElement('ol');
+  this.next_control = new CarouselControlNext(id);
+  this.prev_control = new CarouselControlPrev(id);
+  $(this.carousel).attr('id',id);
+  $(this.carousel).attr('data-pause','true');
+  this.carousel.className = "carousel slide carousel-fade";
+  $(this.carousel).attr('data-ride',"false");
+  this.carousel_indicators.className = "carousel-indicators";
+  this.carousel_inner.className = 'carousel-inner';
+  $(this.carousel).append(this.carousel_indicators)
+  .append(this.carousel_inner)
+  if(images.length>0){
+    $(this.carousel).append(this.next_control.get_control())
+    .append(this.prev_control.get_control());
+  }
+
+  for(var i in images){
+    this.add_indicator(id,i);
+    this.add_item(i,images[i]);
+  }
+
+  $(this.carousel).on('slide.bs.carousel',function(event){
+    var $img = $(event.relatedTarget).children().children('img');
+    if($img.attr('data-src')){
+      $img.attr('src',$img.attr('data-src'));
+    }
+  })
+}
+
+Carousel.prototype = {
+  constructor: Carousel,
+  add_indicator : function(id,i) {
+    var indicator = new CarouselIndicator(id,i);
+    this.carousel_indicators.append(indicator.get_indicator());
+  },
+  add_item: function(i,image) {
+    this.item = new CarouselItem(i,image);
+    this.carousel_inner.append(this.item.get_item());
+  },
+  get_carousel: function(){
+    return this.carousel;
+  }
+}
+
+function Image(src,alt,index=0){
+  this.img = document.createElement('img');
+  $(this.img).attr('alt',alt);
+  if(index>0){
+    $(this.img).attr('data-src',src);
+    $(this.img).attr('src',window.STATIC_URL+'images/');
+  } else {
+    $(this.img).attr('src',src);
+  }
+}
+
+Image.prototype = {
+  constructor: Image,
+  get_image: function(){
+    return this.img;
+  },
+  set_src: function(src) {
+    $(this.img).attr('src',src);
+  },
+  set_data_src: function(src) {
+    $(this.img).attr('data-src',src);
+  },
+}
+
+function ImageCard(src=null,alt=null,index=null){
+  if(!src){
+    Image.call(this,window.STATIC_URL+'images/No-image-available.jpg','no image available');
+  } else {
+    Image.call(this,src,alt,index);
+  }
+  $(this.img).addClass('d-block');
+  this.img_cover = document.createElement('div');
+  this.img_cover.className = 'view card-img-top justify-content-center minh-200 align-items-center d-flex';
+  $(this.img_cover).append(this.img);
+}
+ImageCard.prototype = Object.create(Image.prototype);
+ImageCard.prototype.constructor = ImageCard;
+ImageCard.prototype.get_image = function(){
+  return this.img_cover;
+}
+
+function MyAd(ad){
+  this.card = new Card();
+  this.card.add_classes('w-270 p-0');
+  if(ad.images.length==0){
+    this.image = new ImageCard();
+    this.card.add_image(this.image.get_image());
+  } else {
+    this.carousel = new Carousel('my_ad_'+ad.id,ad.images);
+    this.card.add_carousel(this.carousel.get_carousel());
+  }
+  this.ad_details = new AdDetails(ad);
+  this.ad_links = new AdLinks(ad);
+  this.card.append_to_body(this.ad_links.get_ad_links());
+  this.card.append_to_body(this.ad_details.get_ad_details());
+}
+
+MyAd.prototype = {
+  constructor: MyAd,
+  get_my_ad: function(){
+    return this.card.get_card();
+  }
+}
+
+function MyAds(ads) {
+  this.modal = new Modal('myAdsModal','My Ads');
+  this.modal.add_class_to_dialog('modal-lg');
+  for(var ad of ads) {
+    var ad = new MyAd(ad);
+    this.modal.append_to_body(ad.get_my_ad());
+  }
+  this.modal.show();
+  show_loading(this.modal.get_modal());
+  this.modal.remove_on_close();
+  var $grid = $(this.modal.modal_body).masonry({
+    // itemSelector: '',
+    columnWidth: 270,
+    gutter: 20,
+  });
+  $grid.imagesLoaded().progress( () => {
+    $grid.masonry('layout');
+    setTimeout(function(){
+      $grid.masonry('layout');
+    },2000);
+    remove_loading(this.modal.get_modal());
+  });
+}
+
+function get_my_ads(){
+  $.ajax({
+    url: window.my_ads_url,
+    beforeSend: function(){
+      show_loading();
+    }
+  }).done(function(res){
+    var myAds = new MyAds(JSON.parse(res.data));
+  }).fail(function(){
+    toastr.error("Unable to get your ads","Error");
+  }).always(function(){
+    remove_loading();
+  });
+}
+
 function initialize_editable(id,_this,obj={},callback=()=>{}){
   var options = {
     type: 'select',
     pk: id,
     url: window.tag_url,
     title: 'Choose tag',
-    source: tagList,
+    source: Tags.get_tags(),
     mode: 'inline',
     emptytext: 'Add tag',
     showbuttons: false,

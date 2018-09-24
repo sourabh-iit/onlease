@@ -18,6 +18,7 @@
   <label class="custom-control-label" for="tableDefaultCheck1">Check 1</label>
 </div> {% endcomment %}
 <script>
+  var data = JSON.parse("{{ data | escapejs}}");
   var type = '{{sublodging | full_form:"type"}}';
   var rent = '{{sublodging.rent}}';
   var region = '{{sublodging.region}}';

@@ -44,8 +44,12 @@
         aria-haspopup="true" aria-expanded="true">
         <i class="fa fa-user-circle-o fs-4"></i></a>
       <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalUserProfileForm">
+        <a class="dropdown-item waves-effect waves-light text-capitalized" 
+          data-toggle="modal" data-target="#modalUserProfileForm">
           My Profile</a>
+        <a class="dropdown-item waves-effect waves-light text-capitalized"
+          onclick="get_my_ads()">
+          My Ads</a>
         {% if not user.is_verified %}
         <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalEnterNumberForm"
           data-action="verify-number">

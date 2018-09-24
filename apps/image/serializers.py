@@ -13,6 +13,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class ImageRelatedField(serializers.RelatedField):
   def to_representation(self, value):
+    # import pdb;pdb.set_trace()
     if isinstance(value,ImageModel):
       return ImageSerializer(value).data
     return ImageSerializer(value.first()).data
