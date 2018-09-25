@@ -16,3 +16,4 @@ class UserSerializer(serializers.ModelSerializer):
     fields = ('mobile_number','email','first_name','last_name',
      'is_verified','gender','created_at','updated_at','detail',
      'profile_image','mobile_numbers')
+     

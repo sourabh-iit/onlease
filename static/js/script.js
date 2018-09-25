@@ -2286,7 +2286,8 @@ var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
   fileReader.readAsDataURL(uploadFile);
 
   fileReader.onload = function (event) {
-    var image = new Image();
+    var image = document.createElement('img');
+    image.src = event.target.result;
     image.onload = function () {
       setTimeout(()=>{
         var canvas = document.createElement("canvas");
@@ -2350,7 +2351,6 @@ var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
         });
       },1);
     }
-    image.src = event.target.result;
   };
 }
 
@@ -2371,7 +2371,8 @@ function enable_add_image(){
     var id = "id_"+name;
     set_prefix(this.id);
     $('#'+id).remove();
-    $(this).after(`<input type="file" id=${id} name=${name} onchange="loadImageFile(event)" class="d-none">`);
+    $(this).after(`<input type="file" id=${id} name=${name} 
+    onchange="loadImageFile(event)" class="d-none">`);
     var $file_input = $('#'+id);
     $file_input[0].click();
   });
