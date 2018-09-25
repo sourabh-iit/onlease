@@ -223,6 +223,9 @@ function create_charge_form(event,prefix){
     </div>
   </div>`;
   $(el).parent().before(other_charge_form);
+
+  $form = get_form(event.target);
+  $form.trigger('change');
   
   var key=prefix+'_other_charges';
   var data=localStorage.getItem(key);
@@ -252,8 +255,7 @@ function create_charge_form(event,prefix){
       localStorage.setItem(key,JSON.stringify(data_to_store));
     });
   });
-
-  get_form(event.target).validate();
+  $form.validate();
   $('#'+prefix+'_charge_amount_'+charge_form_id).rules('add',{
     required: true
   });
@@ -1333,22 +1335,50 @@ function edit_form_validation(){
   profile_form_validation($form);
 }
 
-function set_reset_button_toggle($form){
-  var $reset = $form.find('button[type=reset]').first();
-  var filled=$form.find('input:filled,select:filled,textarea:filled').length;
-  if(filled==0){
-    $reset.attr('disabled','true');
+class ResetButton{
+  constructor(element){
+    this.button = element;
   }
-  $form.find('input,select,textarea').each(function(){
-    $(this).on('change',function(){
-      var filled=$form.find('input:filled,select:filled,textarea:filled').length;
-      if(filled==0){
-        $reset.attr('disabled','true');
-      } else {
-        $reset.removeAttr('disabled');
-      }
+  enable(){
+    $(this.button).removeAttr('disabled');
+  }
+  disable(){
+    $(this.button).attr('disabled','true');
+  }
+}
+
+function num_filled_elements($form){
+  return $form.find('input:filled,select:filled,textarea:filled').length;
+}
+
+class AdFormResetButton extends ResetButton{
+  constructor($form){
+    var element = $form.find('button[type=reset]').first();
+    super(element);
+    this.$form = $form;
+    this.check_to_disable();
+    $form.find('input,select,textarea').on('change',()=>{
+      this.check_to_disable();
     });
-  });
+    $form.on('change',()=>{
+      this.check_to_disable();
+    })
+  }
+
+  check_to_disable(){
+    var filled = num_filled_elements(this.$form);
+    var other_charges_form = this.$form.find('.other_charges_container').length;
+    var images = $('property_images_contain').length;
+    if(filled+other_charges_form+images>0){
+      this.enable();
+    } else {
+      this.disable();
+    }
+  }
+}
+
+function set_reset_button_toggle($form){
+  new AdFormResetButton($form);
 }
 
 function property_ad_form_validation(){
@@ -2172,7 +2202,10 @@ function add_image_to_container(div,obj,$form,select){
   $(div).find(`#delete_${obj.value}`).click(function($event){
     delete_image($event,obj.value,$form);
   });
-  $(select).append(`<option value="${obj.value}" selected="selected" data-tag="${obj.tag}">${obj.url}</option>`);
+  $(select).append(
+    `<option value="${obj.value}" selected="selected" 
+    data-tag="${obj.tag}">${obj.url}</option>`
+  ).trigger('change');
   if(obj.tag){
     initialize_editable(obj.value,select,{value: obj.tag});
   } else {
@@ -2208,6 +2241,7 @@ function create_modal_to_add_tag(res){
   $('#delete_'+res.id).click(function($event){
     delete_image(event, res.id, null, ()=>{
       destroy_modal($modal_el);
+      image_uploading=false;
     });
   });
   initialize_editable(res.id,$('#property_images'),{},(tag)=>{
@@ -2223,6 +2257,7 @@ function create_modal_to_add_tag(res){
     }
     add_image_to_container(div,obj,$('#modalPropertyAdForm'),$('#property_images')[0]);
     destroy_modal($modal_el);
+    image_uploading=false;
   });
   $modal_el.modal('show');
   // $('#add_tag').on('show.bs.modal',function(){
@@ -2254,6 +2289,7 @@ var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
 
   //check and retuns the length of uploded file.
   if (file.files.length === 0) {
+    image_uploading = false;
     return;
   }
 
@@ -2263,8 +2299,10 @@ var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
   var uploadFile = file.files[0];
   if (!filterType.test(uploadFile.type)) {
     alert("Please select a valid image.");
+    image_uploading=false;
     return;
   }
+  image_uploading=true;
 
   var loading_icon = document.createElement('span');
   $(loading_icon).append(`&nbsp;<i class="fa fa-spinner fa-spin"></i>`)
@@ -2333,12 +2371,14 @@ var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
           toastr.success('Success!',"Image Uploaded",);
           if (_type == 'profile') {
             $('#profile').trigger('profile-updated', [res.id, res.url]);
+            image_uploading=false;
             return;
           } else {
             create_modal_to_add_tag(res);
           }
         }).fail(function (err) {
           $(file).after(`<div class="error">${err}</div>`);
+          image_uploading=false;
         }).always(function (data) {
           $(loading_icon).remove();
           $(div).remove();
@@ -2363,10 +2403,15 @@ function set_prefix(id){
   return prefix;
 }
 
+var image_uploading = false;
+
 function enable_add_image(){
   $('span').filter(function(){
     return this.id.match(/add_image$/);
   }).click(function(){
+    if(image_uploading){
+      return;
+    }
     var name = this.id+'_file';
     var id = "id_"+name;
     set_prefix(this.id);
@@ -2505,7 +2550,7 @@ function stringToForm(formString, unfilledForm, select_ids) {
         }
         else {
           if ($elem.attr("type") == "checkbox" || $elem.attr("type") == "radio" ) {
-            $elem.prop("checked", !!formObject[id]);
+            $elem.prop("checked", !!formObject[id]).trigger('change');
           } else {
             $elem.val(formObject[id]).trigger('change');
             if($elem[0].selectize){
@@ -2603,9 +2648,19 @@ function reset_form($form){
     localStorage.removeItem('property_other_charges');
     localStorage.removeItem('property_other_charges_fields');
   }
+  if($('#property_images_contain').length){
+    $('#property_images_contain').remove();
+  }
+  if($('.images-added-heading').length){
+    $('.images-added-heading').remove();
+  }
+  if($('.other_charges_container').length){
+    $('.other_charges_container').remove();
+  }
   if($form.validate().resetForm){
     $form.validate().resetForm();
   }
+  $form.trigger('change');
   toastr.success('Success!',"Form has been reset");
 }
 
