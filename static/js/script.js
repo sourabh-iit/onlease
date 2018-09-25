@@ -360,6 +360,11 @@ function show_form_global_errors(form,globalErrors){
   $(form).find('.modal-body').prepend(ul);
 }
 
+function redirect_to_ad_detail_view(id){
+  window.location.href = window.detail_view_url+
+    '?business='+$('#id_business').val()+'&id='+id;
+}
+
 function show_form_field_errors(form,errors){
   var validator = $(form).validate();
   validator.showErrors(errors);

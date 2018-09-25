@@ -138,11 +138,6 @@ function resetSearchBox(){
   }
 }
 
-function redirect_to_ad_detail_view(id){
-  window.location.href = window.detail_view_url+
-    '?business='+$('#id_business').val()+'&id='+id;
-}
-
 $(document).ready(function(){
   resetSearchBox();
   initialize_masonry();
