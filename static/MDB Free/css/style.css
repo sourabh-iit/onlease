@@ -1,1 +1,92 @@
 /* Your custom styles */
+
+.w-270{
+  width: 270px;
+}
+.light-brown-text {
+  color: #3b2d3a!important;
+}
+.fs-1{
+  font-size: 0.8rem!important;
+}
+.fs-2{
+  font-size: 0.9rem!important;
+}
+.fs-3{
+  font-size: 1rem!important;
+}
+.fs-3-5 {
+  font-size: 1.2rem!important;
+}
+.fs-4{
+  font-size: 1.5rem!important;
+}
+.fs-5{
+  font-size: 2rem!important;
+}
+.fs-6{
+  font-size: 3rem!important;
+}
+.lime-text-1{
+  color: #ffcc80!important;
+}
+.flex-direction-column{
+  flex-direction: column;
+}
+.color-2{
+  background-color: #1de9b6!important;
+}
+.color-2-text{
+  color: #b388ff!important;
+}
+.color-1{
+  background-color: #4b515d;
+}
+.color-1.transparent{
+  background-color: rgba(75, 81, 93, 0.8);
+}
+.color-1-text{
+  color: #4b515d;
+}
+.color-2 {
+  background-color: #4e5fca!important;
+}
+.color-2-text {
+  color: #4e5fca!important;
+}
+.color-3 {
+  background-color: #ba0dbd!important;
+}
+.color-3-text {
+  color: #ba0dbd!important;
+}
+.color-4{
+  background-color: #980def!important;
+}
+.color-4-text{
+  color: #980def!important;
+}
+.color-5 {
+  background-color: #03567b!important;
+}
+.fw-400 {
+  font-weight: 400;
+}
+.minh-500{
+  min-height: 500px!important;
+}
+.minh-200{
+  min-height: 200px!important;
+}
+.minh-800 {
+  min-height: 800px;
+}
+.line-height-1{
+  line-height: 1rem!important;
+}
+.carousel .carousel-control-next-icon, .carousel .carousel-control-prev-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: black;
+  border-radius: 2rem;
+}

@@ -67,9 +67,9 @@ function add_options_to_region(){
 function initialize_selectize(){
   $('#id_region').selectize(get_selectize_configurations('search'));
   $(document).trigger('initialize_form_selectize');
-  $('#id_business')[0].selectize.on('change',function(event){
-    $('#id_region')[0].selectize.clearOptions();
-  });
+  // $('#id_business')[0].selectize.on('change',function(event){
+  //   $('#id_region')[0].selectize.clearOptions();
+  // });
 }
 
 function initialize_masonry(){
@@ -108,7 +108,7 @@ function resize(){
 
 function resetSearchBox(){
   var business_mobile = `
-  <select name="business" id="id_business" class="col-12">
+  <select name="business" id="id_business" class="col-12 d-none">
     <option value="PROPERTY" {% if business == 'PROPERTY' %}
       selected{% endif %}>Property</option>
     <option value="MATES" {% if business == 'MATES' %}
@@ -116,7 +116,7 @@ function resetSearchBox(){
   </select>
   `;
   var business_desktop = `
-  <select name="business" id="id_business" class="col-2 p-0">
+  <select name="business" id="id_business" class="col-2 p-0 d-none">
     <option value="PROPERTY" {% if business == 'PROPERTY' %}
       selected{% endif %}>Property</option>
     <option value="MATES" {% if business == 'MATES' %}

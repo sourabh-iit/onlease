@@ -9,6 +9,7 @@ from django.dispatch import receiver
 from apps.constants import *
 from .models import ImageModel
 from apps.utils import generate_random, create_thumbnail
+from .serializers import ImageSerializer
 
 import re
 import base64
@@ -61,11 +62,7 @@ def image_upload_view(request,ad_type):
     else:
       im = ImageModel.objects.create(image=file,image_thumbnail=thumb_file,
         image_mobile=image_mobile,tag=request.POST.get('tag'))
-    return JsonResponse({
-      'id': im.id,
-      'url': im.image_mobile.url,
-      'url_thumbnail': im.image_thumbnail.url,
-    })
+    return JsonResponse(ImageSerializer(im).data)
   except Exception as e:
     return HttpResponseBadRequest({'errors':'Sorry, could not upload file.'})
 
@@ -89,7 +86,7 @@ def image_action_view(request,action):
       if not valid_tag:
         return HttpResponse('Invalid tag. Choose tag from given options',status=400)
       image.save()
-      return HttpResponse(status=200)
+      return HttpResponse('Tag added.',status=200)
     except ImageModel.DoesNotExist:
       return HttpResponse('Image is deleted or not uploaded',status=404)
     except KeyError:
@@ -104,3 +101,14 @@ def image_action_view(request,action):
       return HttpResponse('Image does not exist.',status=404)
     except KeyError:
       return HttpResponse('Image id not provided',status=400)
+  elif action=='images':
+    try:
+      data=request.POST
+      if not data.get('ids',False):
+        ids=data.getlist('ids[]')
+      else:
+        ids=data.getlist('ids')
+      images = ImageModel.objects.filter(id__in=ids)
+      return JsonResponse({'images':ImageSerializer(images,many=True).data})
+    except KeyError:
+      return HttpResponse('ids key is missing',status=400)

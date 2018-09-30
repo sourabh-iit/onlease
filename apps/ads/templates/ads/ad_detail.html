@@ -57,14 +57,14 @@
         {% for image in sublodging.images.all %}
           {% if forloop.first %}
           <div class="carousel-item active">
-            <div class="view align-items-center justify-content-center d-flex">
-              <img class="d-block cursor-zoom-in" 
+            <div class="view image-container">
+              <img class="d-block cursor-zoom-in img-fluid" 
                 src="{{image.image_mobile.url}}"  
                 alt="{{sublodging.additional_details}}">
           {% else %}
           <div class="carousel-item">
-            <div class="view d-flex justify-content-center minh-800 align-items-center">
-              <img class="d-block cursor-zoom-in" 
+            <div class="view image-container">
+              <img class="d-block cursor-zoom-in img-fluid" 
                 src="{% static 'images/Spinner-1s-200px.gif' %}" 
                 data-src="{{image.image_mobile.url}}" 
                 alt="{{sublodging.additional_details}}">

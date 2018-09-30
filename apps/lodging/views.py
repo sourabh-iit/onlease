@@ -40,6 +40,8 @@ def lodging_create_view_ajax(request):
           charge_form = ChargeForm(other_charge)
           if charge_form.is_valid():
             charge_form.save(sublodging)
+          else:
+            raise ValidationError('Error in other charges')
       return JsonResponse({'success': True})
   except ValidationError as e:
     form.add_error(None,e)

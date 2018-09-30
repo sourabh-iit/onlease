@@ -35,13 +35,13 @@
             aria-label="location name" 
             aria-describedby="current-location">
           <label for="property_address">Address</label>
-          <div>
+          <!-- <div>
             <button class="input-group-text btn bg-one btn-primary btn-sm" 
               onclick="getCurrentLocation(event,'property_address')" 
               id="current-location">
               <i class="fa fa-map-marker mr-1"></i>
               Use current location</button>
-          </div>
+          </div> -->
         </div>
         <input type="hidden" name="property_latlng" id="property_latlng">
         <div class="md-form mb-4 col-12 col-md-6 m-5px">
@@ -176,8 +176,6 @@
         {% comment %} Additional details {% endcomment %}
 
         {% comment %} Images {% endcomment %}
-        <div class="group-heading">Images</div>
-        <select name="property_images" hidden="true" id="property_images" multiple="mutiple"></select>
         <div class="form-row">
           <div class="col-12">
             <span class='btn btn-md btn-default text-white ml-0 mt-3 bg-one'
@@ -186,7 +184,6 @@
               <i class="fa fa-file-image-o icon"></i> Add image</span>
           </div>
         </div>
-        <input type="hidden" name="images">
         {% comment %} Images {% endcomment %}
 
       </div>

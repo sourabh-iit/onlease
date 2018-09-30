@@ -176,98 +176,204 @@ function remove_parent(event){
   $(event.target).parent().parent().remove();
 }
 
-function create_charge_form(event,prefix){
-  event.preventDefault();
-  var el=event.target;
-  var other_charge_form=`
-  <div class="row col-12 w-100 mt-3 other_charges_container container">
-    <div class="md-form col-12 col-md-4 p-1">
-      <i class="fa fa-inr prefix grey-text"></i>
-      <input type="text" 
-        id="${prefix}_charge_amount_${charge_form_id}" 
-        class="form-control"
-        data-name="charge_amount"
-        data-id="${prefix}_charge_amount">
-      <label for="${prefix}_charge_amount_${charge_form_id}">
-        Amount
-      </label>
-    </div>
-    <div class="md-form col-12 col-md-4 p-1">
-      <input type="text" 
-        id="${prefix}_charge_description_${charge_form_id}" 
-        class="form-control" 
-        data-name="charge_description"
-        data-id="${prefix}_charge_description">
-      <label for="${prefix}_charge_description_${charge_form_id}">
-        Description
-      </label>
-    </div>
-    <div class="flex-vertical-center d-flex justify-content-center col-10 col-md-3 p-0">
-      <div class="custom-control custom-checkbox">
-        <input type="checkbox" 
-          class="custom-control-input" 
-          id="${prefix}_charge_is_per_month_${charge_form_id}"
-          data-name="charge_is_per_month" 
-          data-id="${prefix}_charge_is_per_month">
-        <label class="custom-control-label" 
-          for="${prefix}_charge_is_per_month_${charge_form_id}">
-          Per month
-        </label>
-      </div>
-    </div>
-    <div class="col-2 col-md-1 d-flex align-items-center justify-content-center">
-      <i 
-        class="cursor-pointer fa fa-times-circle red-text fa-lg"
-        onclick="remove_parent(event)">
-      </i>
-    </div>
-  </div>`;
-  $(el).parent().before(other_charge_form);
-
-  $form = get_form(event.target);
-  $form.trigger('change');
-  
-  var key=prefix+'_other_charges';
-  var data=localStorage.getItem(key);
-  var data_to_store;
-  if(!data || JSON.parse(data).constructor!=Array){
-    data_to_store=[];
-  } else {
-    data_to_store=JSON.parse(data);
+class MdFormInputText{
+  constructor(id,label,icon=null){
+    this.$div = $('<div></div>')
+    .addClass('md-form');
+    this.$input = $('<input></input>').addClass('form-control')
+    .attr('type','text').attr('id',id);
+    this.$label = $('<label></label>').attr('for',id).text(label);
+    this.$div.append(this.$input[0]).append(this.$label[0]);
+    if(icon){
+      this.$icon = $('<i></i>').addClass('prefix grey-text fa fa-'+icon);
+      this.$div.prepend(this.$icon[0]);
+    }
   }
-  data_to_store.push(other_charge_form);
-  localStorage.setItem(key,JSON.stringify(data_to_store));
-  
-  key=prefix+'_other_charges_fields';
-  $(el).parent().prev().find('input,checkbox').each(function(){
-    $(this).change(function(){
-      data=localStorage.getItem(key);
-      if(!data || JSON.parse(data).constructor!=Object){
-        data_to_store={};
-      } else {
-        data_to_store=JSON.parse(data);
-      }
-      if ($(this).attr("type") == 'checkbox' || $(this).attr("type") == 'radio') {
-        data_to_store[this.id] = $(this).attr("checked");
-      } else {
-        data_to_store[this.id] = $(this).val();
-      }
-      localStorage.setItem(key,JSON.stringify(data_to_store));
+
+  get_element(){
+    return this.$div[0];
+  }
+}
+
+class MdFormCheckbox{
+  constructor(id,label){
+    this.$div = $('<div></div>')
+    .addClass('custom-control custom-checkbox');
+    this.$input = $('<input></input>').addClass('custom-control-input')
+    .attr('type','checkbox').attr('id',id);
+    this.$label = $('<label></label>').attr('for',id).text(label)
+    .addClass('custom-control-label');
+    this.$div.append(this.$input[0]).append(this.$label[0]);
+  }
+
+  get_element(){
+    return this.$div[0];
+  }
+}
+
+class ChargeFormCheckbox extends MdFormCheckbox{
+  constructor(id,label,data_name){
+    super(id,label);
+    this.$container = $('<div></div>')
+    .addClass('flex-vertical-center d-flex justify-content-center col-10 col-md-3 p-0');
+    this.$container.append(this.$div[0]);
+    this.$input.attr('data-name',data_name);
+  }
+
+  get_element(){
+    return this.$container[0];
+  }
+}
+
+class ChargeFormInput extends MdFormInputText{
+  constructor(id,label,data_name,icon){
+    super(id,label,icon);
+    this.$div.addClass('col-12 col-md-4 p-1');
+    this.$input.attr('data-name',data_name);
+  }
+}
+
+class RemoveChargeFormButton{
+  constructor($form){
+    this.$icon = $('<i></i>')
+    .addClass('cursor-pointer fa fa-times-circle red-text fa-lg')
+    .css({position:"absolute",right:5,top:5})
+    .click(function(event){
+      $(event.target).trigger('remove');
     });
-  });
-  $form.validate();
-  $('#'+prefix+'_charge_amount_'+charge_form_id).rules('add',{
-    required: true
-  });
-  $('#'+prefix+'_charge_description_'+charge_form_id).rules('add',{
-    required: {
-      depends: function(){
-        return $('#'+prefix+'_charge_amount_'+charge_form_id).val()!='';
-      }
+  }
+}
+
+function fill_form($form,data,attr){
+  $form.find('input,select,textarea').each(function(){
+    var $elem = $(this);
+    var key = $(this).attr(attr);
+    if ($elem.attr("type") == "checkbox" || $elem.attr("type") == "radio" ) {
+      $elem.prop("checked", !!data[key]).trigger('change');
+    } else {
+      $elem.val(data[key]).trigger('change');
     }
   });
-  
-  charge_form_id++;
+}
+
+class OtherChargeForm{
+  constructor(prefix,$element){
+    this.form_id = 1;
+    this.$forms = $([]);
+    this.prefix = prefix;
+    this.$form = get_form($element[0]);
+    this.$ref = $element;
+    this.$form.on('reset',()=>{
+      this.remove_all();
+    });
+    this.localStorage_key = prefix+'_charges_form';
+    this.localStorage_data_key = prefix+'_charges_form_data';
+    this.attr = 'data-name';
+    this.string_to_form();
+  }
+
+  add_form(){
+    var $new_form = this.create_form();
+    this.append_form($new_form[0]);
+  }
+
+  append_form(form){
+    this.$ref.parent()
+    .before(form);
+    this.form_id++;
+    this.$forms = this.$forms.add($(form));
+    this.$form.trigger('change');
+    this.attach_change_event($(form));
+  }
+
+  remove_form($container){
+    $container.remove();
+    this.$forms = this.$forms.not($container);
+    this.trigger_form();
+  }
+
+  trigger_form(){
+    this.$form.trigger('change');
+  }
+
+  remove_all(){
+    this.$forms.remove();
+    this.$forms = $([]);
+    localStorage.removeItem(this.localStorage_data_key);
+    localStorage.removeItem(this.localStorage_key);
+  }
+
+  get_forms_count(){
+    return this.$forms.length;
+  }
+
+  create_form(){
+    var $container = $('<div></div>')
+    .addClass('row col-12 w-100 mt-3 other_charges_container container');
+    var amount = new ChargeFormInput(this.prefix+'_charge_amount_'+this.form_id,
+    'Amount','charge_amount','inr');
+    var description = new ChargeFormInput(this.prefix+'_charge_description_'+this.form_id,
+    'Description','charge_description');
+    var is_per_month = new ChargeFormCheckbox(this.prefix+'_charge_is_per_month_'+this.form_id,
+    'Is per month?','charge_is_per_month');
+    var remove_button = new RemoveChargeFormButton();
+    remove_button.$icon.on('remove',()=>{
+      this.remove_form($container);
+      this.form_to_string();
+    })
+    $container.append(amount.get_element())
+    .append(description.get_element())
+    .append(is_per_month.get_element())
+    .append(remove_button.$icon);
+    return $container;
+  }
+
+  attach_change_event($form){
+    $form.find('input,select,textarea').change(()=>{
+      this.form_to_string();
+    });
+  }
+
+  string_to_form(){
+    var data_array = JSON.parse(localStorage.getItem(this.localStorage_data_key));
+    if(!Array.isArray(data_array)){
+      return
+    }
+    for(var data of data_array){
+      var $new_form = this.create_form();
+      this.append_form($new_form[0]);
+      fill_form($new_form,data,this.attr);
+    }
+  }
+
+  form_to_string(){
+    var forms = [];
+    var data_array = [];
+    var attr = this.attr;
+    this.$forms.each(function(){
+      var data = {};
+      $(this).find('input,select,textarea').each(function(){
+        var $elem = $(this);
+        if ($elem.attr("type") == 'checkbox' || $elem.attr("type") == 'radio') {
+          data[$(this).attr(attr)] = $elem.is(":checked");
+        } else {
+          data[$(this).attr(attr)] = $elem.val();
+        }
+      });
+      data_array.push(data);
+    });
+    localStorage.setItem(
+      this.localStorage_data_key,
+      JSON.stringify(data_array)
+    );
+  }
+}
+
+function create_charge_form(event,prefix){
+  event.preventDefault();
+  if(prefix=='property'){
+    window.property_charge_form.add_form(event);
+  }
 }
 
 function get_selectize_configurations(value,remove_button=true){
@@ -591,6 +697,9 @@ function toggle_add_new_number_button(){
   var num_alternate_numbers = $('.alternate_mobile_number').length;
   var $add_new_number = $('#add_new_number');
   if(num_alternate_numbers<3){
+    if(num_alternate_numbers==0){
+      $('#alternate_numbers_card').remove();
+    }
     $add_new_number.removeAttr('disabled');
     $add_new_number.removeClass('disabled');
   } else {
@@ -650,7 +759,7 @@ function Input(_id,className,label=null,prefix=null,disabled=false) {
   }
 }
 
-function create_alternate_mobile_number_container(mobile_number,$el){
+function create_alternate_mobile_number_container(mobile_number){
   var count = $('.alternate_mobile_number').length+1;
   var id = 'profile_alternate_mobile_number_'+count;
   var alternate_mobile_number_container = `
@@ -667,7 +776,26 @@ function create_alternate_mobile_number_container(mobile_number,$el){
         onclick="delete_number(event,${mobile_number})">Delete</button>
     </div>
   </div>`;
-  $el.after(alternate_mobile_number_container);
+  if($('#alternate_numbers_card').length==0){
+    $('#alt_numbers_ref').after(`
+      <div class="card" id="alternate_numbers_card">
+        <div class="card-header" id="">
+          <div class="mb-0">
+            <button type="button" class="btn btn-link" data-toggle="collapse"
+              data-target="#alt_mobile_numbers">Alternate Mobile Numbers 
+              <i class="fa fa-chevron-down" style="color: inherit!important;"></i>
+            </button>
+          </div>
+        </div>
+        <div class="collapse" id="alt_mobile_numbers">
+          <div class="card-body">
+            <div class="d-none" id="alternate_mobile_numbers"></div>
+          </div>
+        </div>
+      </div>
+    `);
+  }
+  $('#alternate_mobile_numbers').after(alternate_mobile_number_container);
   $('#'+id).trigger('change');
 }
 
@@ -706,7 +834,7 @@ function verify_number_form_validation(){
                   } else {
                     if (add_number) {
                       toastr.success('New mobile number added', 'Add '+mobile_number);
-                      create_alternate_mobile_number_container(data.mobile_number,$('#alternate_mobile_numbers'));
+                      create_alternate_mobile_number_container(data.mobile_number);
                       toggle_add_new_number_button();
                     } else {
                       display_message(form, 'Registered successfully.');
@@ -1015,7 +1143,7 @@ function property_form_validation($form){
         digits: true
       },
       property_images: {
-        minlength: 3,
+        minimages: 2,
       },
     },
     messages: {
@@ -1368,7 +1496,7 @@ class AdFormResetButton extends ResetButton{
   check_to_disable(){
     var filled = num_filled_elements(this.$form);
     var other_charges_form = this.$form.find('.other_charges_container').length;
-    var images = $('property_images_contain').length;
+    var images = window.add_image_object.images_count();
     if(filled+other_charges_form+images>0){
       this.enable();
     } else {
@@ -1618,6 +1746,9 @@ function custom_validators(){
     jQuery.validator.addMethod('less_than_total_floors',function(value,element){
       return $(element).val()<=$('#property_total_floors').val();
     },'Floor number cannot be greater than total floors.');
+    jQuery.validator.addMethod('minimages',function(value,element){
+      return $(element).val().length>=2;
+    },'');
 }
 
 function write_character_count(this_,length,span){
@@ -1720,69 +1851,70 @@ function create_options_from_array(j_el,text,value){
   }
 }
 
-function Modal(id,title){
-  this.modal = document.createElement('div');
-  this.modal_dialog = document.createElement('div');
-  this. modal_content = document.createElement('div');
-  this.modal_header = document.createElement('div');
-  this.modal.className = 'modal fade';
-  this.modal.id = id;
-  $(this.modal).attr('data-backdrop','static')
-  this.modal_dialog.className = 'modal-dialog';
-  this.modal_content.className = 'modal-content';
-  this.modal_header.className = 'modal-header';
-  this.modal_title = document.createElement('h5');
-  this.modal_title.className = 'modal-title';
-  $(this.modal_title).text(title);
-  $(this.modal_header).append(this.modal_title);
-  $(this.modal_header).append(`
-  <button type="button" class="close" 
-    data-dismiss="modal" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>`);
-  this.modal_body = document.createElement('div');
-  this.modal_body.className = 'modal-body minh-500';
-  this.modal_footer = document.createElement('div');
-  this.modal_footer.className = 'modal-footer';
-  $(this.modal).append(this.modal_dialog);
-  $(this.modal_dialog).append(this.modal_content);
-  $(this.modal_content).append(this.modal_header)
-  .append(this.modal_body)
-  .append(this.modal_footer);
-}
+class Modal{
+  constructor(id,title,close_button=true){
+    this.$modal = $('<div></div>').addClass('modal fade')
+    .attr('id',id).attr('data-backdrop','static');
+    this.$modal_dialog = $('<div></div>').addClass('modal-dialog');
+    this.$modal_content = $('<div></div>').addClass('modal-content');
+    this.$modal_header = $('<div></div>').addClass('modal-header');
+    this.$modal_title = $('<h5></h5>').addClass('modal-title')
+    .text(title);
+    this.$modal_header.append(this.$modal_title[0]);
+    if(close_button){
+      this.$modal_header.append(`
+      <button type="button" class="close" 
+        data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>`);
+    }
+    this.$modal_body = $('<div></div>').addClass('modal-body minh-500');
+    this.$modal_footer = $('<div></div>').addClass('modal-footer');
+    this.$modal.append(this.$modal_dialog[0]);
+    this.$modal_dialog.append(this.$modal_content[0]);
+    this.$modal_content.append(this.$modal_header[0])
+    .append(this.$modal_body[0]).append(this.$modal_footer[0]);
+    $('body').append(this.$modal);
+  }
 
-Modal.prototype = {
-  constructor: Modal,
-  replace_title: function (title){
-    $(this.modal_title).text(title);
-  },
-  replace_body: function (body) {
-    $(this.modal_body).html(body);
-  },
-  append_to_body: function (html){
-    $(this.modal_body).append(html);
-  },
-  get_modal: function (){
-    return this.modal;
-  },
-  append_to_footer: function(html){
-    $(this.modal_footer).append(html);
-  },
-  replace_footer: function(footer){
-    $(this.modal_footer).html(footer);
-  },
-  show: function(){
-    $(this.modal).modal('show');
-  },
-  add_class: function(_class){
-    $(this.modal).addClass(_class);
-  },
-  add_class_to_dialog: function(_class){
-    $(this.modal_dialog).addClass(_class);
-  },
-  remove_on_close: function(){
-    $(this.modal).on('hidden.bs.modal',()=>{
-      $(this.modal).remove();
+  replace_title(title) {
+    this.$modal_title.text(title);
+  }
+
+  replace_body(body) {
+    this.$modal_body.html(body);
+  }
+  append_to_body(html) {
+    this.$modal_body.append(html);
+  }
+
+  get_modal() {
+    return this.$modal[0];
+  }
+
+  append_to_footer(html) {
+    this.$modal_footer.append(html);
+  }
+
+  replace_footer(footer) {
+    this.$modal_footer.html(footer);
+  }
+
+  show(){
+    this.$modal.modal('show');
+  }
+
+  add_class(_class){
+    this.$modal.addClass(_class);
+  }
+
+  add_class_to_dialog(_class){
+    this.$modal_dialog.addClass(_class);
+  }
+
+  remove_on_close(){
+    this.$modal.on('hidden.bs.modal',()=>{
+      this.$modal.remove();
     });
   }
 }
@@ -2284,116 +2416,6 @@ function get_image_id(form=null){
   return image_id;
 }
 
-var loadImageFile = function (event,url=window.roomie_image_url,_type='') {
-  var file = event.target;
-
-  //check and retuns the length of uploded file.
-  if (file.files.length === 0) {
-    image_uploading = false;
-    return;
-  }
-
-  var filterType = /^(?:image\/gif|image\/jpeg|image\/jpeg|image\/jpeg|image\/png|image\/svg\+xml|image\/x\-icon|image\/x\-rgb)$/i;
-
-  //Is Used for validate a valid file.
-  var uploadFile = file.files[0];
-  if (!filterType.test(uploadFile.type)) {
-    alert("Please select a valid image.");
-    image_uploading=false;
-    return;
-  }
-  image_uploading=true;
-
-  var loading_icon = document.createElement('span');
-  $(loading_icon).append(`&nbsp;<i class="fa fa-spinner fa-spin"></i>`)
-  $(file).prev('span').filter(function(){
-    return this.id.match(/add_image$/);
-  }).append(loading_icon);
-
-  var div = document.createElement('div');
-  div.className="progress";
-  var progress_bar = document.createElement('div');
-  progress_bar.className="progress-bar orange darken-3 progress-bar-striped progress-bar-animated";
-  $(div).append(progress_bar);
-  $(file).after(div);
-
-  var fileReader = new FileReader();
-  var max_width = 2000;
-  var max_height = 2000;
-
-  fileReader.readAsDataURL(uploadFile);
-
-  fileReader.onload = function (event) {
-    var image = document.createElement('img');
-    image.src = event.target.result;
-    image.onload = function () {
-      setTimeout(()=>{
-        var canvas = document.createElement("canvas");
-        var context = canvas.getContext("2d");
-        if (max_width / max_height > image.width / image.height) {
-          canvas.height = max_height;
-          canvas.width = (image.width / image.height) * max_height;
-        } else {
-          canvas.width = max_width;
-          canvas.height = (image.height / image.width) * max_width;
-        }
-        context.drawImage(image,
-          0,
-          0,
-          image.width,
-          image.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-        var dataURL = canvas.toDataURL('image/jpeg');
-        if (url == window.image_url) {
-          max_height = 1000;
-          max_width = 1000;
-        }
-        $.ajax({
-          type: 'POST',
-          url: url,
-          data: {
-            'image': dataURL,
-          },
-          progress: function(e){
-            if(e.lengthComputable) {
-              var pct = (e.loaded / e.total) * 100;
-              $(progress_bar).css('width',pct+'%');
-              $(progress_bar).text(parseInt(pct)+'%');
-            } else {
-              console.error('Content length not reported');
-            }
-          }
-        }).done(function (res) {
-          toastr.success('Success!',"Image Uploaded",);
-          if (_type == 'profile') {
-            $('#profile').trigger('profile-updated', [res.id, res.url]);
-            image_uploading=false;
-            return;
-          } else {
-            create_modal_to_add_tag(res);
-          }
-        }).fail(function (err) {
-          $(file).after(`<div class="error">${err}</div>`);
-          image_uploading=false;
-        }).always(function (data) {
-          $(loading_icon).remove();
-          $(div).remove();
-          if(_type!='profile'){
-            $(file).remove();
-          } else {
-            $(file).val('');
-          }
-          // console.log(data);
-        });
-      },1);
-    }
-  };
-}
-
 function set_prefix(id){
   var arr=id.split('_');
   var prefix=null;
@@ -2404,24 +2426,6 @@ function set_prefix(id){
 }
 
 var image_uploading = false;
-
-function enable_add_image(){
-  $('span').filter(function(){
-    return this.id.match(/add_image$/);
-  }).click(function(){
-    if(image_uploading){
-      return;
-    }
-    var name = this.id+'_file';
-    var id = "id_"+name;
-    set_prefix(this.id);
-    $('#'+id).remove();
-    $(this).after(`<input type="file" id=${id} name=${name} 
-    onchange="loadImageFile(event)" class="d-none">`);
-    var $file_input = $('#'+id);
-    $file_input[0].click();
-  });
-}
 
 function formToString(filledForm,select_ids) {
   formObject = new Object;
@@ -2435,18 +2439,7 @@ function formToString(filledForm,select_ids) {
           list.push($('#'+id)[0].selectize.options[$(this).val()]);
         });
         formObject[this.id] = list;
-      } else if(this.id.match(/_images$/)){
-        var obj=[];
-        $(this).find('option[selected]').each(function(){
-          obj.push({
-            value: $(this).val(),
-            url: $(this).text(),
-            tag: $(this).attr('data-tag'),
-          });
-        });
-        formObject[this.id]=obj;
-      }
-      else {
+      } else {
         if ($elem.attr("type") == 'checkbox' || $elem.attr("type") == 'radio') {
           formObject[this.id] = $elem.is(":checked");
         } else {
@@ -2456,7 +2449,6 @@ function formToString(filledForm,select_ids) {
     }
   });
   formString = JSON.stringify(formObject);
-  toastr.success('Form has been saved');
   return formString;
 }
 
@@ -2534,21 +2526,7 @@ function stringToForm(formString, unfilledForm, select_ids) {
               $('#'+id)[0].selectize.addItem(items[i].id);
             }
           }          
-        } else if(id.match(/_images$/)){
-          if(formObject[id].length>0){
-            var div = create_images_container(id);
-            $(this).after(div);
-            for(var i in formObject[id]){
-              var obj=formObject[id][i];
-              try {throw obj}
-              catch(newObj){
-                add_image_to_container(div,newObj,unfilledForm,this);
-              }
-            }
-            $(this).after('<div class="w-100 images-added-heading">Images added by you</div>');
-          }
-        }
-        else {
+        } else {
           if ($elem.attr("type") == "checkbox" || $elem.attr("type") == "radio" ) {
             $elem.prop("checked", !!formObject[id]).trigger('change');
           } else {
@@ -2567,28 +2545,28 @@ function stringToForm(formString, unfilledForm, select_ids) {
       }
   });
 
-  if(unfilledForm.attr('id')=='modalPropertyAdForm'){
-    $el = $('#other_charges_button');
-    var htmlString=localStorage.getItem('property_other_charges');
-    if(!htmlString){
-      return
-    }
-    var htmlList=JSON.parse(htmlString);
-    if(!htmlList || htmlList.constructor!==Array){
-      return
-    }
-    for(var html of htmlList){
-      $el.parent().before(html);
-      charge_form_id++;
-      $el.parent().prev().find('input,checkbox').each(function(){
-        if($(this).attr("type") == "checkbox" || $(this).attr("type") == "radio" ){
-          $(this).prop('checked',!!formObject[this.id]);
-        } else {
-          $(this).val(formObject[this.id]).trigger('change');
-        }
-      });
-    }
-  }
+  // if(unfilledForm.attr('id')=='modalPropertyAdForm'){
+  //   $el = $('#other_charges_button');
+  //   var htmlString=localStorage.getItem('property_other_charges');
+  //   if(!htmlString){
+  //     return
+  //   }
+  //   var htmlList=JSON.parse(htmlString);
+  //   if(!htmlList || htmlList.constructor!==Array){
+  //     return
+  //   }
+  //   for(var html of htmlList){
+  //     $el.parent().before(html);
+  //     charge_form_id++;
+  //     $el.parent().prev().find('input,checkbox').each(function(){
+  //       if($(this).attr("type") == "checkbox" || $(this).attr("type") == "radio" ){
+  //         $(this).prop('checked',!!formObject[this.id]);
+  //       } else {
+  //         $(this).val(formObject[this.id]).trigger('change');
+  //       }
+  //     });
+  //   }
+  // }
 }
 
 function resend_otp(){
@@ -2644,24 +2622,12 @@ function reset_form($form){
     }
   });
   localStorage.removeItem(form_id);
-  if(form_id=='modalPropertyAdForm'){
-    localStorage.removeItem('property_other_charges');
-    localStorage.removeItem('property_other_charges_fields');
-  }
-  if($('#property_images_contain').length){
-    $('#property_images_contain').remove();
-  }
-  if($('.images-added-heading').length){
-    $('.images-added-heading').remove();
-  }
-  if($('.other_charges_container').length){
-    $('.other_charges_container').remove();
-  }
+  $form.trigger('reset');
   if($form.validate().resetForm){
     $form.validate().resetForm();
   }
   $form.trigger('change');
-  toastr.success('Success!',"Form has been reset");
+  toastr.success("Form has been reset",'Success');
 }
 
 function hard_reset_form(event){
@@ -2709,7 +2675,7 @@ function initialize_facilities_selectize($form){
 }
 
 function initialize_all_selects($form=null){
-  var selector = 'select:not([hidden=true])';
+  var selector = 'select:not([hidden])';
   if($form){
     $form.find(selector).selectize({
       copyClassesToDropdown: false,
@@ -2728,6 +2694,7 @@ function initialize_form_selectize(){
     initialize_facilities_selectize($('#modalPropertyAdForm'));
     initialize_all_selects();
     initialize_auto_save('modalPropertyAdForm',['property_region']);
+    // window.property_charge_form.string_to_form();
     initialize_auto_save('modalRoomieAdForm',['roomie_regions']);
   });
 }
@@ -2755,7 +2722,7 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
             <div id="full_screen_carousel" class="carousel slide carousel-fade carousel-thumbnails" data-ride="false">
               <div class="carousel-inner" role="listbox">
                 <div class="carousel-item active">
-                  <div class="view d-flex align-items-center justify-content-center">
+                  <div class="view full-screen-img-container">
                     <img class="d-block" src="${ad_images[0]}">
                   </div>
                 </div>
@@ -2764,7 +2731,7 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
       if(i>0){
         carousel += `
                 <div class="carousel-item">
-                  <div class="view d-flex align-items-center justify-content-center minh-800">
+                  <div class="view full-screen-img-container">
                     <img class="d-block" src="${window.loading_icon_big}" data-src="${ad_images[i]}">
                   </div>
                 </div>
@@ -2819,6 +2786,9 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
     $title.html(`<small>${event.to+1}/${images_tag.length}</small> ${images_tag[event.to]}`);
   });
   initialize_panzoom();
+  $('#full_screen_carousel_modal').on('shown.bs.modal',()=>{
+    vertically_center_image_in_carousel($('#full_screen_carousel').find('.carousel-item.active')[0]);
+  })
 }
 
 function initialize_panzoom(){
@@ -2985,6 +2955,333 @@ function set_disable_submit_button(){
     },2000);
   });
 }
+var filterType = /^(?:image\/gif|image\/jpeg|image\/jpeg|image\/jpeg|image\/png|image\/svg\+xml|image\/x\-icon|image\/x\-rgb)$/i;
+
+function valid_image(file){
+  if(file.files.length == 0){
+    return false;
+  }
+  var uploadFile = file.files[0];
+  if (!filterType.test(uploadFile.type)) {
+    alert("Please select a valid image.");
+    return false;
+  }
+  return true;
+}
+
+class ProgressBar{
+  constructor(){
+    this.$div=$('<div></div>').addClass('progress');
+    this.$progress_bar = $('<div></div>')
+    .addClass('progress-bar orange darken-3 progress-bar-striped progress-bar-animated')
+    .appendTo(this.$div);
+  }
+
+  get_element(){
+    return this.$div[0];
+  }
+
+  set_progress(pct){
+    this.$progress_bar.css('width',pct+'%');
+    this.$progress_bar.text(parseInt(pct)+'%');
+  }
+
+  remove(){
+    this.$div.remove();
+  }
+}
+
+function resize_image(image,max_height,max_width){
+  var canvas = document.createElement("canvas");
+  var context = canvas.getContext("2d");
+  if (max_width / max_height > image.width / image.height) {
+    canvas.height = max_height;
+    canvas.width = (image.width / image.height) * max_height;
+  } else {
+    canvas.width = max_width;
+    canvas.height = (image.height / image.width) * max_width;
+  }
+  context.drawImage(image,
+    0,
+    0,
+    image.width,
+    image.height,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+  return canvas.toDataURL('image/jpeg');
+}
+
+function load_image_file($ref,file,url,max_height,max_width) {
+  if(!valid_image(file)){
+    return;
+  }
+
+  var progress_bar = new ProgressBar();
+  $(file).after(progress_bar.get_element());
+
+  var fileReader = new FileReader();
+  var uploadFile = file.files[0];
+  fileReader.readAsDataURL(uploadFile);
+  fileReader.onload = function (event) {
+    var image = document.createElement('img');
+    image.src = event.target.result;
+    image.onload = function () {
+      var dataURL = resize_image(image,max_height,max_width);
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: {
+          'image': dataURL,
+        },
+        progress: function(e){
+          if(e.lengthComputable) {
+            var pct = (e.loaded / e.total) * 100;
+            progress_bar.set_progress(pct);
+          } else {
+            console.error('Content length not reported');
+          }
+        }
+      }).done(function (res) {
+        $ref.trigger('image_uploaded',res);
+      }).fail(function (err) {
+        $(file).after(`<div class="error">${err}</div>`);
+      }).always(function () {
+        progress_bar.remove();
+        $(file).val('');
+      });
+    }
+  };
+}
+
+class InlineTagEditor{
+  constructor($ref,image_data){
+    this.$elem = $('<span></span>').editable({
+      type: 'select',
+      pk: image_data.id,
+      url: window.tag_url,
+      title: 'Choose tag',
+      source: Tags.get_tags(),
+      mode: 'inline',
+      emptytext: 'Add tag',
+      showbuttons: false,
+      success: (response, newValue)=>{
+        $ref.trigger('tag_success',newValue)
+      },
+      value: image_data.tag,
+      params: {
+        csrfmiddlewaretoken: window.getCookie('csrftoken')
+      }
+    }).addClass('cursor-pointer');
+  }
+}
+
+class ImageDelete{
+  constructor(image_id,$elem){
+    this.$span = $('<span></span>').addClass('red-text')
+    .text('Delete').click((event)=>{
+      event.preventDefault();
+      $.confirm({
+        title: 'Delete Image',
+        text: 'Are your sure? Image will be deleted permanently.',
+        confirm: ()=>{
+          $.ajax({
+            type: 'POST',
+            url: window.delete_image_url,
+            data: {
+              id: image_id,
+            }
+          }).done((res)=>{
+            toastr.success('Image has been deleted');
+            $elem.trigger('delete_success');
+          }).fail((res)=>{
+            toastr.error('Error!',res);
+            $elem.trigger('delete_error');
+            if(res.status==404){
+              $elem.trigger('delete_success');
+            }
+          });
+        }
+      });
+    }).addClass('cursor-pointer');
+  }
+}
+
+class ImageGroup{
+  constructor(_this,image_data,src_key){
+    this.$div = $('<div></div>')
+    .addClass('uploaded_image_tag_container');
+    this.$image = $('<img>').attr('src',image_data[src_key])
+    .attr('alt',image_data.tag).css('max-width','180px');
+    this.$image_container = $('<div></div>')
+    .css('text-align','center')
+    .append(this.$image[0]);
+    this.tag_inline_editor = new InlineTagEditor(this.$div,image_data);
+    this.$delete = new ImageDelete(image_data.id,this.$div);
+    this.$div.on('delete_success',()=>{
+      this.$div.remove();
+      _this.remove_image(image_data.id);
+    });
+    this.$div2 = $('<div></div>').addClass('p-1 d-flex')
+    .css({'justify-content':'space-between','min-width':'180px'})
+    .append(this.$delete.$span).append(this.tag_inline_editor.$elem);
+    this.$div.append(this.$image_container).append(this.$div2);
+  }
+}
+
+class ImageTagModal extends Modal{
+  constructor(_this,image_data){
+    super('modal_'+image_data.id,'Choose appropriate tag for image',false);
+    this.$image = $('<img src="'+image_data.image_thumbnail+'">').attr('alt',image_data.tag);
+    this.$modal_body.removeClass('minh-500');
+    this.delete = new ImageDelete(image_data.id,this.$modal);
+    this.tag = new InlineTagEditor(this.$modal,image_data);
+    this.$modal.on('tag_success',(event,new_tag)=>{
+      this.$modal.remove();
+      _this.add_new_image_group(Object.assign(image_data,{tag:new_tag}));
+    });
+    this.$modal.on('delete_success',()=>{
+      this.$modal.remove();
+      _this.remove_image(image_data.id);
+    });
+    this.$modal_body.append(this.$image[0]);
+    this.$modal_footer.append(this.delete.$span[0])
+    .append(this.tag.$elem[0]);
+    this.$modal.modal('show');
+  }
+}
+
+class AddImage{
+  constructor(prefix,$el_ref,url,max_height,max_width){
+    this.$form = get_form($el_ref);
+    this.prefix = prefix;
+    this.$ref = $el_ref;
+    this.$input = $('<input>').attr('type','file')
+    .css('display','none');
+    this.$images_container = $('<div></div>')
+    .addClass('row container-fluid');
+    this.$images_elem = $('<select></select>')
+    .attr('name',prefix+'_images').css('display','none')
+    .attr('hidden','true').attr('multiple','multiple');
+    this.$ref.after(this.$input[0]).click(()=>{
+      this.$input.click();
+    }).after(this.$images_elem[0]);
+    this.localStorage_key = this.prefix+'_images';
+    this.$ref.before(this.$images_container[0]);
+    this.url = url;
+    this.$input.change(()=>{
+      load_image_file(this.$ref,this.$input[0],url,max_height,max_width);
+    });
+    this.$ref.on('image_uploaded',(event,res)=>{
+      toastr.success('Image Uploaded');
+      this.add_image(res.id);
+      new ImageTagModal(this,res);
+    });
+    this.string_to_form();
+    this.$form.on('reset',()=>{
+      this.reset();
+    })
+  }
+
+  remove_image(image_id){
+    var index = this.images_data.findIndex(value=>value==image_id);
+    if(index>-1){
+      delete this.images_data[index];
+      this.form_to_string();
+      this.$images_elem.find('option[value="'+image_id+'"]').remove();
+      this.$form.trigger('change');
+    }
+  }
+
+  add_new_image_group(image_data){
+    var image_group = new ImageGroup(this,image_data,'image_thumbnail');
+    this.$images_container.append(image_group.$div);
+    this.add_option(image_data.id);
+  }
+
+  add_image(image_id){
+    this.images_data.push(image_id);
+    this.form_to_string();
+    this.add_option(image_id);
+  }
+
+  add_option(image_id){
+    this.$images_elem.append(`
+    <option value="${image_id}" selected="selected"></option>`);
+    this.$form.trigger('change');
+  }
+
+  form_to_string(){
+    localStorage.setItem(this.localStorage_key,JSON.stringify(this.images_data));
+  }
+
+  reset(){
+    this.images_data=[];
+    this.$images_container.children().remove();
+    this.$images_elem.children().remove();
+    this.form_to_string();
+    this.$form.trigger('change');
+  }
+
+  string_to_form(){
+    try{
+      this.images_data = JSON.parse(localStorage.getItem(this.localStorage_key));
+    } catch(err){
+      this.reset();
+      return;
+    }
+    if(!Array.isArray(this.images_data)){
+      this.reset();
+      return;
+    }
+    this.images_data=this.images_data.filter(value=>!isNaN(value) && value!=null);
+    this.form_to_string();
+    $.ajax({
+      url:window.images_url,
+      type:'POST',
+      data: {
+        ids: this.images_data
+      },
+    }).done((res)=>{
+      for(var image of res.images){
+        this.add_new_image_group(image);
+      }
+    }).fail((res)=>{
+      this.reset();
+    });
+  }
+
+  images_count(){
+    return this.images_data.length;
+  }
+}
+
+class ProfileAddImage{
+  constructor($el_ref,url,max_height,max_width){
+    this.$ref = $el_ref;
+    this.$input = $('<input type="file">').addClass('d-none');
+    this.$ref.click(()=>{
+      this.$input.click();
+    });
+    this.$input.change((event)=>{
+      load_image_file(this.$ref,event.target,url,max_height,max_width);
+    });
+    this.$ref.on('image_uploaded',(event,image)=>{
+      $('#profile-photo').attr('src',image.image);
+      $('#profile-icon').css({'display':'none'});
+      $('#profile-photo').css({'display':'block'});
+    });
+  }
+}
+
+function vertically_center_image_in_carousel(active_carousel_item){
+  var $img = $(active_carousel_item).find('img');
+  var total_height = $img.parent().height();
+  var img_height = $img.height();
+  $img.css('margin-top',(total_height-img_height)/2);
+}
 
 $('document').ready(function(){
   
@@ -2995,8 +3292,16 @@ $('document').ready(function(){
     };
   });
 
+  $.ajaxSetup({
+    traditional: true
+  })
+
   set_footer();
   $(window).resize(set_footer);
+
+  window.property_charge_form = new OtherChargeForm('property',$('#other_charges_button'));
+  window.add_image_object = new AddImage('property',$('#property_add_image'),window.image_upload_url,2000,2000);
+  new ProfileAddImage($('#upload-image'),window.profile_image_url,1000,1000);
 
   initialize_form_selectize();
   set_custom_alerts();
@@ -3006,7 +3311,7 @@ $('document').ready(function(){
   add_tawk_to();
   set_logout();
   set_enter_number_form();
-  enable_add_image();
+  // enable_add_image();
 
   $('#resend_otp').click(function(){
     resend_otp();
@@ -3036,17 +3341,7 @@ $('document').ready(function(){
       $('#property_available_from').trigger('change');
     }
   });
-  create_options_for_property_form_fields($('#modalPropertyAdForm'));
-  $('#upload-image').click(function(e){
-    e.preventDefault();
-    $('#profile').click();
-  });
   $('#upload-image').css({'visibility':'visible'});
-  $('#profile').on('profile-updated',function(e,id,url){
-    $('#profile-photo').attr('src',url);
-    $('#profile-icon').css({'display':'none'});
-    $('#profile-photo').css({'display':'block'});
-  });
   set_carousel();
   show_indeterminate_progess();
 
@@ -3064,5 +3359,12 @@ $('document').ready(function(){
   $('.modal').on('show.bs.modal',function(){
     var num_visible_modals = $('.modal.show').length;
     $(this).css('z-index',1050+num_visible_modals);
+  });
+  
+  $('.carousel').each(()=>{
+    vertically_center_image_in_carousel($(this).find('.carousel-item.active')[0]);
+    $(this).on('slid.bs.carousel',(event)=>{
+      vertically_center_image_in_carousel(event.relatedTarget);
+    });
   });
 });

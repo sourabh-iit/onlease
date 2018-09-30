@@ -8,7 +8,7 @@ import json
 class ImageSerializer(serializers.ModelSerializer):
   class Meta:
     model = ImageModel
-    fields = ('image','image_mobile','image_thumbnail','created_at',
+    fields = ('id','image','image_mobile','image_thumbnail','created_at',
       'tag')
 
 class ImageRelatedField(serializers.RelatedField):

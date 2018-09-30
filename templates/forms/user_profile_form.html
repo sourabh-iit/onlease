@@ -19,7 +19,6 @@
           <img src="" alt="profile photo" id="profile-photo" style="display:none">
           <i class="fa fa-user-circle-o" id="profile-icon"></i>
           {% endif %}
-          <input type="file" name="profile" id="profile" onchange="loadImageFile(event,window.image_url,'profile')">
           <a id="upload-image" class="btn bg-one btn-md">
             Upload Photo
           </a>
@@ -54,7 +53,9 @@
           </div>
         </div>
 
-        <div class="card">
+        <div id="alt_numbers_ref"></div>
+        {% if user.mobile_numbers.count > 0 %}
+        <div class="card" id="alternate_numbers_card">
           <div class="card-header" id="">
             <div class="mb-0">
               <button type="button" class="btn btn-link" data-toggle="collapse"
@@ -84,6 +85,7 @@
             </div>
           </div>
         </div>
+        {% endif %}
 
         <div class="md-form mb-4 col-12 col-md-6">
           <i class="fa fa-envelope prefix grey-text"></i>
@@ -95,8 +97,7 @@
           <i class="fa fa-pencil prefix grey-text"></i>
           <textarea type="text" class="md-textarea form-control" 
             rows="3" placeholder="e.g. I work at codegenesys." 
-            name="detail" id="profile_detail">
-            {% if user.detail %}{{user.detail}}{% endif %}</textarea>
+            name="detail" id="profile_detail">{% if user.detail %}{{user.detail}}{% endif %}</textarea>
           <label for="profile_detail">Your Description</label>
         </div>
 
