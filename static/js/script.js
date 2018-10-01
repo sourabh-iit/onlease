@@ -421,12 +421,10 @@ function get_selectize_configurations(value,remove_button=true){
           q: query,
           business: value.toLowerCase()=='search' ? $('#id_business').val() : 'none',
         },
-        error: function () {
-          callback();
-        },
-        success: function (res) {
-          callback(res.results);
-        }
+      }).done((res)=>{
+        callback(res.results);
+      }).fail(()=>{
+        callback();
       });
     },
     onInitialize: function(){
@@ -3294,7 +3292,6 @@ function vertically_center_image_in_carousel($img,time){
 
 $('document').ready(function(){
   var window_width = $(window).width();
-  console.log('window_width: ', window_width);
   if(window_width>768){
     $('.mobile').remove()
   } else {
