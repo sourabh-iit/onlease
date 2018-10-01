@@ -9,6 +9,7 @@ from django.utils import timezone
 
 import os
 from datetime import date
+import datetime
 
 from apps.locations.models import Region, District
 from apps.image.models import ImageModel
@@ -150,6 +151,8 @@ class CommonlyUsedLodgingModel(models.Model):
   is_booked = models.BooleanField(default=False)
   images = GenericRelation(ImageModel)
   latlng = models.CharField(max_length=100, blank=True, null=True)
+  is_booking = models.BooleanField(default=False)
+  last_time_booking = models.DateTimeField(default=datetime.datetime.now())
 
   def get_per_month_amount(self):
     total = int(self.rent)
@@ -177,6 +180,8 @@ class CommonlyUsedLodgingModel(models.Model):
         self.ground_floor=True
     if not self.advance_rent_of_months==0:
       self.advance_rent_of_months = 1
+    if self.is_booking:
+      self.last_time_booking=datetime.datetime.now()
     super(CommonlyUsedLodgingModel, self).save(*args, **kwargs)
 
   class Meta:

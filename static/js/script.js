@@ -410,6 +410,7 @@ function get_selectize_configurations(value,remove_button=true){
     create: false,
     copyClassesToDropdown: false,
     render: render,
+    maxItems: 4,
     load: function(query, callback) {
       if (!query.length) return callback();
       $.ajax({
@@ -2171,12 +2172,7 @@ function Carousel(id,images){
     this.add_item(i,images[i]);
   }
 
-  $(this.carousel).on('slide.bs.carousel',function(event){
-    var $img = $(event.relatedTarget).children().children('img');
-    if($img.attr('data-src')){
-      $img.attr('src',$img.attr('data-src'));
-    }
-  })
+  set_carousel($(this.carousel));
 }
 
 Carousel.prototype = {
@@ -2702,7 +2698,9 @@ function initialize_form_selectize(){
 function display_full_screen_carousel(ad_images,rent,location,type,available_from,title,images_tag){
   $('#full_screen_carousel_modal').remove();
   var carousel = `
-    <div class="modal fade full_screen" id="full_screen_carousel_modal"  tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade full_screen" id="full_screen_carousel_modal"  
+      tabindex="-1" data-backdrop="static" role="dialog" 
+      aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -2719,28 +2717,24 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
             </button>
           </div>
           <div class="modal-body">
-            <div id="full_screen_carousel" class="carousel slide carousel-fade carousel-thumbnails" data-ride="false">
-              <div class="carousel-inner" role="listbox">
-                <div class="carousel-item active">
-                  <div class="view full-screen-img-container">
-                    <img class="d-block" src="${ad_images[0]}">
-                  </div>
-                </div>
-                `
+            <div id="full_screen_carousel" 
+              class="carousel slide carousel-fade carousel-thumbnails" 
+              data-ride="false"
+              data-pause="true">
+              <div class="carousel-inner" role="listbox">`
     for(var i in ad_images){
-      if(i>0){
-        carousel += `
-                <div class="carousel-item">
-                  <div class="view full-screen-img-container">
-                    <img class="d-block" src="${window.loading_icon_big}" data-src="${ad_images[i]}">
-                  </div>
-                </div>
-        `
+      if (i==0){
+        carousel += '<div class="carousel-item active">';
+      } else {
+        carousel += '<div class="carousel-item">';
       }
+      carousel += `
+        <div class="view full-screen-img-container">
+          <img class="d-block" src="${window.loading_icon_big}" data-src="${ad_images[i]}">
+        </div>
+      </div>`;
     }
-                `
-              </div>
-    `
+      carousel += `</div>`;
     if(ad_images.length>1){
       carousel += `
             <a class="carousel-control-prev" href="#full_screen_carousel" role="button" data-slide="prev">
@@ -2778,17 +2772,11 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
   $('#full_screen_carousel').carousel('pause');
   $('#full_screen_carousel').off('slide.bs.carousel');
   var $title = $('#full_screen_carousel_modal').find('.modal-title');
+  set_carousel($('#full_screen_carousel'),800);
   $('#full_screen_carousel').on('slide.bs.carousel',function(event){
-    var $img = $(event.relatedTarget).children().children('img');
-    if($img.attr('data-src')){
-      $img.attr('src',$img.attr('data-src'));
-    }
     $title.html(`<small>${event.to+1}/${images_tag.length}</small> ${images_tag[event.to]}`);
   });
   initialize_panzoom();
-  $('#full_screen_carousel_modal').on('shown.bs.modal',()=>{
-    vertically_center_image_in_carousel($('#full_screen_carousel').find('.carousel-item.active')[0]);
-  })
 }
 
 function initialize_panzoom(){
@@ -2817,13 +2805,22 @@ function initialize_panzoom(){
   });
 }
 
-function set_carousel(){
-  $('.carousel').carousel('pause');
-  $('.carousel').on('slide.bs.carousel',function(event){
+function change_src($img){
+  if($img.attr('data-src')){
+    $img.attr('src',$img.attr('data-src'));
+    $img.removeAttr('data-src');
+  }
+}
+
+function set_carousel($carousel,time=0){
+  this.time = time
+  var $img = $carousel.find('.carousel-item.active img');
+  vertically_center_image_in_carousel($img,time);
+  change_src($img);
+  $carousel.on('slide.bs.carousel',(event)=>{
     var $img = $(event.relatedTarget).children().children('img');
-    if($img.attr('data-src')){
-      $img.attr('src',$img.attr('data-src'));
-    }
+    vertically_center_image_in_carousel($img,this.time);
+    change_src($img);
   });
 }
 
@@ -3237,6 +3234,9 @@ class AddImage{
       return;
     }
     this.images_data=this.images_data.filter(value=>!isNaN(value) && value!=null);
+    if(this.images_data.length==0){
+      return;
+    }
     this.form_to_string();
     $.ajax({
       url:window.images_url,
@@ -3276,14 +3276,30 @@ class ProfileAddImage{
   }
 }
 
-function vertically_center_image_in_carousel(active_carousel_item){
-  var $img = $(active_carousel_item).find('img');
+function set_image($img){
   var total_height = $img.parent().height();
   var img_height = $img.height();
   $img.css('margin-top',(total_height-img_height)/2);
 }
 
+function vertically_center_image_in_carousel($img,time){
+  $img[0].onload = (event)=>{
+    $img = $(event.target);
+    set_image($img);
+    setTimeout(()=>{
+      set_image($img);
+    },time);
+  }
+}
+
 $('document').ready(function(){
+  var window_width = $(window).width();
+  console.log('window_width: ', window_width);
+  if(window_width>768){
+    $('.mobile').remove()
+  } else {
+    $('.desktop').remove();
+  }
   
   $(document).ajaxSend(function (event, jqxhr, settings) {
     settings.data += '&csrfmiddlewaretoken=' + window.getCookie('csrftoken');
@@ -3342,7 +3358,6 @@ $('document').ready(function(){
     }
   });
   $('#upload-image').css({'visibility':'visible'});
-  set_carousel();
   show_indeterminate_progess();
 
   $('#modalPropertyAdForm').on('hidden.bs.modal',function(){
@@ -3362,9 +3377,6 @@ $('document').ready(function(){
   });
   
   $('.carousel').each(()=>{
-    vertically_center_image_in_carousel($(this).find('.carousel-item.active')[0]);
-    $(this).on('slid.bs.carousel',(event)=>{
-      vertically_center_image_in_carousel(event.relatedTarget);
-    });
+    set_carousel($(this));
   });
 });

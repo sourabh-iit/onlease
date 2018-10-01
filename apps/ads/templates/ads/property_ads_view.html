@@ -170,7 +170,11 @@
     <div class="teal-text p-1 location-detail bg-grey">
       <small><i class="fa fa-map-marker"></i> {{ad.region}}</small>
     </div>
-	</div>
+  </div>
+  {% empty %}
+    <div class="text-center col-12 h5">
+      <span>No property in chosen location(s)</span>
+    </div>
 	{% endfor %}
 </div>
 <script>

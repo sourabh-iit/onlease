@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.db.models import Prefetch
 from rest_framework.renderers import JSONRenderer
+from django.contrib.auth.decorators import login_required
 
 import json
 
@@ -13,6 +14,7 @@ from apps.roommate.models import RoomieAd
 from apps.locations.models import Region
 from apps.lodging.models import CommonlyUsedLodgingModel, Lodging
 from apps.lodging.serializers import CommonLodgingSerializer
+from apps.transactions.models import LodgingTransaction
 
 User = get_user_model()
 
@@ -42,6 +44,7 @@ def ads_view(request):
   }
   return render(request,'ads/'+template_name,context)
 
+@login_required
 def ad_detail_view(request):
   try:
     business = request.GET.get('business')
@@ -50,11 +53,27 @@ def ad_detail_view(request):
         prefetch_related('lodging','images','region','charges').\
         get(id=request.GET.get('id'))
       lodging = sublodging.lodging
-      # import pdb;pdb.set_trace()
+      show_contact_details = False
+      try:
+        if lodging.posted_by == request.user:
+          show_contact_details=True
+        else:
+          _transactions = LodgingTransaction.objects.filter(lodging=lodging,
+            user=request.user,status=LodgingTransaction.SUCCESS)
+          if len(_transactions)>0:
+            latest_transation = _transactions[0]
+            for _transaction in _transactions:
+              if _transaction.updated_at>latest_transation:
+                latest_transation=_transaction
+            if latest_transation.updated_at>lodging.available_from:
+              show_contact_details=True
+      except LodgingTransaction.DoesNotExist:
+        pass
       return render(request,'ads/ad_detail.html',{
         'lodging':lodging,
         'sublodging':sublodging,
-        'data': json.dumps(CommonLodgingSerializer(sublodging).data)
+        'data': json.dumps(CommonLodgingSerializer(sublodging).data),
+        'show_contact_details': show_contact_details
       })
     return HttpResponse('')
   except Lodging.DoesNotExist:

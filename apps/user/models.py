@@ -75,7 +75,13 @@ class User(AbstractUser):
   objects = CustomUserManager()
 
   def full_name(self):
-    return self.first_name+" "+self.last_name
+    if self.first_name and self.last_name:
+      return self.first_name+" "+self.last_name
+    elif self.first_name:
+      return self.first_name
+    elif self.last_name:
+      return self.last_name
+    return ''
 
   def save(self,*args,**kwargs):
     self.username = self.mobile_number

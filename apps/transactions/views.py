@@ -41,13 +41,17 @@ def redirect_to_instamojo_view(request,ad_id):
   try:
     lodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
     sublodging = lodging.sublodging
-    if sublodging.is_booked:
+    time_diff = datetime.datetime.now() - sublodging.last_time_booking
+    if sublodging.is_booking and time_diff.seconds > 10*60:
+      sublodging.is_booking=False
+      sublodging.save()
+    if sublodging.is_booked or sublodging.is_booking:
       return JsonResponse({
         'errors':{
           '__all__':['This property is already booked.']
         }
       },status=400)
-    amount = sublodging.get_booking_amount()
+    amount = int(sublodging.rent)//10
     trans_id = generate_random(40)
     while LodgingTransaction.objects.filter(trans_id=trans_id).exists():
       trans_id = generate_random(40)
@@ -84,7 +88,7 @@ def redirect_to_instamojo_view(request,ad_id):
         #   kwargs={'trans_id':str(transaction_.id)})  
       )
     if response['success']:
-      sublodging.is_booked = True
+      sublodging.is_booking = True
       sublodging.save()
       transaction_.payment_request_id = response['payment_request']['id']
       transaction_.save()
@@ -129,6 +133,7 @@ def lodging_post_redirection_view(request):
     sublodging = lodging.sublodging
     region = sublodging.region
     sublodging.is_booked=False
+    sublodging.is_booking=False
     if response['success']:
       data = response['payment_request']
       if float(data['amount'])==float(transaction_.amount):
@@ -220,6 +225,7 @@ def lodging_webhook_view(request,trans_id):
           if float(request.POST.get('amount'))==float(transaction_.amount):
             transaction_.status=LodgingTransaction.SUCCESS
             sublodging.is_booked=True
+        sublodging.is_booking=False
         with transaction.atomic():
           sublodging.save()
           transaction_.save()

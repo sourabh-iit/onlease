@@ -63,6 +63,8 @@
 .links div:nth-child(1){
   border-right: 1px solid white;
 }
-.selectize-input.items{
-  height: 40px;
+@media (min-width: 768px){
+  .selectize-input.items{
+    height: 40px;
+  }
 }

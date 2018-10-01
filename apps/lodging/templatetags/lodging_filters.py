@@ -76,7 +76,14 @@ def style_number(value):
     return 'th'
   else:
     return style(value[-1])
-  
+
+
+@register.filter(name="phone_numbers")
+def style_number(value):
+  phone_numbers = [value.posted_by.mobile_number]
+  for mobile_number in value.posted_by.mobile_numbers.all():
+    phone_numbers.append(mobile_number.value)
+  return ', '.join(phone_numbers)
 
 
 @register.filter(name='fixed_length')

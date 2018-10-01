@@ -15,13 +15,25 @@
               <a href="{% url 'dashboard:home' %}">Dashboard</a>
             </li> {% endcomment %}
             <li>
-              <a href="{% url 'user:login' %}">Log in</a>
+              <a
+              data-toggle="modal"
+              data-target="#modalLoginForm"
+              >Log in</a>
             </li>
             <li>
-              <a href="{% url 'user:register' %}">Register</a>
+              <a
+              data-toggle="modal"
+              data-target="#modalRegisterForm"
+              >Register</a>
             </li>
             <li>
-              <a>Add new property</a>
+              <a data-toggle="modal"
+              {% if user.is_authenticated %}
+              data-target="#modalPropertyAdForm"
+              {% else %}
+              data-target="#modalLoginForm"
+              {% endif %}
+              >Add new property</a>
             </li>
           </ul>
         </div>
@@ -49,12 +61,6 @@
             <strong>contact</strong>
           </p>
           <ul class="list-unstyled">
-            <li>
-              <a href="{% url 'user:contact' %}">
-                <i class="fa fa-envelope"></i>
-                Send Email
-              </a>
-            </li>
             <li>
               <i class="fa fa-whatsapp"></i>
               9050183280

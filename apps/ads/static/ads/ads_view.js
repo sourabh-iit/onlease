@@ -85,7 +85,6 @@ function initialize_masonry(){
       $grid.masonry('layout');
     },2000);
   });
-  set_carousel();
 }
 
 function set_tooltip(){
