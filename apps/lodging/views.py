@@ -5,6 +5,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 
 from .forms import LodgingCreateForm, CommonlyUsedLodgingCreateForm, ChargeForm
+from .models import TermAndCondition
 from apps.user.utils import ViewException, number_verfication_required
 from apps.image.models import ImageModel
 from apps.user.utils import maintain_cookie
@@ -33,7 +34,7 @@ def lodging_create_view_ajax(request):
           except ImageModel.DoesNotExist:
             continue
           if image.content_object is not None:
-            raise ValidationError('Image(s) is/are already associated with another property. Try resetting form.')
+            continue
           image.content_object = sublodging
           image.save()
         for other_charge in json.loads(data.get('other_charges')):
@@ -42,6 +43,9 @@ def lodging_create_view_ajax(request):
             charge_form.save(sublodging)
           else:
             raise ValidationError('Error in other charges')
+        for term_and_condition in json.loads(data.get('terms_and_conditions')):
+          if len(term_and_condition)>0:
+            TermAndCondition.objects.create(text=term_and_condition,lodging=sublodging)
       return JsonResponse({'success': True})
   except ValidationError as e:
     form.add_error(None,e)

@@ -66,49 +66,50 @@ def image_upload_view(request,ad_type):
   except Exception as e:
     return HttpResponseBadRequest({'errors':'Sorry, could not upload file.'})
 
-@login_required         
-@require_POST
+@login_required
 def image_action_view(request,action):
-  if action=='add-tag':
-    try:
-      data=request.POST
-      pk=data.get('pk')
-      tag=data['value']
-      if not pk:
-        return HttpResponse('Primary key is missing',status=404)
-      image=ImageModel.objects.get(pk=pk)
-      image.tag=tag
-      valid_tag=False
-      for (key,text) in ImageModel.LODGING_TAG_CHOICES:
-        if key==tag:
-          valid_tag=True
-          break
-      if not valid_tag:
-        return HttpResponse('Invalid tag. Choose tag from given options',status=400)
-      image.save()
-      return HttpResponse('Tag added.',status=200)
-    except ImageModel.DoesNotExist:
-      return HttpResponse('Image is deleted or not uploaded',status=404)
-    except KeyError:
-      return HttpResponse('Tag is missing',status=404)
-  elif action=='delete':
-    try:
-      data=request.POST
-      _id=data['id']
-      ImageModel.objects.get(id=_id).delete()
-      return JsonResponse({'success':'true','status':200})
-    except ImageModel.DoesNotExist:
-      return HttpResponse('Image does not exist.',status=404)
-    except KeyError:
-      return HttpResponse('Image id not provided',status=400)
-  elif action=='images':
-    try:
-      data=request.POST
-      if not data.get('ids',False):
-        ids=data.getlist('ids[]')
-      else:
-        ids=data.getlist('ids')
-      images = ImageModel.objects.filter(id__in=ids)
-      return JsonResponse({'images':ImageSerializer(images,many=True).data})
-    except KeyError:
-      return HttpResponse('ids key is missing',status=400)
+  if request.method=='POST':
+    if action=='add-tag':
+      try:
+        data=request.POST
+        pk=data.get('pk')
+        tag=data['value']
+        if not pk:
+          return HttpResponse('Primary key is missing',status=404)
+        image=ImageModel.objects.get(pk=pk)
+        image.tag=tag
+        valid_tag=False
+        for (key,text) in ImageModel.LODGING_TAG_CHOICES:
+          if key==tag:
+            valid_tag=True
+            break
+        if not valid_tag:
+          return HttpResponse('Invalid tag. Choose tag from given options',status=400)
+        image.save()
+        return HttpResponse('Tag added.',status=200)
+      except ImageModel.DoesNotExist:
+        return HttpResponse('Image is deleted or not uploaded',status=404)
+      except KeyError:
+        return HttpResponse('Tag is missing',status=404)
+    elif action=='delete':
+      try:
+        data=request.POST
+        _id=data['id']
+        ImageModel.objects.get(id=_id).delete()
+        return JsonResponse({'success':'true','status':200})
+      except ImageModel.DoesNotExist:
+        return HttpResponse('Image does not exist.',status=404)
+      except KeyError:
+        return HttpResponse('Image id not provided',status=400)
+  else:
+    if action=='images':
+      try:
+        data=request.GET
+        if not data.get('ids',False):
+          ids=data.getlist('ids[]')
+        else:
+          ids=data.getlist('ids')
+        images = ImageModel.objects.filter(id__in=ids)
+        return JsonResponse({'images':ImageSerializer(images,many=True).data})
+      except KeyError:
+        return HttpResponse('ids key is missing',status=400)

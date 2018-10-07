@@ -234,7 +234,7 @@ class ChargeFormInput extends MdFormInputText{
 }
 
 class RemoveChargeFormButton{
-  constructor($form){
+  constructor(){
     this.$icon = $('<i></i>')
     .addClass('cursor-pointer fa fa-times-circle red-text fa-lg')
     .css({position:"absolute",right:5,top:5})
@@ -403,14 +403,13 @@ function get_selectize_configurations(value,remove_button=true){
       }
     });
   }
-  return {
+  var config = {
     valueField: 'id',
     labelField: 'region',
     searchField: ['region','state','district'],
     create: false,
     copyClassesToDropdown: false,
     render: render,
-    maxItems: 4,
     load: function(query, callback) {
       if (!query.length) return callback();
       $.ajax({
@@ -432,6 +431,10 @@ function get_selectize_configurations(value,remove_button=true){
     },
     plugins: plugins,
   }
+  if(remove_button){
+    return Object.assign(config,{maxItems: 4});
+  }
+  return config;
 }
 
 function remove_all_messages(form){
@@ -518,7 +521,7 @@ function display_global_errors(res){
     } else {
       res = res.responseText;
     }
-    if('errors' in res){
+    if(res && 'errors' in res){
       for(var key in res.errors){
         show_errors_in_list(res.errors[key],key);
       }
@@ -1202,6 +1205,7 @@ function property_form_validation($form){
           'other_charges': create_charges_data($(form)),
           'additional_details': get_value_using_name($(form),'additional_details'),
           'images': get_value_using_name($(form),'property_images'),
+          'terms_and_conditions': window.termsAndConditions.get_data(),
         }
         show_loading($(form));
         $.ajax({
@@ -1496,7 +1500,8 @@ class AdFormResetButton extends ResetButton{
     var filled = num_filled_elements(this.$form);
     var other_charges_form = this.$form.find('.other_charges_container').length;
     var images = window.add_image_object.images_count();
-    if(filled+other_charges_form+images>0){
+    var termsAndConditions = window.termsAndConditions.$inputs.length;
+    if(filled+other_charges_form+images+termsAndConditions>0){
       this.enable();
     } else {
       this.disable();
@@ -2627,21 +2632,100 @@ function reset_form($form){
 function hard_reset_form(event){
   event.preventDefault();
   var $form=get_form(event.target);
-  var form_id=$form.attr('id');
-  var data=localStorage.getItem(form_id);
-  var imageList;
-  if(data && JSON.parse(data).constructor==Object) {
-    data=JSON.parse(data);
-    if(form_id=='modalPropertyAdForm'){
-      imageList=data['property_images'];
-    } else {
-      imageList=data['id_images'];
+  reset_form($form);
+}
+
+class TermsAndConditions{
+  constructor($ref){
+    this.$form = get_form($ref);
+    this.$button = $('<div class="btn bg-one m-0 btn-sm"></div>')
+    .text('New Term and Condition');
+    this.$container = $('<div class="col-12 p-0"></div>').append(this.$button);
+    $ref.after(this.$container);
+    this.$inputs = $([]);
+    this.localStorage_key = 'property_termsAndConditions';
+    
+    this.$button.on('click',()=>{
+      this.create_input();
+    });
+
+    this.$form.on('reset',()=>{
+      this.reset();
+    });
+
+    this.string_to_form();
+  }
+
+  create_input(data=null){
+    var input_count = this.$inputs.length+1;
+    var $label = $(`<label for="terms_${input_count}"></label>`)
+    .text('Term and Condition '+input_count);
+    var $input = $(`<input id="terms_${input_count}" 
+      type="text" class="col-12 form-control">`);
+    if(data){
+      $input.val(data);
     }
-    for(var image of imageList){
-      send_image_delete_request(event,image.value,$form);
+    $input.change(()=>{
+      this.form_to_string();
+    });
+    if(this.$inputs.length>0){
+      $(this.$inputs[this.$inputs.length-1]).find('.fa.fa-times-circle').remove();
+    }
+    var $div = $('<div class="md-form mb-4"></div>').append($input)
+    .append($label);
+    this.add_remove_button($div);
+    this.$button.before($div);
+    this.$inputs = this.$inputs.add($div);
+    this.form_to_string();
+    this.$form.trigger('change');
+  }
+
+  add_remove_button($div){
+    var remove_button = new RemoveChargeFormButton();
+    remove_button.$icon.on('remove',()=>{
+      $div.remove();
+      this.$inputs = this.$inputs.not($div);
+      if(this.$inputs.length>0){
+        this.add_remove_button($(this.$inputs[this.$inputs.length-1]));
+      }
+      this.form_to_string();
+      this.$form.trigger('change');
+    });
+    $div.append(remove_button.$icon);
+  }
+
+  get_data(){
+    var values = [];
+    this.$inputs.each((index,element)=>{
+      values.push($(element).find('input').val());
+    });
+    return JSON.stringify(values);
+  }
+
+  reset(){
+    localStorage.removeItem(this.localStorage_key);
+    this.$inputs.remove();
+    this.$inputs = $([]);
+  }
+
+  form_to_string(){
+    var elems_data = [];
+    this.$inputs.each(function(index,element){
+      elems_data.push($(element).find('input').val());
+    });
+    localStorage.setItem(this.localStorage_key,JSON.stringify(elems_data));
+  }
+
+  string_to_form(){
+    var elems_data = JSON.parse(localStorage.getItem(this.localStorage_key));
+    if(!isArray(elems_data)){
+      this.reset();
+      return;
+    }
+    for(var data of elems_data){
+      this.create_input(data);
     }
   }
-  reset_form($form);
 }
 
 function confirm_reset_form(event){
@@ -2736,11 +2820,11 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
     if(ad_images.length>1){
       carousel += `
             <a class="carousel-control-prev" href="#full_screen_carousel" role="button" data-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="fa fa-chevron-left fa-lg" aria-hidden="true"></span>
               <span class="sr-only">Previous</span>
             </a>
             <a class="carousel-control-next" href="#full_screen_carousel" role="button" data-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="fa fa-chevron-right fa-lg" aria-hidden="true"></span>
               <span class="sr-only">Next</span>
             </a>`;
     }
@@ -2945,6 +3029,7 @@ function set_disable_submit_button(){
         toggle_buttons(form);
       })
     });
+    toggle_buttons(form);
     setTimeout(function(){
       $(form).validate().resetForm();
     },2000);
@@ -3177,7 +3262,7 @@ class AddImage{
     this.string_to_form();
     this.$form.on('reset',()=>{
       this.reset();
-    })
+    });
   }
 
   remove_image(image_id){
@@ -3227,7 +3312,7 @@ class AddImage{
       this.reset();
       return;
     }
-    if(!Array.isArray(this.images_data)){
+    if(!isArray(this.images_data)){
       this.reset();
       return;
     }
@@ -3238,7 +3323,7 @@ class AddImage{
     this.form_to_string();
     $.ajax({
       url:window.images_url,
-      type:'POST',
+      type:'GET',
       data: {
         ids: this.images_data
       },
@@ -3276,18 +3361,37 @@ class ProfileAddImage{
 
 function set_image($img){
   var total_height = $img.parent().height();
-  var img_height = $img.height();
-  $img.css('margin-top',(total_height-img_height)/2);
+  var total_width = $img.parent().width();
+  var viewport_width = window.innerWidth;
+  if(total_width>0){
+    viewport_width=total_width;
+  }
+  var img_height = $img[0].naturalHeight;
+  var img_width = $img[0].naturalWidth;
+  var desired_img_height, desired_img_width;
+  if(img_height>total_height || img_width>viewport_width){
+    if(img_width/img_height < viewport_width/total_height){
+      // height is bottleneck here
+      desired_img_height = total_height;
+      desired_img_width = desired_img_height*(img_width/img_height);
+    } else {
+      desired_img_width = viewport_width;
+      desired_img_height = desired_img_width*(img_height/img_width);
+    }
+  }
+  $img.height(desired_img_height);
+  $img.width(desired_img_width);
+  $img.css('margin-top',(total_height-desired_img_height)/2);
 }
 
 function vertically_center_image_in_carousel($img,time){
-  $img[0].onload = (event)=>{
-    $img = $(event.target);
-    set_image($img);
-    setTimeout(()=>{
+  // find size of image before loading
+  var interval = setInterval(()=>{
+    if($img[0].naturalWidth){
+      clearInterval(interval);
       set_image($img);
-    },time);
-  }
+    }
+  },10);
 }
 
 $('document').ready(function(){
@@ -3307,40 +3411,39 @@ $('document').ready(function(){
 
   $.ajaxSetup({
     traditional: true
-  })
+  });
 
   set_footer();
   $(window).resize(set_footer);
 
-  window.property_charge_form = new OtherChargeForm('property',$('#other_charges_button'));
-  window.add_image_object = new AddImage('property',$('#property_add_image'),window.image_upload_url,2000,2000);
-  new ProfileAddImage($('#upload-image'),window.profile_image_url,1000,1000);
-
   initialize_form_selectize();
   set_custom_alerts();
+  // enable_add_image();
+  initialize_other_select();
+  $('.carousel').each(()=>{
+    set_carousel($(this));
+  });
+
+  $('.modal').on('hidden.bs.modal',function(){
+    remove_all_messages($(this));
+  });
+
+  $('.modal').on('show.bs.modal',function(){
+    var num_visible_modals = $('.modal.show').length;
+    $(this).css('z-index',1050+num_visible_modals);
+  });
+  
+
+  create_options_for_property_form_fields($('#modalPropertyAdForm'));
+  window.property_charge_form = new OtherChargeForm('property',$('#other_charges_button'));
+  window.add_image_object = new AddImage('property',$('#property_add_image'),window.image_upload_url,2000,2000);
+  window.termsAndConditions = new TermsAndConditions($('#termsAndConditionsRef'));
+  new ProfileAddImage($('#upload-image'),window.profile_image_url,1000,1000);
+  set_logout();
   set_character_count();
   set_validations();
   set_disable_submit_button();
-  add_tawk_to();
-  set_logout();
   set_enter_number_form();
-  // enable_add_image();
-
-  $('#resend_otp').click(function(){
-    resend_otp();
-  });
-
-  $('input[name=has_property]').change(function(event){
-      if(event.target.value=="False"){
-          $('.has_property').addClass('d-none');
-          $('.not_has_property').removeClass('d-none');
-      } else {
-          $('.not_has_property').addClass('d-none');
-          $('.has_property').removeClass('d-none');
-      }
-      $($('#modalRoomieAdForm .modal-body').children('div')[1]).removeClass('d-none');
-  });
-  initialize_other_select();
   $('#property_available_from').Zebra_DatePicker({
     default_position: 'below',
     show_icon: false,
@@ -3361,19 +3464,22 @@ $('document').ready(function(){
     $('.modal-backdrop').remove();
   });
 
+  $('#resend_otp').click(function(){
+    resend_otp();
+  });
+
+  // $('input[name=has_property]').change(function(event){
+  //     if(event.target.value=="False"){
+  //         $('.has_property').addClass('d-none');
+  //         $('.not_has_property').removeClass('d-none');
+  //     } else {
+  //         $('.not_has_property').addClass('d-none');
+  //         $('.has_property').removeClass('d-none');
+  //     }
+  //     $($('#modalRoomieAdForm .modal-body').children('div')[1]).removeClass('d-none');
+  // });
+
   toastr.options.closeButton = true;
   toastr.options.progressBar = true;
-
-  $('.modal').on('hidden.bs.modal',function(){
-    remove_all_messages($(this));
-  });
-
-  $('.modal').on('show.bs.modal',function(){
-    var num_visible_modals = $('.modal.show').length;
-    $(this).css('z-index',1050+num_visible_modals);
-  });
-  
-  $('.carousel').each(()=>{
-    set_carousel($(this));
-  });
+  add_tawk_to();
 });

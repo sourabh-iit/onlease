@@ -34,12 +34,18 @@ function calcRoute() {
 }
 
 function book_now(event){
+  if(!$('#agree_to_terms_and_conditions:checked').checked){
+    alert('Agree to terms and conditions');
+    return;
+  }
   var loading_icon;
   $el = $(event.target);
   $.ajax({
     type: 'POST',
     url: window.book_now_url,
-    data: {},
+    data: {
+      termsandconditions: $('#agree_to_terms_and_conditions')[0].checked,
+    },
     dataType: 'json',
     beforeSend: function(){
       loading_icon = window.create_inline_loading_element();

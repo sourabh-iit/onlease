@@ -16,7 +16,7 @@
   font-size: 1rem!important;
 }
 .fs-3-5 {
-  font-size: 1.2rem!important;
+  font-size: 1.25rem!important;
 }
 .fs-4{
   font-size: 1.5rem!important;
@@ -95,4 +95,13 @@
 }
 .width-fit-content {
   width: fit-content;
+}
+.carousel .fa.fa-chevron-right,.carousel .fa.fa-chevron-left{
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: black;
+  border-radius: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

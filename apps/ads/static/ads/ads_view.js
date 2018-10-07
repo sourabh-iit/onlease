@@ -95,7 +95,7 @@ function set_tooltip(){
 }
 
 function resize(){
-  var width = $(document).width();
+  var width = window.innerWidth;
   var padding;
   if(width<600){
     padding=(width-270)/2;
@@ -137,16 +137,27 @@ function resetSearchBox(){
   }
 }
 
+function set_resize(){
+  $(window).resize(()=>{
+    var times = 0;
+    var poll = setInterval(()=>{
+      times++;
+      resize();
+      if(times==5){
+        clearInterval(poll);
+      }
+    },10);
+  });
+}
+
 $(document).ready(function(){
   resetSearchBox();
-  initialize_masonry();
   initialize_selectize();
   add_options_to_region();
+  initialize_masonry();
   set_tooltip();
   resize();
-  $(window).resize(()=>{
-    resize();
-  });
+  set_resize();
   $('.carousel').on('slid.bs.carousel', function(){
     $grid.masonry('layout');
   })

@@ -197,3 +197,12 @@ class Charge(models.Model):
 
   def __str__(self):
     return self.description+': Rs. '+self.amount
+
+
+class TermAndCondition(models.Model):
+  text = models.CharField(max_length=200)
+  lodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,
+    related_name='termsandconditions')
+
+  def __str__(self):
+    return self.text

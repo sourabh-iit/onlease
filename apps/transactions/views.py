@@ -33,16 +33,19 @@ api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
         endpoint=settings.INSTAMOJO_ENDPOINT)
 
 @login_required
+@require_POST
 def redirect_to_instamojo_view(request,ad_id):
   if settings.DEBUG:
     base_url = 'http://'+request.META['HTTP_HOST']
   else:
     base_url = settings.BASE_URL
   try:
+    if request.POST.get('termsandconditions','false')=='false':
+      raise ValidationError('You have not agreed to terms and conditions')
     lodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
     sublodging = lodging.sublodging
     time_diff = datetime.datetime.now() - sublodging.last_time_booking
-    if sublodging.is_booking and time_diff.seconds > 10*60:
+    if sublodging.is_booking and time_diff.seconds > 3*60:
       sublodging.is_booking=False
       sublodging.save()
     if sublodging.is_booked or sublodging.is_booking:
@@ -98,21 +101,21 @@ def redirect_to_instamojo_view(request,ad_id):
       })
     return JsonResponse({
       'errors':{'__all__':['Failed to process request']}.update(response['message'])
-    })
+    },status=400)
   except Lodging.DoesNotExist:
     return JsonResponse({
       'errors':{'__all__':['Lodging with id '+ad_id+' does not exist.']}
-    })
+    },status=400)
   except ValidationError as e:
-    return JsonResponse({'errors':{'__all__':[e]}})
+    return JsonResponse({'errors':{'__all__':e.messages}},status="400")
   except ConnectionError as e:
     return JsonResponse({
       'errors':{'__all__':['Connection could not be made. Please try again later.']}
-    })
+    },status=400)
   except JSONDecodeError as e:
     return JsonResponse({
       'errors':{'__all__':['Payment gateway server is not responding. Contact about this issue.']}
-    })
+    },status=400)
 
 
 @login_required

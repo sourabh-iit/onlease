@@ -9,6 +9,7 @@ from rest_framework.renderers import JSONRenderer
 from django.contrib.auth.decorators import login_required
 
 import json
+import datetime
 
 from apps.roommate.models import RoomieAd
 from apps.locations.models import Region
@@ -69,6 +70,10 @@ def ad_detail_view(request):
               show_contact_details=True
       except LodgingTransaction.DoesNotExist:
         pass
+      time_diff = datetime.datetime.now() - sublodging.last_time_booking
+      if sublodging.is_booking and time_diff.seconds > 3*60:
+        sublodging.is_booking=False
+        sublodging.save()
       return render(request,'ads/ad_detail.html',{
         'lodging':lodging,
         'sublodging':sublodging,
