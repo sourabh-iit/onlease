@@ -39,6 +39,7 @@ def ads_view(request):
       'state':region.state.name,'district':region.district.name})
   context = {
     'ads': ads,
+    'ads_json': json.dumps(CommonLodgingSerializer(ads,many=True).data),
     'business':  business,
     'regions': regions_selected,
     'data': json.dumps(data.data)

@@ -376,6 +376,9 @@ function create_charge_form(event,prefix){
   }
 }
 
+// return configurations for remote selectize locations
+// if remove_button is true then it is multi select
+// if value is property then number of properties is shown in results
 function get_selectize_configurations(value,remove_button=true){
   var business, items, render={
     option: function (item, escape) {
@@ -1857,14 +1860,20 @@ function create_options_from_array(j_el,text,value){
 
 class Modal{
   constructor(id,title,close_button=true){
-    this.$modal = $('<div></div>').addClass('modal fade')
-    .attr('id',id).attr('data-backdrop','static');
-    this.$modal_dialog = $('<div></div>').addClass('modal-dialog');
-    this.$modal_content = $('<div></div>').addClass('modal-content');
-    this.$modal_header = $('<div></div>').addClass('modal-header');
-    this.$modal_title = $('<h5></h5>').addClass('modal-title')
+    this.$modal = $('<div></div>')
+    .addClass('modal fade')
+    .attr('id',id)
+    .attr('data-backdrop','static');
+    this.$modal_dialog = $('<div></div>')
+    .addClass('modal-dialog');
+    this.$modal_content = $('<div></div>')
+    .addClass('modal-content');
+    this.$modal_header = $('<div></div>')
+    .addClass('modal-header');
+    this.$modal_title = $('<h5></h5>')
+    .addClass('modal-title')
     .text(title);
-    this.$modal_header.append(this.$modal_title[0]);
+    this.$modal_header.append(this.$modal_title);
     if(close_button){
       this.$modal_header.append(`
       <button type="button" class="close" 
@@ -1874,46 +1883,12 @@ class Modal{
     }
     this.$modal_body = $('<div></div>').addClass('modal-body minh-500');
     this.$modal_footer = $('<div></div>').addClass('modal-footer');
-    this.$modal.append(this.$modal_dialog[0]);
-    this.$modal_dialog.append(this.$modal_content[0]);
-    this.$modal_content.append(this.$modal_header[0])
-    .append(this.$modal_body[0]).append(this.$modal_footer[0]);
+    this.$modal.append(this.$modal_dialog);
+    this.$modal_dialog.append(this.$modal_content);
+    this.$modal_content.append(this.$modal_header)
+    .append(this.$modal_body)
+    .append(this.$modal_footer);
     $('body').append(this.$modal);
-  }
-
-  replace_title(title) {
-    this.$modal_title.text(title);
-  }
-
-  replace_body(body) {
-    this.$modal_body.html(body);
-  }
-  append_to_body(html) {
-    this.$modal_body.append(html);
-  }
-
-  get_modal() {
-    return this.$modal[0];
-  }
-
-  append_to_footer(html) {
-    this.$modal_footer.append(html);
-  }
-
-  replace_footer(footer) {
-    this.$modal_footer.html(footer);
-  }
-
-  show(){
-    this.$modal.modal('show');
-  }
-
-  add_class(_class){
-    this.$modal.addClass(_class);
-  }
-
-  add_class_to_dialog(_class){
-    this.$modal_dialog.addClass(_class);
   }
 
   remove_on_close(){
@@ -1923,362 +1898,363 @@ class Modal{
   }
 }
 
-function AdLink(text,icon) {
-  this.link_container = this.details = document.createElement('div');
-  this.link_container.className = 'col';
-  this.link_icon = document.createElement('i');
-  this.link_icon.className = icon;
-  $(this.link_container).append(this.link_icon).append('&nbsp;'+text);
+class AdLink{
+  constructor(text,icon){
+    this.$link_container = $('<div></div>').addClass('col');
+    this.$link_icon = $('<i></i>').addClass(icon);
+    this.$link_container.append(this.$link_icon)
+    .append('&nbsp;'+text);
+  }
+
+  add_click_event(func,arg) {
+    this.$link_container.click(function(){
+      func(arg);
+    });
+  }
 }
 
-AdLink.prototype = {
-  constructor: AdLink,
-  get_ad_link: function(){
-    return this.link_container;
-  },
-  add_click_event: function(func,arg){
-    $(this.link_container).click(function(){
-      func(arg);
+class AdLinks{
+  constructor(ad){
+    this.$container = $('<div></div>').addClass('row m-0 links');
+    if(ad.images.length>0) {
+      this.zoom = new AdLink('Zoom','fa fa-search-plus');
+      this.$container.append(this.zoom.$link_container);
+    }
+    this.view_details = new AdLink('View Details','fa fa-external-link');
+    this.view_details.add_click_event(redirect_to_ad_detail_view,ad.id)
+    this.$container.append(this.view_details.$link_container);
+  }
+}
+
+class AdDetailItem{
+  constructor(text,icon,value){
+    this.$li = $('<li></li>')
+    .addClass('col p-0 white-text');
+    this.$text_container = $('<div></div>')
+    .addClass('light-brown-text');
+    this.$text = $('<small></small>');
+    this.$value_container = $('<div></div>');
+    this.$value_icon = $('<i></i>')
+    .addClass(icon+' pr-1');111
+    if(text=='Rent'){
+      this.$value_container
+      .append(this.$value_icon);
+      this.$text.text(text);
+    } else {
+      this.$text.append(this.$value_icon)
+      .append(text);
+    }
+    this.$value_container.append(value);
+    this.$text_container.append(this.$text);
+    this.$li.append(this.$text_container)
+    .append(this.$value_container);
+  }
+}
+
+class AdDetails{
+  constructor(ad){
+    this.$ul = $('<ul></ul>')
+    .addClass('list-unstyled row p-0 ml-0 mr-0 font-small');
+    this.rent = new AdDetailItem('Rent','fa fa-inr',ad.rent);
+    if(ad.lodging_type=='O'){
+      this.type = new AdDetailItem('Type','fa fa-home',ad.lodging_type_other);
+    } else {
+      this.type = new AdDetailItem('Type','fa fa-home',type_full_form(ad.lodging_type));
+    }
+    this.available_from = new AdDetailItem('Available from','fa fa-clock-o',ad.available_from);
+    this.$container = $('<div></div>').css('height','fit-content')
+    .addClass('rounded-bottom mdb-color lighten-3 text-center pt-3')
+    .append(this.$ul);
+    this.$ul.append(this.rent.$li)
+    .append(this.type.$li)
+    .append(this.available_from.$li);
+  }
+}
+
+class Card{
+  constructor(){
+    this.$card_body = $('<div class="card-body p-0"></div>');
+    this.$card = $('<div class="card mb-3"></div>')
+    .append(this.$card_body);
+    this.$card_footer = $('<div class="card-footer"></div>');
+    this.$card_title = $('<h4 class="card-title"></h4>');
+  }
+
+  add_carousel(carousel) {
+    if(this.$card.children('img').length>0){
+      throw('Card image is already appended.')
+    }
+    this.$card.prepend(carousel);
+  }
+
+  add_image(image) {
+    if(this.$card.children('.carousel').length>0){
+      throw('Card carousel is already appended.')
+    }
+    this.$card.prepend(image);
+  }
+}
+
+class CarouselIndicator{
+  constructor(id,slide_to){
+    this.$indicator = $('<li></li>').attr('data-target',id)
+    .attr('data-slide-to',slide_to);
+    if(slide_to==0){
+      this.$indicator.addClass('active');
+    }
+  }
+}
+
+class CarouselItem{
+  constructor(i,image){
+    this.img_element = new ImageCard(image,image.image_thumbnail,image.tag,i);
+    this.$caption = $('<div></div>').addClass('carousel-caption')
+    .text(Tags.get_tag_text(image.tag));
+    this.$item = $('<div></div>').addClass('carousel-item')
+    .append(this.img_element.$img_cover).append(this.$caption);
+    if(i==0){
+      this.$item.addClass('carousel-item active');
+    } else {
+      this.$item.addClass('carousel-item');
+    }
+  }
+}
+
+class CarouselControl{
+  constructor(id){
+    this.$icon = $('<span></span>').addClass('carousel-control')
+    .attr('aria-hidden','true');
+    this.$sr_only = $('<span></span>').addClass('sr-only');
+    this.$control = $('<a></a>').attr('href','#'+id)
+    .attr('role','button')
+    .append(this.$icon)
+    .append(this.$sr_only);
+  }
+}
+
+class CarouselControlNext extends CarouselControl{
+  constructor(id){
+    super(id);
+    this.$control.addClass('carousel-control-next')
+    .attr('data-slide','next');
+    this.$icon.addClass('fa fa-chevron-right');
+    this.$sr_only.text('Next');
+  }
+}
+
+class CarouselControlPrev extends CarouselControl{
+  constructor(id){
+    super(id);
+    this.$control.addClass('carousel-control-prev')
+    .attr('data-slide','prev');
+    this.$icon.addClass('fa fa-chevron-left');
+    this.$sr_only.text('Prev');
+  }
+}
+
+class Carousel{
+  constructor(id,images){
+    this.$carousel = $('<div></div>').attr('id',id)
+    .attr('data-pause','true').attr('data-ride',"false")
+    .addClass("carousel slide carousel-fade");
+    this.$carousel_inner = $('<div></div>').addClass('carousel-inner');
+    this.$carousel_indicators = $('<ol></ol>').addClass("carousel-indicators");
+    this.next_control = new CarouselControlNext(id);
+    this.prev_control = new CarouselControlPrev(id);
+    this.$carousel.append(this.$carousel_indicators)
+    .append(this.$carousel_inner);
+    if(images.length>0){
+      this.$carousel.append(this.next_control.$control)
+      .append(this.prev_control.$control);
+    }
+    for(var i in images){
+      this.add_indicator(id,i);
+      this.add_item(i,images[i]);
+    }
+    set_carousel(this.$carousel);
+  }
+
+  add_indicator(id, i) {
+    var indicator = new CarouselIndicator(id,i);
+    this.$carousel_indicators.append(indicator.$indicator);
+  }
+  add_item(i, image) {
+    this.item = new CarouselItem(i,image);
+    this.$carousel_inner.append(this.item.$item);
+  }
+}
+
+class Image{
+  constructor(src,alt,index=0){
+    this.$img = $('<img>').attr('alt',alt);
+    if(index>0){
+      this.$img.attr('data-src',src)
+      .attr('src',window.STATIC_URL+'images/Spinner-1s-51px.gif');
+    } else {
+      this.$img.attr('src',src);
+    }
+  }
+}
+
+class PanzoomIcon{
+  constructor(icon){
+    this.$i = $(`<i class="fa fa-${icon} fa-lg"></i>`);
+  }
+}
+
+class FullView{
+  constructor(image){
+    this.modal = new Modal('image_360',image.tag);
+    this.modal.$modal_body.attr('id','vrview');
+    this.modal.$modal.modal('show');
+    var vrView = new VRView.Player('#vrview', {
+      image: image.image,
+      is_stereo: false
+    });
+    vrView.on('error',()=>{
+      this.$img = $(`<img src="${image.image}" alt="${image.tag}">`);
+      this.modal.$modal_body.append(this.$img);
+      this.$img.panzoom({
+        increment: 0.3,
+        panOnlyWhenZoomed: true,
+        minScale: 1,
+        maxScale: 3,
+        contain: 'invert',
+      });
+      var $image_zoom_in = new PanzoomIcon('search-plus');
+      var $image_zoom_out = new PanzoomIcon('search-minus');
+      var $reset = new PanzoomIcon('');
+      $image_zoom_in.click(()=>{
+        this.$img.panzoom('zoom');
+      });
+      $image_zoom_out.click(()=>{
+        this.$img.panzoom('resetPan');
+        this.$img.panzoom('zoom',true);
+      });
+      $reset.click(()=>{
+        this.$img.panzoom('reset');
+      });
+      this.modal.$modal_body.append($image_zoom_in)
+      .append($image_zoom_out)
+      .append($reset);
     })
   }
 }
 
-function AdLinks(ad) {
-  this.container = document.createElement('div');
-  this.container.className = 'row m-0 links';
-  if(ad.images.length>0) {
-    this.zoom = new AdLink('Zoom','fa fa-search-plus');
-    $(this.container).append(this.zoom.get_ad_link());
-  }
-  this.view_details = new AdLink('View Details','fa fa-external-link');
-  this.view_details.add_click_event(redirect_to_ad_detail_view,ad.id)
-  $(this.container).append(this.view_details.get_ad_link());
-}
-
-AdLinks.prototype = {
-  constructor: AdLinks,
-  get_ad_links: function(){
-    return this.container;
-  }
-}
-
-function AdDetailItem(text,icon,value){
-  this.li = document.createElement('li');
-  this.li.className = 'col p-0 white-text';
-  this.text_container = document.createElement('div');
-  this.text_container.className = 'light-brown-text';
-  this.text = document.createElement('small');
-  this.value_container = document.createElement('div');
-  this.value_icon = document.createElement('i');
-  this.value_icon.className = icon+' pr-1';
-  if(text=='Rent'){
-    $(this.value_container).append(this.value_icon)
-    .append(value);
-    this.text.innerText = text;
-  } else {
-    $(this.value_container).append(value);
-    $(this.text).append(this.value_icon)
-    .append(text);
-  }
-  $(this.text_container).append(this.text);
-  $(this.li).append(this.text_container)
-  .append(this.value_container);
-}
-
-AdDetailItem.prototype = {
-  constructor: AdDetailItem,
-  get_ad_detail_item: function(){
-    return this.li;
-  }
-}
-
-function AdDetails(ad){
-  this.container = document.createElement('div');
-  this.container.className = 'rounded-bottom mdb-color lighten-3 text-center pt-3';
-  $(this.container).css('height','fit-content');
-  this.ul = document.createElement('ul');
-  this.ul.className='list-unstyled row p-0 ml-0 mr-0 font-small';
-  this.rent = new AdDetailItem('Rent','fa fa-inr',ad.rent);
-  if(ad.lodging_type=='O'){
-    this.type = new AdDetailItem('Type','fa fa-home',ad.lodging_type_other);
-  } else {
-    this.type = new AdDetailItem('Type','fa fa-home',type_full_form(ad.lodging_type));
-  }
-  this.available_from = new AdDetailItem('Available from','fa fa-clock-o',ad.available_from);
-  $(this.container).append(this.ul);
-  $(this.ul).append(this.rent.get_ad_detail_item())
-  .append(this.type.get_ad_detail_item())
-  .append(this.available_from.get_ad_detail_item());
-}
-
-AdDetails.prototype = {
-  constructor: AdDetails,
-  get_ad_details: function(){
-    return this.container;
-  }
-}
-
-function Card(){
-  this.card = document.createElement('div');
-  this.card.className = 'card mb-3';
-  this.card_body = document.createElement('div');
-  this.card_body.className = 'card-body p-0';
-  this.card_footer = document.createElement('div');
-  this.card_footer.className = 'card-footer';
-  this.card_title = document.createElement('h4');
-  this.card_title.className = 'card-title';
-  $(this.card).append(this.card_body);
-  // .append(this.card_footer);
-  // $(this.card_body).append(this.card_title);
-}
-
-Card.prototype = {
-  constructor: Card,
-  append_to_title: function(html){
-    $(this.card_title).append(html);
-  },
-  replace_title: function(html){
-    $(this.card_title).html(html);
-  },
-  append_to_body: function(html){
-    $(this.card_body).append(html);
-  },
-  replace_body:function(html){
-    $(this.card_body).html(html);
-  },
-  append_to_footer: function(html){
-    $(this.card_footer).append(html);
-  },
-  replace_footer:function(html){
-    $(this.card_footer).html(html);
-  },
-  add_classes: function(classes){
-    $(this.card).addClass(classes);
-  },
-  add_carousel: function (carousel) {
-    if($(this.card).children('img').length>0){
-      throw('Card image is already appended.')
+class ImageCard extends Image{
+  constructor(image,src=null,alt=null,index=null){
+    if(!src){
+      super(window.STATIC_URL+'images/No-image-available.jpg','no image available');
+    } else {
+      super(src,alt,index);
     }
-    $(this.card).prepend(carousel);
-  },
-  add_image: function (image){
-    if($(this.card).children('.carousel').length>0){
-      throw('Card carousel is already appended.')
+    this.$img.addClass('d-block');
+    this.$icon360 = $(`<img src="${window.STATIC_URL}images/360.png">`)
+    .css({'display':'none','position':'absolute','cursor':'pointer',
+    'width':'50px','height':'50px'}).click(()=>{
+      new FullView(image);
+    });
+    this.$img_cover = $('<div></div>')
+    .addClass('view card-img-top justify-content-center minh-200 align-items-center d-flex')
+    .append(this.$img);
+    if(src){
+      this.$img_cover.append(this.$icon360).hover(()=>{
+        if(!this.$img.attr('data-src')){
+          if(this.$icon360.css('display')=='none'){
+            this.$icon360.css('display','block');
+          } else {
+            this.$icon360.css('display','none');
+          }
+        }
+      });
     }
-    $(this.card).prepend(image);
-  },
-  get_card: function(){
-    return this.card;
   }
 }
 
-function CarouselIndicator(id,slide_to) {
-  this.indicator = document.createElement('li');
-  $(this.indicator).attr('data-target',id);
-  $(this.indicator).attr('data-slide-to',slide_to);
-  if(slide_to==0){
-    this.indicator.className='active';
+class Ad{
+  constructor(ad){
+    this.card = new Card();
+    this.card.$card.addClass('w-270 p-0');
+    if(ad.images.length==0){
+      this.image = new ImageCard(ad.images[0]);
+      this.card.add_image(this.image.$img_cover);
+    } else {
+      this.carousel = new Carousel('my_ad_'+ad.id,ad.images);
+      this.card.add_carousel(this.carousel.$carousel);
+    }
+    this.ad_details = new AdDetails(ad);
+    this.ad_links = new AdLinks(ad);
+    this.card.$card_body.append(this.ad_links.$container)
+    .append(this.ad_details.$container);
   }
 }
 
-CarouselIndicator.prototype = {
-  constructor: CarouselIndicator,
-  get_indicator: function(){
-    return this.indicator;
+class MyAd extends Ad{
+  constructor(ad){
+    super(ad);
   }
 }
 
-function CarouselItem(i,image){
-  this.item = document.createElement('div');
-  this.item.className = 'carousel-item';
-  if(i==0){
-    this.item.className = 'carousel-item active';
-  } else {
-    this.item.className = 'carousel-item';
-  }
-  this.img_element = new ImageCard(image.image_thumbnail,image.tag,i);
-  this.caption = document.createElement('div');
-  this.caption.className = 'carousel-caption';
-  $(this.caption).text(Tags.get_tag_text(image.tag));
-  $(this.item).append(this.img_element.get_image())
-  .append(this.caption);
-}
-
-CarouselItem.prototype = {
-  constructor: CarouselItem,
-  get_item: function(){
-    return this.item;
+class MyAds {
+  constructor(ads){
+    this.modal = new Modal('myAdsModal','My Ads');
+    this.modal.$modal_dialog.addClass('modal-lg');
+    for(var ad of ads) {
+      var ad = new MyAd(ad);
+      this.modal.$modal_body.append(ad.card.$card);
+    }
+    var ads = new Ads(this.modal.$modal_body);
+    this.modal.$modal.modal('show');
+    this.modal.remove_on_close();
   }
 }
 
-function CarouselControl(id){
-  this.control = document.createElement('a');
-  this.icon = document.createElement('span');
-  this.sr_only = document.createElement('span');
-  $(this.control).attr('href','#'+id);
-  $(this.control).attr('role','button');
-  this.icon.className = 'carousel-control';
-  $(this.icon).attr('aria-hidden','true');
-  this.sr_only.className='sr-only';
-  $(this.control).append(this.icon)
-  .append(this.sr_only);
-}
-
-CarouselControl.prototype = {
-  constructor: CarouselControl,
-  get_control: function(){
-    return this.control;
+class Ads{
+  constructor($ref,myads=false){
+    for(var ad of ads) {
+      if(myads){
+        var ad_object = new MyAd(ad);
+      } else {
+        var ad_object = new Ad(ad);
+      }
+      $ref.append(ad_object.card.$card);
+    }
+    show_loading($ref);
+    this.$grid = $ref.masonry({
+      columnWidth: 270,
+      gutter: 20,
+    });
+    $ref.children('.card').find('.carousel').each(()=>{
+      $(this).on('slid.bs.carousel', ()=>{
+        this.$grid.masonry('layout');
+      });
+    });
+    this.$grid.imagesLoaded().progress( () => {
+      this.$grid.masonry('layout');
+      setTimeout(()=>{
+        this.$grid.masonry('layout');
+      },2000);
+      remove_loading($ref);
+    });
   }
 }
 
-function CarouselControlNext(id){
-  CarouselControl.call(this,id);
-  this.control.className = 'carousel-control-next';
-  $(this.control).attr('data-slide','next');
-  $(this.icon).addClass('fa fa-chevron-right');
-  $(this.sr_only).text('Next');
-}
-CarouselControlNext.prototype = Object.create(CarouselControl.prototype);
-CarouselControlNext.prototype.constructor = CarouselControlNext;
-
-function CarouselControlPrev(id){
-  CarouselControl.call(this,id);
-  this.control.className = 'carousel-control-prev';
-  $(this.control).attr('data-slide','prev');
-  $(this.icon).addClass('fa fa-chevron-left');
-  $(this.sr_only).text('Prev');
-}
-CarouselControlPrev.prototype = Object.create(CarouselControl.prototype);
-CarouselControlPrev.prototype.constructor = CarouselControlPrev;
-
-function Carousel(id,images){
-  this.carousel = document.createElement('div');
-  this.carousel_inner = document.createElement('div');
-  this.carousel_indicators = document.createElement('ol');
-  this.next_control = new CarouselControlNext(id);
-  this.prev_control = new CarouselControlPrev(id);
-  $(this.carousel).attr('id',id);
-  $(this.carousel).attr('data-pause','true');
-  this.carousel.className = "carousel slide carousel-fade";
-  $(this.carousel).attr('data-ride',"false");
-  this.carousel_indicators.className = "carousel-indicators";
-  this.carousel_inner.className = 'carousel-inner';
-  $(this.carousel).append(this.carousel_indicators)
-  .append(this.carousel_inner)
-  if(images.length>0){
-    $(this.carousel).append(this.next_control.get_control())
-    .append(this.prev_control.get_control());
+class PropertyAds extends Ads{
+  constructor(ads){
+    var $container= $('#ads_wrapper');
+    super($container);
   }
 
-  for(var i in images){
-    this.add_indicator(id,i);
-    this.add_item(i,images[i]);
+  append_ad(ad){
+    // TODO append ad if ad's location is in current locations
+    var ad_object = new Ad(ad);
+    this.$grid.append(ad_object.card.$card)
+    .masonry('appended',ad_object.card.$card);
   }
 
-  set_carousel($(this.carousel));
-}
-
-Carousel.prototype = {
-  constructor: Carousel,
-  add_indicator : function(id,i) {
-    var indicator = new CarouselIndicator(id,i);
-    this.carousel_indicators.append(indicator.get_indicator());
-  },
-  add_item: function(i,image) {
-    this.item = new CarouselItem(i,image);
-    this.carousel_inner.append(this.item.get_item());
-  },
-  get_carousel: function(){
-    return this.carousel;
+  remove_ad($elem){
+    this.$grid.masonry('remove',$elem).masonry('layout');
   }
-}
-
-function Image(src,alt,index=0){
-  this.img = document.createElement('img');
-  $(this.img).attr('alt',alt);
-  if(index>0){
-    $(this.img).attr('data-src',src);
-    $(this.img).attr('src',window.STATIC_URL+'images/');
-  } else {
-    $(this.img).attr('src',src);
-  }
-}
-
-Image.prototype = {
-  constructor: Image,
-  get_image: function(){
-    return this.img;
-  },
-  set_src: function(src) {
-    $(this.img).attr('src',src);
-  },
-  set_data_src: function(src) {
-    $(this.img).attr('data-src',src);
-  },
-}
-
-function ImageCard(src=null,alt=null,index=null){
-  if(!src){
-    Image.call(this,window.STATIC_URL+'images/No-image-available.jpg','no image available');
-  } else {
-    Image.call(this,src,alt,index);
-  }
-  $(this.img).addClass('d-block');
-  this.img_cover = document.createElement('div');
-  this.img_cover.className = 'view card-img-top justify-content-center minh-200 align-items-center d-flex';
-  $(this.img_cover).append(this.img);
-}
-ImageCard.prototype = Object.create(Image.prototype);
-ImageCard.prototype.constructor = ImageCard;
-ImageCard.prototype.get_image = function(){
-  return this.img_cover;
-}
-
-function MyAd(ad){
-  this.card = new Card();
-  this.card.add_classes('w-270 p-0');
-  if(ad.images.length==0){
-    this.image = new ImageCard();
-    this.card.add_image(this.image.get_image());
-  } else {
-    this.carousel = new Carousel('my_ad_'+ad.id,ad.images);
-    this.card.add_carousel(this.carousel.get_carousel());
-  }
-  this.ad_details = new AdDetails(ad);
-  this.ad_links = new AdLinks(ad);
-  this.card.append_to_body(this.ad_links.get_ad_links());
-  this.card.append_to_body(this.ad_details.get_ad_details());
-}
-
-MyAd.prototype = {
-  constructor: MyAd,
-  get_my_ad: function(){
-    return this.card.get_card();
-  }
-}
-
-function MyAds(ads) {
-  this.modal = new Modal('myAdsModal','My Ads');
-  this.modal.add_class_to_dialog('modal-lg');
-  for(var ad of ads) {
-    var ad = new MyAd(ad);
-    this.modal.append_to_body(ad.get_my_ad());
-  }
-  this.modal.show();
-  show_loading(this.modal.get_modal());
-  this.modal.remove_on_close();
-  var $grid = $(this.modal.modal_body).masonry({
-    // itemSelector: '',
-    columnWidth: 270,
-    gutter: 20,
-  });
-  $grid.imagesLoaded().progress( () => {
-    $grid.masonry('layout');
-    setTimeout(function(){
-      $grid.masonry('layout');
-    },2000);
-    remove_loading(this.modal.get_modal());
-  });
 }
 
 function get_my_ads(){
@@ -2854,7 +2830,7 @@ function display_full_screen_carousel(ad_images,rent,location,type,available_fro
   $('#full_screen_carousel').carousel('pause');
   $('#full_screen_carousel').off('slide.bs.carousel');
   var $title = $('#full_screen_carousel_modal').find('.modal-title');
-  set_carousel($('#full_screen_carousel'),800);
+  set_carousel($('#full_screen_carousel'));
   $('#full_screen_carousel').on('slide.bs.carousel',function(event){
     $title.html(`<small>${event.to+1}/${images_tag.length}</small> ${images_tag[event.to]}`);
   });
@@ -2894,14 +2870,13 @@ function change_src($img){
   }
 }
 
-function set_carousel($carousel,time=0){
-  this.time = time
+function set_carousel($carousel){
   var $img = $carousel.find('.carousel-item.active img');
-  vertically_center_image_in_carousel($img,time);
+  vertically_center_image_in_carousel($img);
   change_src($img);
   $carousel.on('slide.bs.carousel',(event)=>{
     var $img = $(event.relatedTarget).children().children('img');
-    vertically_center_image_in_carousel($img,this.time);
+    vertically_center_image_in_carousel($img);
     change_src($img);
   });
 }
@@ -3384,10 +3359,10 @@ function set_image($img){
   $img.css('margin-top',(total_height-desired_img_height)/2);
 }
 
-function vertically_center_image_in_carousel($img,time){
+function vertically_center_image_in_carousel($img){
   // find size of image before loading
   var interval = setInterval(()=>{
-    if($img[0].naturalWidth){
+    if($img[0].naturalWidth>0 && $img.parent().height()>0){
       clearInterval(interval);
       set_image($img);
     }

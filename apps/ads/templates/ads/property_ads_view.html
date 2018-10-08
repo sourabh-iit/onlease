@@ -7,7 +7,8 @@
 
 {% block content %}
 
-<div id="ads_wrapper" class="row">
+<div id="ads_wrapper">
+  {% comment %}
   {% for ad in ads %}
   <script>
     var type = '{{ad | full_form:"type"}}';
@@ -175,9 +176,11 @@
     <div class="text-center col-12 h5">
       <span>No property in chosen location(s)</span>
     </div>
-	{% endfor %}
+  {% endfor %}
+  {% endcomment %}
 </div>
 <script>
   var detail_view_url = '{% url "ads:ad-detail-view" %}';
+  var ads = JSON.parse("{{ads_json|escapejs}}");
 </script>
 {% endblock %}

@@ -72,21 +72,6 @@ function initialize_selectize(){
   // });
 }
 
-function initialize_masonry(){
-  $grid = $('#ads_wrapper').masonry({
-    itemSelector: '.card',
-    columnWidth: '.card',
-    percentPosition: true,
-    gutter: 20,
-  });
-  $grid.imagesLoaded().progress( function() {
-    $grid.masonry('layout');
-    setTimeout(function(){
-      $grid.masonry('layout');
-    },2000);
-  });
-}
-
 function set_tooltip(){
   $('[data-toggle="tooltip"]').tooltip();
 	$('i.fa.fa-info-circle').click(function(){
@@ -154,11 +139,8 @@ $(document).ready(function(){
   resetSearchBox();
   initialize_selectize();
   add_options_to_region();
-  initialize_masonry();
   set_tooltip();
   resize();
   set_resize();
-  $('.carousel').on('slid.bs.carousel', function(){
-    $grid.masonry('layout');
-  })
+  window.property_ads = new PropertyAds(window.ads);
 });

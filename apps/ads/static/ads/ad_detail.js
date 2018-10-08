@@ -93,4 +93,4 @@ $('document').ready(function(){
   $('#area_unit').on('change',function () {
     $('#area').text(window.convert_to_rqeuested_unit(area,$(this).val()));
   });
-})
+});

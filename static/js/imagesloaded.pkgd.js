@@ -391,7 +391,7 @@ LoadingImage.prototype.check = function() {
   }
 
   // If none of the checks above matched, simulate loading on detached element.
-  this.proxyImage = new Image();
+  this.proxyImage = document.createElement('img');
   this.proxyImage.addEventListener( 'load', this );
   this.proxyImage.addEventListener( 'error', this );
   // bind to image as well for Firefox. #191
