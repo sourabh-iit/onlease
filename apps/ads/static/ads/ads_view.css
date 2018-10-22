@@ -31,8 +31,8 @@
 }
 #ads_wrapper{
   margin: 0;
-  margin-bottom: 2rem;
   padding: 20px;
+  text-align: center;
 }
 #ads_wrapper .card{
   margin-top: 1rem;
@@ -50,18 +50,6 @@
   right: 0px;
   color: blue;
   background-color: aliceblue;
-}
-.links div{
-  text-align: center;
-  padding: 0.4rem;
-  cursor: pointer;
-  color: white;
-  background: darkblue;
-  font-weight: 600;
-  font-size: small;
-}
-.links div:nth-child(1){
-  border-right: 1px solid white;
 }
 @media (min-width: 768px){
   .selectize-input.items{

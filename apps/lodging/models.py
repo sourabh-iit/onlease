@@ -114,6 +114,28 @@ class CommonlyUsedLodgingModel(models.Model):
     (BRICK, 'Brick'),
     (OTHER, 'Other')
   )
+  SQUARE_GAJ = '1'
+  SQUARE_FEET = '2'
+  SQUARE_YARDS = '3'
+  SQUARE_METER = '4'
+  ACRE = '5'
+  MARLA = '6'
+  KANAL = '7'
+  ARES = '8'
+  BISWA = '9'
+  HECTARES = '10'
+  MEASURING_UNIT_CHOICES = (
+    (SQUARE_GAJ,'Sq. Gaj'),
+    (SQUARE_FEET,'Sq. Feet'),
+    (SQUARE_YARDS,'Sq. Yds.'),
+    (SQUARE_METER,'Sq. Meter'),
+    (ACRE,'Acre'),
+    (MARLA,'Marla'),
+    (KANAL,'Kanal'),
+    (ARES,'Ares'),
+    (BISWA,'Biswa'),
+    (HECTARES,'Hectares'),
+  )
   # COMMERCIAL = 'C'
   # RESIDENTIAL = 'R'
   # LODGING_CHOICES = (
@@ -135,6 +157,7 @@ class CommonlyUsedLodgingModel(models.Model):
   available_from = models.DateField(default=timezone.now())
   rent = models.CharField(max_length=10,validators=[RegexValidator('^[1-9][0-9]+$')])
   area = models.CharField(max_length=12)
+  unit = models.CharField(max_length=2,choices=MEASURING_UNIT_CHOICES,default=SQUARE_GAJ)
   bathrooms = models.IntegerField(default=1)
   rooms = models.IntegerField(default=1)
   balconies = models.IntegerField(default=0)
@@ -153,6 +176,7 @@ class CommonlyUsedLodgingModel(models.Model):
   latlng = models.CharField(max_length=100, blank=True, null=True)
   is_booking = models.BooleanField(default=False)
   last_time_booking = models.DateTimeField(default=datetime.datetime.now())
+  virtual_tour_link = models.CharField(max_length=300,blank=True,null=True)
 
   def get_per_month_amount(self):
     total = int(self.rent)

@@ -87,7 +87,7 @@ class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsM
     fields = ('lodging_type','lodging_type_other','total_floors','floor_no',
         'furnishing','facilities','rent','area','bathrooms','rooms',
         'balconies','halls','flooring','flooring_other','additional_details','title',
-        'available_from','region','latlng')
+        'available_from','region','latlng','virtual_tour_link','unit')
 
   def clean_title(self):
     data = self.cleaned_data.get('title')

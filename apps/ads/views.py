@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.db.models import Prefetch
 from rest_framework.renderers import JSONRenderer
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 import json
 import datetime
@@ -19,32 +20,51 @@ from apps.transactions.models import LodgingTransaction
 
 User = get_user_model()
 
-def ads_view(request):
+num_ads_per_page = 10
+
+def get_paginated_data(ads,page_no=1):
+  paginator = Paginator(ads,num_ads_per_page)
+  page = paginator.page(page_no)
+  return page.object_list, page.has_next()
+
+def get_ads(request):
   regions = request.GET.getlist('regions')
   if request.GET.get('business')=='MATES':
     ads = RoomieAd.objects.prefetch_related('images').filter(regions__overlap=regions)
     business='MATES'
     template_name='ads_view.html'
-  elif request.GET.get('business')=='PROPERTY':
+  else:
     ads = CommonlyUsedLodgingModel.objects.prefetch_related(
-      'images','region').filter(region__in=regions)
+      'images','region').filter(region__in=regions,is_booked=False)
     business='PROPERTY'
     template_name='property_ads_view.html'
-    data = CommonLodgingSerializer(ads,many=True)
   regions = Region.objects.select_related('state','district').filter(id__in=regions)
   regions_selected = []
   for region in regions:
     regions_selected.append({
       'id':region.id,'region':region.name,
       'state':region.state.name,'district':region.district.name})
+  return ads, business, template_name, regions_selected
+
+def ads_view(request):
+  ads, business, template_name, regions_selected = get_ads(request)
+  ads, has_next_page = get_paginated_data(ads)
   context = {
     'ads': ads,
     'ads_json': json.dumps(CommonLodgingSerializer(ads,many=True).data),
     'business':  business,
     'regions': regions_selected,
-    'data': json.dumps(data.data)
+    'has_next_page': has_next_page,
   }
   return render(request,'ads/'+template_name,context)
+
+def paginated_ads(request,page_no):
+  ads, business, template_name, regions = get_ads(request)
+  ads, has_next_page = get_paginated_data(ads,page_no)
+  return JsonResponse({
+    'ads': CommonLodgingSerializer(ads,many=True).data,
+    'has_next_page': has_next_page,
+  })
 
 @login_required
 def ad_detail_view(request):

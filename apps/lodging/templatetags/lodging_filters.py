@@ -1,9 +1,13 @@
 from django import template
+
 from apps.lodging.models import CommonlyUsedLodgingModel
 from apps.locations.models import Region
 from apps.image.models import ImageModel
+from apps.user.serializers import UserSerializer
+
 import datetime
 import ast
+import json
 
 register = template.Library()
 
@@ -93,3 +97,9 @@ def fixed_length(value,arg):
     return value
   else:
     return value[0:l-4]+'...'
+
+@register.filter(name='serialize_user')
+def serialize_user(user):
+  if user.is_authenticated:
+    return json.dumps(UserSerializer(user).data)
+  return '{}'

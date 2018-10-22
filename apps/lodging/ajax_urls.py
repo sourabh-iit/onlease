@@ -3,5 +3,7 @@ from . import views
 
 app_name="lodging_ajax"
 urlpatterns = [
-    path('create', views.lodging_create_view_ajax, name="create"),
+    path('create', views.LodgingView.as_view(), name="create"),
+    path('<ad_id>', views.LodgingView.as_view(), name="edit"),
+    path('tour-link/validate', views.verify_tour_link, name="validate-tour-link"),
 ]

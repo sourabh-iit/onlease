@@ -12,12 +12,23 @@
 .md-form label{
     left: auto;
 }
+.links div{
+  text-align: center;
+  padding: 0.4rem;
+  cursor: pointer;
+  color: white;
+  background: darkblue;
+  font-weight: 600;
+  font-size: small;
+  border-right: 1px solid white;
+}
+.links div:last-child{
+  border-right: none;
+}
 .other_charges_container{
   border: 1px solid rgba(0,0,0,0.2);
   padding: 0;
   margin: 0;
-  padding: 0.5rem!important;
-  padding-top: 1rem!important;
 }
 .dropdown-menu-right { 
     right: 0; 
@@ -43,6 +54,10 @@
 }
 .pd-1.btn.btn-sm{
     padding: 0.5rem 0.2rem;
+}
+.no_property_message{
+  margin: 4rem auto;
+  opacity: 0.5;
 }
 .messages-container{
     position: fixed;
@@ -148,6 +163,7 @@ body{
 }
 footer.page-footer{
     background: #4b515d!important;
+    margin-top: 2rem;
 }
 .logo{
     max-height: 2rem;
@@ -482,10 +498,10 @@ div#new_ads_circle {
   max-height: 100%;
   margin: auto;
 }
-#full_screen_carousel_modal .modal-dialog{
+[id^='full_screen_carousel_modal'] .modal-dialog{
   height: 100%;
 }
-#full_screen_carousel_modal .modal-content{
+[id^='full_screen_carousel_modal'] .modal-content{
   height: 100%;
 }
 @media (min-height: 520px) {

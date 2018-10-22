@@ -34,17 +34,20 @@ function calcRoute() {
 }
 
 function book_now(event){
-  if(!$('#agree_to_terms_and_conditions:checked').checked){
+  var $agree = $('#agree_to_terms_and_conditions');
+  if($agree[0] && !$agree[0].checked){
     alert('Agree to terms and conditions');
     return;
   }
   var loading_icon;
   $el = $(event.target);
+  if(window.booking_in_process) return;
+  window.booking_in_process = true;
   $.ajax({
     type: 'POST',
     url: window.book_now_url,
     data: {
-      termsandconditions: $('#agree_to_terms_and_conditions')[0].checked,
+      termsandconditions: $agree[0]?$agree[0].checked:true,
     },
     dataType: 'json',
     beforeSend: function(){
@@ -58,6 +61,7 @@ function book_now(event){
     display_global_errors(res);
   }).always(function(){
     $(loading_icon).remove();
+    window.booking_in_process=false;
   });
 }
 
@@ -86,11 +90,29 @@ function openMap() {
   calcRoute();
 }
 
+function new_button(icon,text){
+  return $(`<div class="p-2 color-2 col text-white text-center cursor-pointer"><i class="fa fa-${icon}"></i>&nbsp;${text}</div>`);
+}
+
 $('document').ready(function(){
-  window.create_options_from_array($('#area_unit'), area_units, conversion_value);
+  var data = window.data;
+  var image_carousel = new Carousel('image_carousel',data.images,1);
+  var $carousel_container = $('#image_carousel_container').append(image_carousel.$carousel);
+  var $buttons_container = $('<div class="row m-0 mb-2"></div>').prependTo($carousel_container);
+  var $zoom_button = new_button('search-plus','Zoom').appendTo($buttons_container);
+  new FullScreenCarousel($zoom_button,data);
+  if(data.virtual_tour_link){
+    var $tour_button = new_button('video-camera','Tour').appendTo($buttons_container)
+    .css({'border-left':'1px solid white'});
+    new VirtualTour($tour_button,data.virtual_tour_link);
+  }
+  var area_unit = new Select(null,'area_unit','area_unit','Choose unit',null,'fs-1 area_unit',
+    false,Area.get_options(),data.unit,false,false,false,data);
+  area_unit.$select.next().css({'width':'110px','display':'flex'});
+  $('#area_group').append(area_unit.$select.next());
   $(document).trigger('initialize_form_selectize');
   var area = $('#area').text();
-  $('#area_unit').on('change',function () {
-    $('#area').text(window.convert_to_rqeuested_unit(area,$(this).val()));
+  area_unit.$select.on('change',function (event) {
+    $('#area').text(Area.convert_unit(data.unit,$(event.target).val(),parseInt(data.area)));
   });
 });

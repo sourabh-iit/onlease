@@ -8,66 +8,218 @@ var prefix;
 var upload_image_url;
 var regions_url = window.API_PREFIX + 'locations/regions2/';
 var charge_form_id=1;
+var DEBUG = true;
 
-var area_units = [
-  'Sq. Gaj',
-  'Sq. Ft.',
-  'Sq. Yds',
-  'Sq. Meter',
-  'Acre',
-  'Marla',
-  // 'Bigha',
-  'Kanal',
-  // 'Grounds',
-  'Ares',
-  'Biswa',
-  // 'Gunta',
-  'Hectares'
-];
-var conversion_value = [
-  1,
-  0.112188,
-  1.00969,
-  1.20758,
-  4886.92,
-  30.5433,
-  // ,
-  610.865,
-  // ,
-  120.758,
-  150,
-  // ,
-  12075.8
-  
-];
+function has_keys(data){
+  return Object.keys(data).length>0;
+}
 
-var Tags = {
-  tagList: [
-    {value: '', text: 'Choose tag'},
-    {value:'0',text:'Bedroom'},
-    {value:'3',text:'Living Room'},
-    {value:'5',text:'Kitchen'},
-    {value:'6',text:'Bathroom'},
-    {value:'4',text:'Entrance'},
-    {value:'1',text:'Hall'},
-    {value:'2',text:'Balcony'},
-    {value:'7',text:'Building'},
-    {value:'8',text:'Floor'},
-    {value:'9',text:'Outside View'},
-    {value:'11',text:'Dining Room'},
-    {value:'10',text:'Other'},
-  ],
-  get_tags: function(){
-    return this.tagList;
-  },
-  get_tag_text: function(value) {
-    for(var tag of this.tagList) {
-      if(tag.value==value){
-        return tag.text;
-      }
+(function (){
+  // TODO handle if not user verified
+  // <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalEnterNumberForm"
+  //       data-action="verify-number">
+  //       Verify your number</a>
+  var $logged_in_nav_items = `
+  <li class="nav-item dropdown">
+    <!-- {% comment %}<a class="nav-link dropdown-toggle waves-effect waves-light btn btn-sm btn-info" id="newAdsLink" data-toggle="dropdown" aria-haspopup="true"
+      aria-expanded="true">
+      New Ad
+    </a>
+    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="newAdsLink">
+      {% if user.is_verified %}
+      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalPropertyAdForm">
+      {% else %}
+      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
+      {% endif %} Property
+      </a>
+      {% if user.is_verified %}
+      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalRoomieAdForm">
+      {% else %}
+      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
+      {% endif %} Mates
+      </a>
+    </div>{% endcomment %} -->
+    <a class="nav-link color-4 waves-effect waves-light btn btn-sm btn-info" 
+      onclick="open_property_form('propertyAdform','New Property Form')"
+      id="newProperty" 
+      aria-haspopup="true"
+      aria-expanded="true">
+      New Ad
+    </a>
+  </li>
+  <li class="nav-item dropdown-md">
+    <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" 
+      id="navbarDropdownMenuLink" data-toggle="dropdown"
+      aria-haspopup="true" aria-expanded="true">
+      <i class="fa fa-user-circle-o fs-4"></i></a>
+    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
+      <a class="dropdown-item waves-effect waves-light text-capitalized" 
+        data-toggle="modal" data-target="#modalUserProfileForm">
+        My Profile</a>
+      <a class="dropdown-item waves-effect waves-light text-capitalized"
+        onclick="get_my_ads()">
+        My Ads</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item text-capitalized waves-effect waves-light" onclick="logout()">
+        Log out</a>
+    </div>
+  </li>`;
+
+  function nav_link(form){
+    return $(`<a class="nav-link waves-effect waves-light" data-toggle="modal" data-target="#${form}"></a>`)
+  }
+
+  function logged_out_nav_items(){
+    var $nav_item = $(`<li class="nav-item"></li>`);
+    if($(window).width()<768){
+      $nav_item.append(nav_link('modalLoginForm').append(`<i class="fa fa-sign-in"></i>`).addClass('fs-3-5'))
+      .append(nav_link('modalRegisterForm').append(`<i class="fa fa-user-plus"></i>`).addClass('fs-3-5'));
+    } else {
+      $nav_item.append(nav_link('modalLoginForm').append(`<i class="fa fa-sign-in">&nbsp;Login</i>`))
+      .append(nav_link('modalRegisterForm').append(`<i class="fa fa-user-plus">&nbsp;Register</i>`));
     }
+    return $nav_item;
+  }
+
+  var $logged_out_nav_items = logged_out_nav_items();
+  var $navbar = $('#navbar');
+
+  $(document).on('login',()=>{
+    $navbar.empty().append($logged_in_nav_items);
+  });
+
+  $(document).on('logout',()=>{
+    $navbar.empty().append($logged_out_nav_items);
+  });
+  if(has_keys(window.user_data)){
+    $navbar.append($logged_in_nav_items);
+  } else {
+    $navbar.append($logged_out_nav_items);
+  }
+})();
+
+function trace(...values){
+  if(DEBUG){
+    console.log(values);
   }
 }
+
+function console_trace(){
+  if(DEBUG){
+    console.trace();
+  }
+}
+
+class BaseType{
+  constructor(options){
+    this.options = options;
+  }
+
+  get_options(){
+    return this.options;
+  }
+
+  get_option(value){
+    for(var option of this.options){
+      if(option.value==value){
+        return option;
+      }
+    }
+    throw('Value not found');
+  }
+}
+
+class AreaType extends BaseType{
+  constructor(){
+    super([
+      {value: 1, text: 'Sq. Gaj'},
+      {value: 2, text: 'Sq. Ft.'},
+      {value: 3, text: 'Sq. Yds'},
+      {value: 4, text: 'Sq. Meter'},
+      {value: 5, text: 'Acre'},
+      {value: 6, text: 'Marla'},
+      {value: 7, text: 'Kanal'},
+      {value: 8, text: 'Ares'},
+      {value: 9, text: 'Biswa'},
+      {value: 10, text: 'Hectares'},
+      // {value:'11',text:'Bigha'},
+      // {value:'12',text:'Grounds'},
+      // {value:'13',text:'Gunta'},
+      // {value:'14',text:''},
+    ]);
+    this.coversion_dict = {
+      '1':1,
+      '2':0.112188,
+      '3':1.00969,
+      '4':1.20758,
+      '5':4886.92,
+      '6':30.5433,
+      '7':610.865,
+      '8':120.758,
+      '9':150,
+      '10':12075.8,
+    };
+  }
+
+  convert_unit(from_unit,to_unit,value){
+    return Math.round((value*this.coversion_dict[from_unit])*100/this.coversion_dict[to_unit])/100;
+  }
+}
+
+var Area = new AreaType()
+
+var Furnishing = new BaseType([
+  {value: 'F', text: 'Fully-Furnished'},
+  {value: 'S', text: 'Semi-Furnished'},
+  {value: 'U', text: 'Un-Furnished'},
+]);
+
+var Type =  new BaseType([
+  {value: 'F', text: 'Flat'},
+  {value: 'H', text: 'House'},
+  {value: 'P', text: 'Paying Guest'},
+  {value: 'R', text: 'Room(s)'},
+  {value: 'O', text: 'Other'},
+]);
+
+var Tag = new BaseType([
+  {value: '', text: 'Choose tag'},
+  {value:'0',text:'Bedroom'},
+  {value:'3',text:'Living Room'},
+  {value:'5',text:'Kitchen'},
+  {value:'6',text:'Bathroom'},
+  {value:'4',text:'Entrance'},
+  {value:'1',text:'Hall'},
+  {value:'2',text:'Balcony'},
+  {value:'7',text:'Building'},
+  {value:'8',text:'Floor'},
+  {value:'9',text:'Outside View'},
+  {value:'11',text:'Dining Room'},
+  {value:'10',text:'Other'},
+]);
+
+var Facilities = new BaseType([
+  {value: 'A', text: 'Air Conditioner'},
+  {value: 'P', text: 'Parking'},
+  {value: 'K', text: 'Kitchen'},
+]);['','','','','',
+'','','','','','',''],
+['M','VT','V','H','G','B','C','L','LI','T','BR','O']
+
+var Flooring = new BaseType([
+  {value:'M',text:'Marble'},
+  {value:'VT',text:'Vitrified Tile'},
+  {value:'V',text:'Vinyl'},
+  {value:'H',text:'Hardwood'},
+  {value:'G',text:'Granite'},
+  {value:'B',text:'Bamboo'},
+  {value:'C',text:'Concrete'},
+  {value:'L',text:'Laminate'},
+  {value:'LI',text:'Linoleum'},
+  {value:'T',text:'Tarrazzo'},
+  {value:'BR',text:'Brick'},
+  {value:'O',text:'Other'},
+])
 
 function type_full_form(value) {
   return 'need to be done';
@@ -177,16 +329,21 @@ function remove_parent(event){
 }
 
 class MdFormInputText{
-  constructor(id,label,icon=null){
-    this.$div = $('<div></div>')
-    .addClass('md-form');
-    this.$input = $('<input></input>').addClass('form-control')
-    .attr('type','text').attr('id',id);
-    this.$label = $('<label></label>').attr('for',id).text(label);
-    this.$div.append(this.$input[0]).append(this.$label[0]);
-    if(icon){
-      this.$icon = $('<i></i>').addClass('prefix grey-text fa fa-'+icon);
-      this.$div.prepend(this.$icon[0]);
+  constructor(id,label,icon=null,hidden=false){
+    if(hidden){
+      this.$input = $('<input></input>').addClass('form-control')
+      .attr('type','hidden').attr('id',id);
+    } else {
+      this.$div = $('<div></div>')
+      .addClass('md-form');
+      this.$input = $('<input></input>').addClass('form-control')
+      .attr('type','text').attr('id',id);
+      this.$label = $('<label></label>').attr('for',id).text(label);
+      this.$div.append(this.$input[0]).append(this.$label[0]);
+      if(icon){
+        this.$icon = $('<i></i>').addClass('prefix grey-text fa fa-'+icon);
+        this.$div.prepend(this.$icon[0]);
+      }
     }
   }
 
@@ -212,12 +369,17 @@ class MdFormCheckbox{
 }
 
 class ChargeFormCheckbox extends MdFormCheckbox{
-  constructor(id,label,data_name){
+  constructor(id,label,data_name,value){
     super(id,label);
     this.$container = $('<div></div>')
     .addClass('flex-vertical-center d-flex justify-content-center col-10 col-md-3 p-0');
     this.$container.append(this.$div[0]);
     this.$input.attr('data-name',data_name);
+    if(value){
+      this.$input.prop('checked',true);
+    } else {
+      this.$input.prop('checked',false);
+    }
   }
 
   get_element(){
@@ -226,10 +388,11 @@ class ChargeFormCheckbox extends MdFormCheckbox{
 }
 
 class ChargeFormInput extends MdFormInputText{
-  constructor(id,label,data_name,icon){
-    super(id,label,icon);
+  constructor(prefix,suffix,form_id,label,icon=null,value){
+    super(prefix+suffix+form_id,label,icon);
     this.$div.addClass('col-12 col-md-4 p-1');
-    this.$input.attr('data-name',data_name);
+    this.$input.attr('name',suffix+form_id)
+    .addClass(suffix).attr('data-name',suffix).val(value);
   }
 }
 
@@ -257,24 +420,38 @@ function fill_form($form,data,attr){
 }
 
 class OtherChargeForm{
-  constructor(prefix,$element){
+  constructor($form,prefix,$element,ad){
     this.form_id = 1;
     this.$forms = $([]);
     this.prefix = prefix;
-    this.$form = get_form($element[0]);
+    this.$form = $form;
     this.$ref = $element;
     this.$form.on('reset',()=>{
       this.remove_all();
     });
-    this.localStorage_key = prefix+'_charges_form';
     this.localStorage_data_key = prefix+'_charges_form_data';
     this.attr = 'data-name';
-    this.string_to_form();
+    if(!ad || (ad && Object.keys(ad).length==0)){
+      $(window).on('form_rendered',()=>{
+        this.string_to_form();
+        $(window).off('form_rendered');
+      });
+      $form.on('delete_local_storage',()=>{
+        localStorage.removeItem(this.localStorage_data_key);
+      });
+    } else {
+      if(ad.charges){
+        for(var charge of ad.charges){
+          this.add_form
+        }
+      }
+    }
   }
 
-  add_form(){
-    var $new_form = this.create_form();
+  add_form(data={amount:'',description:'',is_per_month:null}){
+    var $new_form = this.create_form(data);
     this.append_form($new_form[0]);
+    return $new_form;
   }
 
   append_form(form){
@@ -282,40 +459,44 @@ class OtherChargeForm{
     .before(form);
     this.form_id++;
     this.$forms = this.$forms.add($(form));
-    this.$form.trigger('change');
+    trigger_form_event(this.$forms,'add',this.$form);
+    // this.$form.trigger('change');
     this.attach_change_event($(form));
   }
 
   remove_form($container){
     $container.remove();
     this.$forms = this.$forms.not($container);
-    this.trigger_form();
+    trigger_form_event(this.$forms,'remove',this.$form);
   }
 
   trigger_form(){
-    this.$form.trigger('change');
+    // this.$form.trigger('change');
   }
 
   remove_all(){
+    var total = this.$forms.length;
     this.$forms.remove();
     this.$forms = $([]);
     localStorage.removeItem(this.localStorage_data_key);
-    localStorage.removeItem(this.localStorage_key);
+    if(total>0){
+      trigger_form_event(this.$forms,'remove',this.$form);
+    }
   }
 
   get_forms_count(){
     return this.$forms.length;
   }
 
-  create_form(){
+  create_form(data){
     var $container = $('<div></div>')
-    .addClass('row col-12 w-100 mt-3 other_charges_container container');
-    var amount = new ChargeFormInput(this.prefix+'_charge_amount_'+this.form_id,
-    'Amount','charge_amount','inr');
-    var description = new ChargeFormInput(this.prefix+'_charge_description_'+this.form_id,
-    'Description','charge_description');
+    .addClass('row col-12 w-100 other_charges_container container-fluid');
+    var amount = new ChargeFormInput(this.prefix,'amount',this.form_id,
+    'Amount','inr',data.amount);
+    var description = new ChargeFormInput(this.prefix,'description',this.form_id,
+    'Description','',data.description);
     var is_per_month = new ChargeFormCheckbox(this.prefix+'_charge_is_per_month_'+this.form_id,
-    'Is per month?','charge_is_per_month');
+    'Is per month?','is_per_month',data.is_per_month);
     var remove_button = new RemoveChargeFormButton();
     remove_button.$icon.on('remove',()=>{
       this.remove_form($container);
@@ -340,14 +521,12 @@ class OtherChargeForm{
       return
     }
     for(var data of data_array){
-      var $new_form = this.create_form();
-      this.append_form($new_form[0]);
+      var $new_form = this.add_form();
       fill_form($new_form,data,this.attr);
     }
   }
 
-  form_to_string(){
-    var forms = [];
+  get_data(){
     var data_array = [];
     var attr = this.attr;
     this.$forms.each(function(){
@@ -362,9 +541,13 @@ class OtherChargeForm{
       });
       data_array.push(data);
     });
+    return data_array;
+  }
+
+  form_to_string(){
     localStorage.setItem(
       this.localStorage_data_key,
-      JSON.stringify(data_array)
+      JSON.stringify(this.get_data())
     );
   }
 }
@@ -398,9 +581,19 @@ function get_selectize_configurations(value,remove_button=true){
     render = Object.assign(render,{
       item: function(item,escape){
         return `
-        <div class="item active" data-value="${item.id}">
+        <div class="item active" data-value="${item.id}" data-state="${item.state}" data-region="${item.region}" data-district="${item.district}">
           ${shortForm(item.region)}
           <a href="javascript:void(0)" class="remove" tabindex="-1" title="Remove">×</a>
+        </div>
+        `;
+      }
+    });
+  } else {
+    render = Object.assign(render,{
+      item: function(item,escape){
+        return `
+        <div class="item active" data-value="${item.id}" data-state="${item.state}" data-region="${item.region}" data-district="${item.district}">
+          ${shortForm(item.region)}
         </div>
         `;
       }
@@ -485,10 +678,6 @@ function show_form_field_errors(form,errors){
 
 function isDict(v) {
   return typeof v==='object' && v!==null && !(v instanceof Array) && !(v instanceof Date);
-}
-
-function trace(data,key){
-  console.log(key+':',data);
 }
 
 function isArray(v){
@@ -600,16 +789,9 @@ function login_form_validation(){
                     'url': url,
                     'data': data,
                 }).done((data)=>{
-                  display_message(form,'Logging in.');
-                  if(window.location.pathname=='/account/login'){
-                    setTimeout(()=>{
-                      window.location.href = "/";
-                    },1000);
-                  } else {
-                    setTimeout(()=>{
-                      window.location.reload();
-                    },1000);
-                  }
+                  toastr.success('You are now logged in.');
+                  $(document).trigger('login');
+                  $(form).modal('hide');
                 }).fail((data)=>{
                   display_errors(data,form);
                 }).always((data)=>{
@@ -1019,23 +1201,6 @@ function roomie_ad_form_validation(){
     });
 }
 
-function create_charges_data($form){
-  var $charges_amount=$form.find('[data-name=charge_amount]')
-  var $charges_description=$form.find('[data-name=charge_description]');
-  var $charges_is_per_month=$form.find('[data-name=charge_is_per_month]');
-  var data=[];
-  var i=0;
-  $charges_amount.each(function(el){
-    data.push({
-      amount: $charges_amount[i].value,
-      description: $charges_description[i].value,
-      is_per_month: $charges_is_per_month[i].checked,
-    });
-    i++;
-  });
-  return JSON.stringify(data);
-}
-
 function convert_area_to_gaj(area, no_of_gaj) {
   return parseFloat(area)*parseFloat(no_of_gaj);
 }
@@ -1058,472 +1223,752 @@ function should_validate_other($form,name){
   return $form.find('[name='+name+'] option:selected').first().text().toLowerCase()=='other';
 }
 
-function property_form_validation($form){
-  $form.on('show.bs.modal',function(){
-      url = window.roomie_image_url;
-      height = 2000;
-      width = 12000;
-  });
-  var propertyFormValidator = $form.validate({
-    ignore: '.ignore',
-    rules: {
-      title: {
-        slug: true,
-        maxlength: 70,
-        required: true,
-      },
-      region: {
-        required: true,
-      },
-      address: {
-        required: true,
-      },
-      available_from: {
-        required: true,
-      },
-      total_floors: {
-        required: true,
-        digits: true,
-      },
-      floor_no: {
-        required: true,
-        less_than_total_floors: true,
-        digits: true,
-      },
-      lodging_type: {
-        required: true,
-      },
-      property_type_other: {
-        required: {
-          depends: function (element) {
-            return should_validate_other($form,'lodging_type');
-          }
-        }
-      },
-      furnishing: {
-        required: true,
-      },
-      facilities: {
-        required: false,
-      },
-      halls: {
-        required: true,
-      },
-      rooms: {
-        required: true,
-      },
-      bathrooms: {
-        required: true,
-      },
-      balconies: {
-        required: true,
-      },
-      area: {
-        required: true,
-        number: true,
-      },
-      measuring_unit: {
-        required: {
-          depends: function(){
-            return get_value_using_name($form,'area')!="";
-          }
-        }
-      },
-      flooring: {
-        required: true,
-      },
-      property_flooring_other: {
-        required: {
-          depends: function (element) {
-            return should_validate_other($form,'flooring');
-          }
-        }
-      },
-      rent: {
-        required: true,
-        digits: true
-      },
-      advance_of_months: {
-        required: true,
-        digits: true
-      },
-      property_images: {
-        minimages: 2,
-      },
-    },
-    messages: {
-      property_images: {
-        minlength: jQuery.validator.format('Choose atleast {0} images'),
-      },
-      measuring_unit: {
-        required: 'Measuring unit is required.'
-      }
-    },
-    errorPlacement: function(error, element){
-      if(element.attr('name')=='measuring_unit'){
-        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
-        $(element).parent().after(error[0]);
-      }
-      else if(element.attr('name')=='property_images') {
-        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
-        element.parent().find('add_image').first().after(error[0]);
-      } else if(element.prop('nodeName')=='SELECT'){
-        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px'});
-        element.next().after(error[0]);
-      } else if(element.attr('name')=='area'){
-        error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
-        element.next().after(error[0]);
-      } else {
-        element.after(error[0]);
-      }
-    },
-    errorElement: 'div',
-    submitHandler: function(form,e){
-      e.preventDefault();
-      e.stopPropagation();
-      propertyFormValidator.form();
-      if ($(form).valid()) {
-        var data = {
-          'title': get_value_using_name($(form),'title'),
-          'region': get_value_using_name($(form),'region'),
-          'address': get_value_using_name($(form),'address'),
-          'latlng': get_value_using_name($(form),'property_latlng'),
-          'available_from': get_value_using_name($(form),'available_from'),
-          'total_floors': get_value_using_name($(form),'total_floors'),
-          'floor_no': get_value_using_name($(form),'floor_no'),
-          'lodging_type': get_value_using_name($(form),'lodging_type'),
-          'lodging_type_other': get_value_using_name($(form),'property_type_other'),
-          'furnishing': get_value_using_name($(form),'furnishing'),
-          'facilities': get_value_using_name($(form),'facilities'),
-          'bathrooms': get_value_using_name($(form),'bathrooms'),
-          'balconies': get_value_using_name($(form),'balconies'),
-          'rooms': get_value_using_name($(form),'rooms'),
-          'halls': get_value_using_name($(form),'halls'),
-          'area': convert_area_to_gaj(get_value_using_name($(form),'area'), 
-                    get_value_using_name($(form),'measuring_unit')),
-          'flooring': get_value_using_name($(form),'flooring'),
-          'flooring_other': get_value_using_name($(form),'property_flooring_other'),
-          'rent': get_value_using_name($(form),'rent'),
-          'advance_rent_of_months': get_value_using_name($(form),'advance_rent_of_months'),
-          'other_charges': create_charges_data($(form)),
-          'additional_details': get_value_using_name($(form),'additional_details'),
-          'images': get_value_using_name($(form),'property_images'),
-          'terms_and_conditions': window.termsAndConditions.get_data(),
-        }
-        show_loading($(form));
-        $.ajax({
-          'type': 'POST',
-          'dataType': 'json',
-          'url': window.create_property_url,
-          'data': data,
-          traditional: true,
-        }).done((res)=>{
-          $(form).trigger('done',res);
-        }).fail((data)=>{
-          display_errors(data, form);
-        }).always(()=>{
-          remove_loading(form);
-        })
-      }
-    }
-  });
-}
-
-function get_property_edit_form_html(data){
-  return `
-  <form class="modal fade" id="modalPropertyAdEditForm" 
-  data-backdrop="static" tabindex="-1" role="dialog" 
-  aria-labelledby="myModalLabel" aria-hidden="true"
-  novalidate>
-    <div class="modal-dialog full-width modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header text-center">
-          <h4 class="modal-title w-100 font-weight-bold">Rent Your Property</h4>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body mx-3 row">
-          <div class="md-form mb-4 col-12 m-5px" style="margin-top: 1rem!important">
-            <i class="fa fa-tag prefix grey-text"></i>
-            <input type="text" name="title"
-              value="${data.title}"
-              id="edit_property_title" class="form-control" length="70">
-            <label for="edit_property_title">Title</label>
-          </div>
-
-          <div class="group-heading mb-4">General details</div>
-          <div class="mb-4 col-12 col-lg-10 m-5px">
-            <select name="region" id="edit_property_region"
-            data-placeholder="Search location">
-              <option value="${data.region.id}" selected="selected">
-                ${data.region.name}
-              </option>
-            </select>
-            <label for="edit_property_region">Location</label>
-          </div>
-          <div class="md-form mt-0 mb-4" role="group" aria-label="Basic example">
-            <input type="text" name="address" 
-              id="edit_property_address" 
-              class="form-control"
-              value="${data.address}"
-              id="edit_property_location" 
-              placeholder="Type address or use current location" 
-              aria-label="location name" 
-              aria-describedby="current-location">
-            <label for="edit_property_address">Address</label>
-            <div>
-              <button class="input-group-text btn bg-one btn-primary btn-sm" 
-                onclick="getCurrentLocation(event,'edit_property_address')" 
-                id="edit-current-location">
-                <i class="fa fa-map-marker mr-1"></i>
-                Use current location</button>
-            </div>
-          </div>
-          <input type="hidden" name="property_latlng"
-            value="${data.latlng}"
-            id="edit_property_latlng">
-          <div class="md-form mb-4 col-12 col-md-6 m-5px">
-            <i class="fa fa-calendar prefix grey-text"></i>
-            <input type="text" name="available_from" id="edit_property_available_from" 
-            class="form-control" value="${data.available_from}" required>
-            <label for="edit_property_available_from">Date of availability</label>
-            <div id="edit_datepicker-container"></div>
-          </div>
-          <div class="col-12 mb-4 col-md-6 m-5px">
-            <select name="total_floors" id="edit_property_total_floors">
-              <option value="">Choose total floors</option>
-            </select>
-            <label for="edit_property_total_floors">Total floors</label>
-          </div>
-          <div class="col-12 mb-4 col-md-6 m-5px">
-            <select name="floor_no" id="edit_property_floor_no">
-              <option value="">Choose floor number</option>
-            </select>
-            <label for="edit_property_floor_no">Floor number</label>
-          </div>
-          
-          <div class="group-heading mb-4">Property details</div>
-          <div class="mb-4 col-12 col-md-6 m-5px">
-            <select name="lodging_type" id="edit_property_type" 
-              data-target="other" data-label="Property type">
-              <option value="">Choose type</option>
-              <option value="F">Flat</option>
-              <option value="H">House</option>
-              <option value="P">Paying guest</option>
-              <option value="R">Room(s)</option>
-              <option value="O">Other</option>
-            </select>
-            <label for="edit_property_type">Type</label>
-          </div>
-          <div class="mb-4 col-12 col-md-6 m-5px">
-            <select name="furnishing" id="edit_property_furnishing">
-              <option value="">Choose furnishing</option>
-              <option value="F">Fully Furnished</option>
-              <option value="S">Semi-Furnished</option>
-              <option value="U">UnFurnished</option>
-            </select>
-            <label for="edit_property_furnishing">Furnishing</label>
-          </div>
-          <div class="mb-4 col-12 col-md-6 m-5px">
-            <select name="facilities" id="edit_property_facilities" 
-              multiple="multiple" data-placeholder="Select facilities">
-              <option value="A">Air conditioner</option>
-              <option value="P">Parking</option>
-              <option value="K">Kitchen</option>
-            </select>
-            <label for="edit_property_facilities">Facilities</label>
-          </div>
-          <div class="col-12 mb-4 col-md-6 m-5px">
-            <select name="bathrooms" id="edit_property_bathrooms">
-              <option value="">Choose total bathrooms</option>
-            </select>
-            <label for="edit_poperty_bathrooms">Total Bathrooms</label>
-          </div>
-          <div class="col-12 mb-4 col-md-6 m-5px">
-            <select name="balconies" id="edit_property_balconies">
-              <option value="">Choose total balconies</option>
-            </select>
-            <label for="edit_property_balconies">Total Balconies</label>
-          </div>
-          <div class="col-12 mb-4 col-md-6 m-5px">
-            <select name="rooms" id="edit_property_rooms">
-              <option value="">Choose total rooms</option>
-            </select>
-            <label for="edit_property_rooms">Total Rooms</label>
-          </div>
-          <div class="col-12 mb-4 col-md-6 m-5px">
-            <select name="halls" id="edit_property_halls">
-              <option value="">Choose total halls</option>
-            </select>
-            <label for="edit_property_halss">Total Halls</label>
-          </div>
-          <div class="input-group md-form mb-4 col-12 col-md-8 m-5px" 
-            role="group" aria-label="Area with unit" required>
-            <label for="edit_property_area" style="top: 0">Area (built up)</label>
-            <input type="text" 
-            value="${data.area}"
-            name="area" id="edit_property_area" 
-            class="form-control p-0">
-            <span class="input-group-append" style="width:110px">
-              <select name="measuring_unit" style="width:100%" 
-              id="edit_property_measuring_unit">
-                <option value="">Choose unit</option>
-              </select>
-            </span>
-          </div>
-          <div class="mb-4 col-12 col-md-6 m-5px">
-            <select name="flooring" id="edit_property_flooring" 
-              data-target="other" data-label="Flooring type">
-              <option value="">Choose flooring type</option>
-            </select>
-            <label for="edit_property_flooring">Flooring</label>
-          </div>
-          
-          <div class="group-heading mb-4">Rent details</div>
-          <div class="md-form col-12 col-md-6 m-5px">
-              <i class="fa fa-inr prefix grey-text"></i>
-              <input type="text" 
-              value="${data.rent}"
-              name="rent" id="edit_property_rent" 
-              class="form-control" required>
-              <label for="edit_property_rent">Rent (per month)</label>
-          </div>
-          <div class="md-form col-12 col-md-6 m-5px">
-            <input type="number" name="advance_rent_of_months" 
-            value="${data.advance_rent_of_months}"
-            id="edit_property_advance_of_months" min="1" 
-            class="form-control" required>
-            <label for="edit_property_advance_of_months">
-              Advance rent of months</label>
-          </div>
-          <div class="col-12 mb-4 mt-0">
-            <button class="btn btn-primary btn-sm bg-one" 
-              onclick="create_charge_form(event,'edit_property')" 
-              id="edit_other_charges_button">
-              Add more charges
-            </button>
-            <input type="hidden" name="other_charges">
-          </div>
-          
-          <div class="group-heading mb-4">Additional details</div>
-          <div class="md-form m-5px" style="margin-top: 1rem!important">
-            <i class="fa fa-pencil prefix grey-text"></i>
-            <textarea rows="3" length="1000" 
-            value="${data.additional_details}"
-            placeholder="e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished."
-            class="md-textarea form-control" name="additional_details" 
-            id="property_additional_details"></textarea>
-            <label for="property_additional_details">Additional details</label>
-          </div>
-        
-          <div class="group-heading">Images</div>
-          <select name="property_images" 
-          hidden="true" id="property_images" 
-          multiple="mutiple"></select>
-          <div class="form-row">
-            <div class="col-12">
-              <span class='btn btn-md btn-default text-white ml-0 mt-3 bg-one'
-                name="add_image"
-                id="property_add_image">
-                <i class="fa fa-file-image-o icon"></i> Add image</span>
-            </div>
-          </div>
-          <input type="hidden" name="images">
-          
-        </div>
-        <div class="modal-footer">
-          <div class="text-center col-12 mt-4">
-            <button class="btn color-2" type="submit">Post</button>
-            <button class="red white-text btn"
-            type="delete"
-            onclick="delete_form(event)">
-            Delete</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </form>`;
-}
-
-function show_modal(id){
-  $(id).modal('show');
-}
-
-function show_property_edit_form(data){
-  $('body').append(get_property_edit_form_html(data));
-  var $form = $('#modalPropertyAdEditForm');
-  show_modal('#modalPropertyAdEditForm');
-  create_options_for_property_form_fields($form);
-  select_option($form,data)
-  initialize_region_selectize($form);
-  initialize_facilities_selectize($form);
-  initialize_all_selects($form);
-}
-
-function edit_form_validation(){
-  var $form = $('#modalPropertyAdEditForm');
-  $form.on('done',function(data){
-    toastr.success('Information updated successfully','Saved');
-  });
-  profile_form_validation($form);
-}
-
-class ResetButton{
-  constructor(element){
-    this.button = element;
-  }
-  enable(){
-    $(this.button).removeAttr('disabled');
-  }
-  disable(){
-    $(this.button).attr('disabled','true');
-  }
-}
-
-function num_filled_elements($form){
-  return $form.find('input:filled,select:filled,textarea:filled').length;
-}
-
-class AdFormResetButton extends ResetButton{
-  constructor($form){
-    var element = $form.find('button[type=reset]').first();
-    super(element);
-    this.$form = $form;
-    this.check_to_disable();
-    $form.find('input,select,textarea').on('change',()=>{
-      this.check_to_disable();
-    });
-    $form.on('change',()=>{
-      this.check_to_disable();
-    })
-  }
-
-  check_to_disable(){
-    var filled = num_filled_elements(this.$form);
-    var other_charges_form = this.$form.find('.other_charges_container').length;
-    var images = window.add_image_object.images_count();
-    var termsAndConditions = window.termsAndConditions.$inputs.length;
-    if(filled+other_charges_form+images+termsAndConditions>0){
-      this.enable();
+class BaseInput{
+  constructor($input,id,$form,ad){
+    this.id = id;
+    this.$input = $input;
+    this.current_value = "";
+    if(!ad || (ad && Object.keys(ad).length==0)){
+      $input.on('change',()=>{
+        this.save();
+        var prev_value = this.current_value;
+        this.current_value = this.$input.val();
+        trigger_event(prev_value,this.current_value,$form);
+      });
+      $(window).on('form_rendered',()=>{
+        this.retrieve_from_localStorage();
+        $(window).off('form_rendered');
+        $input.trigger('change');
+      });
+      $form.on('reset',()=>{
+        this.$input.val('').trigger('change');
+      });
+      $form.on('delete_local_storage',()=>{
+        localStorage.removeItem(id);
+      });
     } else {
-      this.disable();
+      $(window).on('form_rendered',()=>{
+        $(window).off('form_rendered');
+        $input.trigger('change');
+      });
+    }
+  }
+
+  retrieve_from_localStorage(){
+    if(localStorage.getItem(this.id)){
+      this.$input.val(localStorage.getItem(this.id)).trigger('change');
+    }
+  }
+
+  save(){
+    localStorage.setItem(this.id,this.$input.val());
+  }
+}
+
+class PropertyInputText extends MdFormInputText{
+  // Adds css classes, name, value, length and group heading to base input class
+  constructor($form,id,label,icon,classes="",value="",name="",length=null,hidden=false,ad){
+    super(id,label,icon,hidden);
+    var base_input = new BaseInput(this.$input,id,$form,ad);
+    this.retrieve_from_localStorage = base_input.retrieve_from_localStorage;
+    this.save = base_input.save;
+    this.id = id;
+    if(!hidden){
+      this.$div.addClass(classes);
+      this.$input.attr('name',name).attr('value',value);
+      if(length) this.$input.attr('length',length);
     }
   }
 }
 
-function set_reset_button_toggle($form){
-  new AdFormResetButton($form);
+class Select{
+  // Creates a select initialized with selectize with options and selected options
+  constructor($form,name,id,placeholder,label,classes,multiple=false,options=[],selected_options=null,region=false, search=false,hidden=false,ad=null){
+    this.id = id;
+    this.$form = $form;
+    this.multiple = multiple;
+    this.region = region;
+    if(hidden){
+      for(var option of selected_options){
+        this.add_option(option,true);
+        this.$select = $(`<select name="${name}" id="${id}"></select>`);
+      }
+      this.current_value="";
+    } else {
+      this.$select = $(`<select name="${name}" id="${id}"></select>`);
+      if(placeholder){
+        this.add_option({value:'',text:placeholder});
+      }
+      if(multiple){
+        this.$select.attr('multiple','multiple');
+      }
+      this.$label = $(`<label for="${id}">${label}</label>`);
+      this.$div = $('<div></div>').addClass(classes).append(this.$select);
+      if(label!=''){
+        this.$div.append(this.$label);
+      }
+      for(var option of options){
+        this.add_option(option);
+      }
+      if(region){
+        if(search){
+          this.$select.selectize(get_selectize_configurations('search'));
+        } else {
+          if(multiple){
+            this.$select.selectize(get_selectize_configurations('property',true));
+          } else {
+            this.$select.selectize(get_selectize_configurations('property',false));
+          }
+        }
+      } else {
+        if(multiple){
+          this.$select.selectize({
+            plugins: ['remove_button'],
+            copyClassesToDropdown: false,
+          });
+        } else {
+          this.$select.selectize({
+            copyClassesToDropdown: false,
+          });
+        }
+      }
+    }
+    this.selectize = this.$select[0].selectize;
+    if(!hidden && selected_options){
+      this.add_selected_options(selected_options);
+    }
+    this.current_value="";
+    if(!ad || (ad && Object.keys(ad).length==0)){
+      this.selectize.on('change',()=>{
+        this.trigger_event();
+        $form.trigger('validate',this.$select);
+      });
+      if(region){
+        this.selectize.on('item_add',(value,$item)=>{
+          this.save(value,$item,true);
+        });
+        this.selectize.on('item_remove',(value,$item)=>{
+          this.save(value,$item,false);
+        })
+      } else {
+        this.selectize.on('change',(value)=>{
+          this.save(value);
+        });
+      }
+      $(window).on('form_rendered',()=>{
+        this.retrieve_from_localStorage();
+      });
+      $form.on('reset',()=>{
+        this.selectize.clear();
+      });
+      $form.on('delete_local_storage',()=>{
+        localStorage.removeItem(id);
+      });
+    }
+  }
+
+  trigger_event(){
+    var prev_value = this.current_value;
+    this.current_value = this.$select.val();
+    trigger_event(prev_value,this.current_value,this.$form);
+  }
+
+  add_selected_options(items){
+    if(this.region){
+      for(var item of items){
+        item = Object.assign(item,{
+          district: item.district.name,
+          state: item.state.name,
+          region: item.name,
+        });
+        this.add_item(item);
+      }
+    } else {
+      if(this.multiple){
+        this.selectize.setValue(items);
+      } else {
+        this.selectize.setValue(items);
+      }
+    }
+  }
+
+  add_option(option,selected=false){
+    var $option = $(`<option value="${option.value}">${option.text}</option>`);
+    if(selected){
+      $option.attr('selected','selected');
+    }
+    this.$select.append($option);
+  }
+
+  save(value,$item=null,added=true){
+    if(this.region){
+      if(added){
+        if(!localStorage.getItem(this.id)){
+          localStorage.setItem(this.id,JSON.stringify([this.get_data(value,$item)]));
+        } else {
+          var items = JSON.parse(localStorage.getItem(this.id));
+          if(items.filter(obj=>obj.id==value).length>0){
+            return
+          }
+          items.push(this.get_data(value,$item));
+          localStorage.setItem(this.id,JSON.stringify(items));
+        }
+      } else {
+        var items = JSON.parse(localStorage.getItem(this.id));
+        localStorage.setItem(this.id,JSON.stringify(items.filter(obj=>obj.id!=value)));
+      }
+    } else {
+      if(this.multiple){
+        localStorage.setItem(this.id,JSON.stringify(value));
+      } else {
+        localStorage.setItem(this.id,value);
+      }
+    }
+  }
+
+  get_data(value,$item){
+    return {
+      id: value,
+      region: $item.attr('data-region'),
+      state: $item.attr('data-state'),
+      district: $item.attr('data-district'),
+    };
+  }
+
+  add_item(item){
+    this.selectize.addOption(item);
+    this.selectize.addItem(item.id);
+  }
+
+  retrieve_from_localStorage(){
+    if(!localStorage.getItem(this.id)){
+      return;
+    }
+    if(this.region){
+      var items = JSON.parse(localStorage.getItem(this.id));
+      for(var item of items){
+        this.add_item(item);
+      }
+    } else {
+      if(this.multiple){
+        var items = JSON.parse(localStorage.getItem(this.id));
+        this.selectize.setValue(items,true);
+      } else {
+        this.selectize.setValue(localStorage.getItem(this.id));
+      }
+    }
+  }
 }
 
-function property_ad_form_validation(){
-  var $form = $('#modalPropertyAdForm');
-  $form.on('done',function(data){
-    toastr.success('New post added','Success');
-    reset_form($form,true);
-  });
-  property_form_validation($form);
-  set_reset_button_toggle($form);
+class PropertyDate extends PropertyInputText{
+  // Extends to use datepicker
+  constructor($form,id,label,icon,classes,value,name,ad){
+    super($form,id,label,icon,classes,value,name,null,false,ad);
+    this.$datepicker_container = $('<div></div>')
+    .addClass('col-12 col-md-6');
+    this.$div.append(this.$datepicker_container);
+    this.$input.Zebra_DatePicker({
+      default_position: 'below',
+      show_icon: false,
+      open_on_focus: true,
+      format: 'd-m-Y',
+      direction: [1,30],
+      container: this.$datepicker_container,
+      show_clear_date: true,
+      show_select_today: true,
+      onSelect: ()=>{
+        this.$input.trigger('change');
+        this.$input.trigger('keyup');
+      },
+      onClear: ()=>{
+        this.$input.trigger('change');
+        this.$input.trigger('keyup');
+      }
+    });
+    this.datepicker = this.$input.data('Zebra_DatePicker');
+    $form.on('reset',()=>{
+      this.datepicker.clear_date();
+      setTimeout(this.datepicker.hide,10);
+      this.$input.trigger('change');
+    });
+  }
+}
+
+class PropertyRoom extends Select{
+  // Common idea for multiple rooms
+  constructor($form,name,id,ad){
+    super($form,name,id+'_'+name,'Choose total '+name,'Total '+name,'col-12 mb-4 col-md-6 m-5px',
+    false,create_options_from_range(0,20),ad.hasOwnProperty(name)?ad[name].toString():null,false,false,false,ad);
+  }
+}
+
+class PropertyAreaGroup{
+  // Area with units to chose from
+  constructor($form,name,id,label,id_unit,name_unit,ad){
+    this.id=id;
+    this.input = new PropertyInputText($form,id,label,'','',
+      ad.area,name,null,false,ad);
+    this.input.$input.addClass('p-0');
+    this.units = new Select($form,name_unit,id_unit,'Choose unit','','w-100',false,
+      Area.get_options(),ad.unit,false,false,false,ad);
+    this.units.$select.next().css({'width':'100%'});
+    this.$input_group_append = $('<span class="input-group-append" style="width:110px"></span>')
+    .append(this.units.$div.children());
+    this.$div = $(`<div class="input-group md-form mt-0 mb-4 col-12 col-md-6 m-5px"></div>`)
+    .append(this.input.$label).append(this.input.$input).append(this.$input_group_append);
+  }
+}
+
+function empty(value){
+  return value=="" || value==[];
+}
+
+function not_empty(value){
+  return value!="" && value!=[];
+}
+
+function trigger_event(prev_value,current_value,$form){
+  if(empty(prev_value) && not_empty(current_value)){
+    // console.trace();
+    $form.trigger('filled');
+  } else if(not_empty(prev_value) && empty(current_value)){
+    // console.trace();
+    $form.trigger('empty');
+  }
+}
+
+class MdFormTextArea extends BaseInput{
+  // Simple text area
+  constructor($form,id,name,placeholder,label,classes,length=1000,rows=3,additional_details="",ad={}){
+    var $textarea = $(`<textarea rows="${rows}" length="${length}" 
+    placeholder="${placeholder}" class="md-textarea form-control" 
+    name="${name}" id="${id}">${additional_details}</textarea>`);
+    super($textarea,id,$form,ad);
+    this.id =id;
+    this.$textarea = $textarea;
+    this.$label = $(` <label for="${id}">${label}</label>`).addClass('active');
+    this.$div = $(`<div class="md-form ${classes}"></div>`)
+    .append(this.$label).append(this.$textarea);
+  }
+}
+
+function create_options_from_range(min,max){
+  var options = [];
+  for(var i=min;i<=max;i++){
+    options.push({
+      value: i,
+      text: i,
+    });
+  }
+  return options;
+}
+
+class MdFormSwitch{
+  constructor(left_text,right_text,name,value){
+    this.$div = $(`<div class="mt-3">${left_text}</div>`);
+    this.$label = $(`<label class="bs-switch"></label>`).appendTo(this.$div);
+    this.$input = $(`<input type="checkbox" name="${name}">`).appendTo(this.$label);
+    if(value) this.$input.prop('checked','true');
+    this.$span = $(`<span class="slider round"></span>`).appendTo(this.$label);
+    this.$div.append(right_text);
+  }
+}
+
+class PropertyAdForm{
+  // Creates a property form to create new property ad. 
+  // If ad is given as argument then it will be used to edit already created property ad.
+  constructor(id,title,ad={}){
+    this.is_new_ad = !ad || (ad && Object.keys(ad).length==0);
+    if(this.is_new_ad){
+      this.url = window.create_property_url;
+      this.method='POST';
+    } else {
+      this.url = get_property_ad_edit_url(ad);
+      this.method='PUT';
+    }
+    this.id=id;
+    this.modal = new Modal(id,title);
+    this.modal.$modal_dialog.addClass('modal-lg');
+    this.modal.$modal_body.addClass('row')
+    .css({'padding':'0', 'padding-left': '2rem','padding-right': '2rem'});
+    this.$form = $('<form></form>').attr('novalidate','true').append(this.modal.$modal);
+    if(!this.is_new_ad){
+      this.is_booked_switch = new MdFormSwitch('Vaccant','Booked','is_booked',ad.is_booked);
+      this.is_booked_switch.$div.appendTo(this.modal.$modal_body);
+    }
+    this.title = new PropertyInputText(this.$form,id+'_title','Title','tag',
+      'mb-4 col-12 m-5px',ad.title,'title','70',false,ad);
+    this.title.$div.css('margin-top','1rem!important');
+    this.location = new Select(this.$form,'region',id+'_region','Start typing...',
+      'Choose location','mb-4 col-12 col-lg-10 m-5px',false,[],
+      ad.region?[ad.region]:null,true,false,false,ad);
+    this.address = new PropertyInputText(this.$form,id+'_address',
+      'Property Address',null,'mt-0 mb-4',ad.lodging?ad.lodging.address:null,
+      'address',150,false,ad);
+    this.$latlng = new PropertyInputText(this.$form,id+'_latlng',null,
+      null,null,ad.latlng,'latlng',null,true,ad);
+    this.date = new PropertyDate(this.$form,id+'_available_from','Date of availability','calendar',
+      'mb-4 col-12 col-md-6 m-5px mt-0',ad.available_from,'available_from',ad);
+    this.total_floors = new Select(this.$form,'total_floors',id+'_total_floors',
+      'Choose total floors','Total floors','col-12 mb-4 col-md-6 m-5px',false,
+      create_options_from_range(1,20),ad.total_floors,false,false,false,ad);
+    this.floor_no = new Select(this.$form,'floor_no',id+'_floor_no','Choose floor number',
+      'Floor number','col-12 mb-4 col-md-6 m-5px',false,create_options_from_range(1,20),
+      ad.floor_no,false,false,false,ad);
+    this.type = new Select(this.$form,'lodging_type',id+'_lodging_type','Choose type',
+      'Property type','mb-4 col-12 col-md-6 m-5px',false,Type.get_options(),
+      ad.lodging_type,false,false,false,ad);
+    this.furnishing = new Select(this.$form,'furnishing',id+'_furnishing','Choose furnishing',
+      'Furnishing','mb-4 col-12 col-md-6 m-5px',false,Furnishing.get_options(),ad.furnishing,
+      false,false,false,ad);
+    this.facilities = new Select(this.$form,'facilities',id+'_facilities','Select facilities',
+      'Facilities','mb-4 col-12 col-md-6 m-5px',true,Facilities.get_options(),
+      ad.facilities?JSON.parse(ad.facilities.replace(/'/g, '"')):null,false,false,false,ad);
+    this.bathrooms = new PropertyRoom(this.$form,'bathrooms',id,ad);
+    this.balconies = new PropertyRoom(this.$form,'balconies',id,ad);
+    this.rooms = new PropertyRoom(this.$form,'rooms',id,ad);
+    this.halls = new PropertyRoom(this.$form,'halls',id,ad);
+    this.area_group = new PropertyAreaGroup(this.$form,'area',id+'_area','Area (built up)',
+      id+'_unit','measuring_unit',ad);
+    this.flooring = new Select(this.$form,'flooring',id+'_flooring',
+      'choose flooring type','Flooring type','col-12 mb-4 col-md-6 m-5px',
+      false,Flooring.get_options(),ad.flooring,false,false,false,ad);
+    this.rent = new PropertyInputText(this.$form,id+'_rent','Rent (per month)','inr',
+      'col-12 col-md-6 m-5px mt-0',ad.rent,'rent',null,false,ad);
+    this.advance_rent_of_months = new PropertyInputText(this.$form,id+'_advance_rent_of_months',
+      'Advance rent of months',null,'col-12 col-md-6 m-5px mt-0',ad.advance_rent_of_months,
+      'advance_rent_of_months',null,false,ad);
+    this.$charge_form_creator = $(`<button type="button" class="btn btn-primary btn-sm bg-one m-0 mt-3"></button>`)
+    .html(`<i class="fa fa-money"></i> Add more charges`).click(()=>{
+      this.charges_form_manager.add_form();
+    });
+    this.$charges_input = $(`<input type="hidden" name="other_charges">`);
+    this.$charge_forms_container = $(`<div class="col-12 mb-4 mt-0 p-0"></div>`).append(this.$charge_form_creator)
+      .append(this.$charges_input);
+    this.details = new MdFormTextArea(this.$form,id+'_additional_details','additional_details',
+      'e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished.','Additional Details',
+      'm-5px',null,3,ad.additional_details,ad);
+    this.$images_button = $(`<span class='btn btn-sm btn-default text-white ml-0 bg-one'>
+      <i class="fa fa-file-image-o"></i> Add image</span>`);
+    this.$images_button_container = $(`<div class="col-12"></div>`).append(this.$images_button);
+    this.$images_container = $('<div class="form-row mb-4"></div>').append(this.$images_button_container);
+    this.$terms_and_condition_ref = $('<div></div>');
+    this.modal.$modal_content.append(this.modal.$modal_footer);
+    this.$post = $(`<button class="btn color-2" type="submit"></button>`);
+    this.$reset = $(`<button class="red white-text btn" type="reset">Reset</button>`);
+    this.$delete = $(`<button class="red white-text btn" type="button">Delete</button>`);
+    this.virtual_tour_link = new PropertyInputText(this.$form,id+'_virtual_tour_link','Virtual tour link','video',
+      'mt-0 mb-4',ad.virtual_tour_link,'virtual_tour_link',null,false,ad);
+    this.$buttons_cotnainer = $(`<div class="text-center col-12 mt-4"></div>`)
+      .append(this.$post)
+    if(this.is_new_ad){
+      this.$buttons_cotnainer.append(this.$reset);
+      this.$reset.click((event)=>{
+        confirm_reset_form(event,this.$form);
+      });
+      this.$post.text('Post');
+    } else {
+      this.$post.text('Save');
+      this.$buttons_cotnainer.append(this.$delete);
+      this.$delete.click(()=>{
+        $.confirm({
+          title: 'Delete - '+ad.title,
+          text: 'This will delete it permanently. Are you sure you want to delete it?',
+          confirm: ()=>{
+            show_loading(this.modal.$modal);
+            $.ajax({
+              url: window.get_property_ad_edit_url(ad),
+              type: 'DELETE',
+            }).done(()=>{
+              this.modal.$modal.modal('hide');
+              this.modal.$modal.on('hidden.bs.modal',()=>{
+                this.$form.remove();
+              });
+              toastr.success('Property successfully deleted');
+              $(document).trigger('remove_post',ad);
+            }).fail((res)=>{
+              toastr.error(res.error,'Error occurred');
+            }).always(()=>{
+              remove_loading(this.modal.$modal);
+            });
+          }
+        });
+      });
+    }
+    this.modal.$modal_footer.append(this.$buttons_cotnainer);
+    this.modal.$modal_body.append(this.title.$div)
+    .append(this.create_group_heading('General details')).append(this.location.$div)
+    .append(this.$latlng).append(this.address.$div).append(this.date.$div)
+    .append(this.total_floors.$div).append(this.floor_no.$div)
+    .append(this.create_group_heading('Property details')).append(this.type.$div)
+    .append(this.furnishing.$div).append(this.facilities.$div)
+    .append(this.bathrooms.$div).append(this.balconies.$div).append(this.rooms.$div)
+    .append(this.halls.$div).append(this.area_group.$div).append(this.flooring.$div)
+    .append(this.create_group_heading('Rent details')).append(this.rent.$div)
+    .append(this.advance_rent_of_months.$div).append(this.$charge_forms_container)
+    .append(this.create_group_heading('Additional details')).append(this.details.$div)
+    .append(this.create_group_heading('Images')).append(this.virtual_tour_link.$div)
+    .append(this.$images_container).append(this.create_group_heading("Terms & Conditions"))
+    .append(this.$terms_and_condition_ref).append($('<div class="mb-3 col-12"></div>'));
+    $('body').append(this.$form);
+    this.image = new AddImage(this.$form,id,this.$images_button,window.image_upload_url,2000,2000,ad);
+    this.charges_form_manager = new OtherChargeForm(this.$form,id,this.$charge_form_creator,ad);
+    this.terms_and_conditions = new TermsAndConditions(this.$form,id,this.$terms_and_condition_ref,ad);
+    this.modal.$modal.on('shown.bs.modal',()=>{
+      $(window).trigger('form_rendered');
+    });
+    this.initialize_validation();
+    if(!ad || (ad && Object.keys(ad).length==0)){
+      this.total_filled_values = 0;
+      this.$form.on('filled',()=>{
+        this.total_filled_values++;
+        this.check_to_enable_reset();
+      });
+      this.$form.on('empty',()=>{
+        this.total_filled_values--;
+        this.check_to_enable_reset();
+      });
+      this.check_to_enable_reset();
+    }
+    this.$form.on('validate',(event,$element)=>{
+      this.propertyFormValidator.element($element);
+    });
+  }
+
+  check_to_enable_reset(){
+    if(this.total_filled_values>0){
+      this.$reset.removeAttr('disabled');
+    } else {
+      this.$reset.attr('disabled','disabled');
+    }
+  }
+
+  create_group_heading(heading){
+    return $(`<div class="group-heading mb-4">${heading}</div>`)
+  }
+  
+  initialize_validation(){
+    var $form = this.$form;
+    url = window.roomie_image_url;
+    height = 2000;
+    width = 2000;
+    this.propertyFormValidator = $form.validate({
+      ignore: [],
+      rules: {
+        title: {
+          slug: true,
+          maxlength: 70,
+          required: true,
+        },
+        region: {
+          required: true,
+        },
+        address: {
+          required: true,
+        },
+        available_from: {
+          required: true,
+        },
+        total_floors: {
+          required: true,
+          digits: true,
+        },
+        floor_no: {
+          required: true,
+          less_than_or_equal_to: this.total_floors.$select,
+          digits: true,
+        },
+        lodging_type: {
+          required: true,
+        },
+        property_type_other: {
+          required: {
+            depends: function (element) {
+              return should_validate_other($form,'lodging_type');
+            }
+          }
+        },
+        furnishing: {
+          required: true,
+        },
+        facilities: {
+          required: false,
+        },
+        halls: {
+          required: true,
+        },
+        rooms: {
+          required: true,
+        },
+        bathrooms: {
+          required: true,
+        },
+        balconies: {
+          required: true,
+        },
+        area: {
+          required: true,
+          number: true,
+          not_equal_zero: true,
+        },
+        measuring_unit: {
+          required: {
+            depends: function(){
+              return get_value_using_name($form,'area')!="";
+            }
+          }
+        },
+        flooring: {
+          required: true,
+        },
+        property_flooring_other: {
+          required: {
+            depends: function (element) {
+              return should_validate_other($form,'flooring');
+            }
+          }
+        },
+        rent: {
+          required: true,
+          digits: true,
+          not_equal_zero: true,
+        },
+        advance_rent_of_months: {
+          required: true,
+          digits: true,
+          not_equal_zero: true,
+        },
+        images: {
+          minimages: 2,
+        },
+        virtual_tour_link: {
+          remote: window.validate_tour_link_url
+        }
+      },
+      messages: {
+        property_images: {
+          minlength: jQuery.validator.format('Choose atleast {0} images'),
+        },
+        measuring_unit: {
+          required: 'Measuring unit is required.'
+        },
+        floor_no: {
+          less_than_or_equal_to: 'Floor number may not be greater than total floors'
+        },
+        virtual_tour_link: {
+          remote: 'Please enter a valid kuula link'
+        }
+      },
+      errorPlacement: function(error, element){
+        if(element.attr('name')=='measuring_unit'){
+          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
+          $(element).parent().after(error[0]);
+        }
+        else if(element.attr('name')=='property_images') {
+          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
+          element.parent().find('add_image').first().after(error[0]);
+        } else if(element.prop('nodeName')=='SELECT'){
+          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px'});
+          element.next().after(error[0]);
+        } else if(element.attr('name')=='area'){
+          error.css({'margin':'0.5rem 0 0 0','margin-left':'0px',width: '100%'});
+          element.next().after(error[0]);
+        } else {
+          if(!element.prev() || !element.prev().hasClass('prefix')){
+            error.css({'margin':'0.5rem 0 0 0'});
+          }
+          element.after(error);
+        }
+      },
+      onkeyup: (element,event)=>{
+        this.propertyFormValidator.element($(element));
+      },
+      errorElement: 'div',
+      submitHandler: (form,e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        this.propertyFormValidator.form();
+        if ($form.valid()) {
+          var data = {
+            'title': this.title.$input.val(),
+            'region': this.location.selectize.getValue(),
+            'address': this.address.$input.val(),
+            // 'latlng': this.$latlng.val(),
+            'available_from': this.date.$input.val(),
+            'total_floors': this.total_floors.selectize.getValue(),
+            'floor_no': this.floor_no.selectize.getValue(),
+            'lodging_type': this.type.selectize.getValue(),
+            'lodging_type_other': '',
+            'furnishing': this.furnishing.selectize.getValue(),
+            'facilities': this.facilities.selectize.getValue(),
+            'bathrooms': this.bathrooms.selectize.getValue(),
+            'balconies': this.balconies.selectize.getValue(),
+            'rooms': this.rooms.selectize.getValue(),
+            'halls': this.halls.selectize.getValue(),
+            'area': this.area_group.input.$input.val(), 
+            'unit': this.area_group.units.selectize.getValue(),
+            'flooring': this.flooring.selectize.getValue(),
+            'flooring_other': '',
+            'rent': this.rent.$input.val(),
+            'advance_rent_of_months': this.advance_rent_of_months.$input.val(),
+            'other_charges': JSON.stringify(this.charges_form_manager.get_data()),
+            'additional_details': this.details.$input.val(),
+            'images': this.image.$images_elem.val(),
+            'terms_and_conditions': JSON.stringify(this.terms_and_conditions.get_data()),
+            'virtual_tour_link': this.virtual_tour_link.$input.val(),
+          }
+          show_loading($form);
+          $.ajax({
+            'type': this.method,
+            'dataType': 'json',
+            'url': this.url,
+            'data': data,
+            traditional: true,
+          }).done((res)=>{
+            if(this.is_new_ad){
+              $(window).trigger('add_post',res.ad);
+              toastr.success(res.ad.title,'Post Created');
+              $form.trigger('delete_local_storage');
+              this.modal.$modal.modal('hide');
+              this.modal.$modal.on('hidden.bs.modal',()=>{
+                window.property_forms_manger.delete_form(this.id);
+              });
+            } else {
+              toastr.success(res.ad.title,'Post Saved');
+              $(window).trigger('update_ad',res.ad);
+            }
+          }).fail((data)=>{
+            display_errors(data, $form);
+          }).always(()=>{
+            remove_loading($form);
+          })
+        }
+      }
+    });
+  }
+}
+
+class PropertFormsManager {
+  constructor(){
+    this.forms = {};
+  }
+  open_form(id,title,ad){
+    if(!this.forms[id]){
+      this.forms[id] = new PropertyAdForm(id,title,ad);
+    }
+    this.forms[id].modal.$modal.modal('show');
+  }
+  delete_form(id){
+    this.forms[id].$form.remove();
+    delete this.forms[id];
+  }
+}
+
+function open_property_form(id,title,ad={}){
+  if(!window.property_forms_manger){
+    window.property_forms_manger = new PropertFormsManager();
+  }
+  window.property_forms_manger.open_form(id,title,ad);
 }
 
 function set_password_form_validation(){
@@ -1750,12 +2195,15 @@ function custom_validators(){
       }
       return true;
     },'Type other value.');
-    jQuery.validator.addMethod('less_than_total_floors',function(value,element){
-      return $(element).val()<=$('#property_total_floors').val();
-    },'Floor number cannot be greater than total floors.');
+    jQuery.validator.addMethod('less_than_or_equal_to',function(value,element,params){
+      return $(element).val()<=params.val();
+    },'');
     jQuery.validator.addMethod('minimages',function(value,element){
       return $(element).val().length>=2;
-    },'');
+    },'Atleast two images are required');
+    jQuery.validator.addMethod('not_equal_zero',function(value,element){
+      return $(element).val()!=0;
+    },'Zero is not a valid value');
 }
 
 function write_character_count(this_,length,span){
@@ -1781,16 +2229,6 @@ function set_character_count(){
     $('input[length],textarea[length]').focusout(function(){
       $(this).parent().children('.character-counter').remove()
     });
-}
-
-function set_footer(){
-    var offset = $('footer').offset();
-    var windowHeight = $(window).height();
-    if(offset.top<windowHeight){
-        $('footer').css({'position': 'relative','top':windowHeight-offset.top,'width':'100%'});
-    }
-    var height = $('#center').height();
-    $('#center').css({'margin-top':(windowHeight/2-height/2-$('body').css('padding-top'))+'px'});
 }
 
 function set_custom_alerts(){
@@ -1821,44 +2259,20 @@ function set_custom_alerts(){
     });
 }
 
-function set_logout(){
-    $('[data-action=logout]').click(function(){
-      show_loading();
-      $.ajax({
-        type: 'POST',
-        url: window['API_PREFIX'] + 'account/logout/',
-        data: {
-          empty: ''
-        }
-      }).always((data)=>{
-        remove_loading();
-        toastr.success('Success!','Logged out');
-        setTimeout(function(){
-          window.location.reload();
-        },0);
-      });
-    });
-}
-
-function create_options(min_val,max_val,j_el){
-  for(var i=min_val;i<=max_val;i++){
-      var option = document.createElement('option');
-      $(option).val(i);
-      $(option).text(i);
-      j_el.append(option);
-  }
-}
-
-function create_options_from_array(j_el,text,value){
-  for(var i in text){
-    var option = document.createElement('option');
-    $(option).val(value[i]);
-    $(option).text(text[i]);
-    j_el.append(option);
-  }
+function logout(){
+  show_loading();
+  $.ajax({
+    type: 'POST',
+    url: window['API_PREFIX'] + 'account/logout/',
+  }).always((data)=>{
+    remove_loading();
+    toastr.success('Your are now logged out');
+    $(document).trigger('logout');
+  });
 }
 
 class Modal{
+  // Creates a simple modal with header and body
   constructor(id,title,close_button=true){
     this.$modal = $('<div></div>')
     .addClass('modal fade')
@@ -1872,28 +2286,27 @@ class Modal{
     .addClass('modal-header');
     this.$modal_title = $('<h5></h5>')
     .addClass('modal-title')
-    .text(title);
+    .html(title);
     this.$modal_header.append(this.$modal_title);
     if(close_button){
-      this.$modal_header.append(`
-      <button type="button" class="close" 
-        data-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>`);
+      this.$close_button = $(`<button type="button" class="close" 
+      data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>`);
+      this.$modal_header.append(this.$close_button);
     }
     this.$modal_body = $('<div></div>').addClass('modal-body minh-500');
     this.$modal_footer = $('<div></div>').addClass('modal-footer');
     this.$modal.append(this.$modal_dialog);
     this.$modal_dialog.append(this.$modal_content);
     this.$modal_content.append(this.$modal_header)
-    .append(this.$modal_body)
-    .append(this.$modal_footer);
+    .append(this.$modal_body);
     $('body').append(this.$modal);
   }
 
   remove_on_close(){
+    this.$modal.remove();
     this.$modal.on('hidden.bs.modal',()=>{
-      this.$modal.remove();
     });
   }
 }
@@ -1913,14 +2326,56 @@ class AdLink{
   }
 }
 
+class VirtualTour{
+  // ref and link to create vr view using kuula embed link
+  constructor($ref,link){
+    var first_time = true;
+    $ref.click(()=>{
+      if(first_time){
+        this.modal = new Modal('vrview','Virtual Tour');
+        this.modal.$modal.modal('show').css({'width':'100%'});
+        this.modal.$modal_body.css({'margin':'0','padding':'0'});
+        this.modal.$modal_dialog.css({'margin':'0'});
+        this.modal.$modal.on('shown.bs.modal',()=>{
+          show_loading(this.modal.$modal);
+          var frame_height = $(window).height()-this.modal.$modal_body[0].offsetTop;
+          this.modal.$modal_dialog.css({'max-width':'100%','width':'100%',
+            'height':$(window).height(),'max-height':$(window).height()});
+          this.modal.$modal_body.css({'height':frame_height});
+          this.$iframe = $('<iframe></iframe>').attr('width','100%').attr('height',frame_height)
+          .css({'border':'none','max-width':'100%','frameborder':'0'})
+          .attr('allow','vr,gyroscope,accelerometer,fullscreen')
+          .attr('scrolling','no').attr('allowfullscreen','true')
+          .attr('src',link);
+          this.$iframe.on('load',()=>{
+            remove_loading(this.modal.$modal);
+            this.$iframe.off('load');
+          });
+          this.modal.$modal_body.append(this.$iframe);
+          this.modal.$modal.off('shown.bs.modal');
+        });
+        first_time=false;
+      } else {
+        this.modal.$modal.modal('show');
+      }
+    });
+  }
+}
+
 class AdLinks{
   constructor(ad){
     this.$container = $('<div></div>').addClass('row m-0 links');
     if(ad.images.length>0) {
       this.zoom = new AdLink('Zoom','fa fa-search-plus');
       this.$container.append(this.zoom.$link_container);
+      new FullScreenCarousel(this.zoom.$link_container,ad);
     }
-    this.view_details = new AdLink('View Details','fa fa-external-link');
+    if(ad.virtual_tour_link){
+      this.virtual_tour_link = new AdLink('Tour','fa fa-video-camera');
+      new VirtualTour(this.virtual_tour_link.$link_container,ad.virtual_tour_link);
+      this.$container.append(this.virtual_tour_link.$link_container);
+    }
+    this.view_details = new AdLink('Details','fa fa-external-link');
     this.view_details.add_click_event(redirect_to_ad_detail_view,ad.id)
     this.$container.append(this.view_details.$link_container);
   }
@@ -1929,7 +2384,7 @@ class AdLinks{
 class AdDetailItem{
   constructor(text,icon,value){
     this.$li = $('<li></li>')
-    .addClass('col p-0 white-text');
+    .addClass('col-4 p-0 white-text');
     this.$text_container = $('<div></div>')
     .addClass('light-brown-text');
     this.$text = $('<small></small>');
@@ -1954,17 +2409,19 @@ class AdDetailItem{
 class AdDetails{
   constructor(ad){
     this.$ul = $('<ul></ul>')
-    .addClass('list-unstyled row p-0 ml-0 mr-0 font-small');
+    .addClass('list-unstyled row p-0 ml-0 m-0 font-small');
     this.rent = new AdDetailItem('Rent','fa fa-inr',ad.rent);
+    this.rent.$li.removeClass('col-4').addClass('col-3');
     if(ad.lodging_type=='O'){
       this.type = new AdDetailItem('Type','fa fa-home',ad.lodging_type_other);
     } else {
-      this.type = new AdDetailItem('Type','fa fa-home',type_full_form(ad.lodging_type));
+      this.type = new AdDetailItem('Type','fa fa-home',Type.get_option(ad.lodging_type).text);
     }
     this.available_from = new AdDetailItem('Available from','fa fa-clock-o',ad.available_from);
+    this.available_from.$li.addClass('col-5').removeClass('col-4');
     this.$container = $('<div></div>').css('height','fit-content')
     .addClass('rounded-bottom mdb-color lighten-3 text-center pt-3')
-    .append(this.$ul);
+    .append(this.$ul).css({'padding-bottom':'0.5rem'});
     this.$ul.append(this.rent.$li)
     .append(this.type.$li)
     .append(this.available_from.$li);
@@ -2006,12 +2463,27 @@ class CarouselIndicator{
 }
 
 class CarouselItem{
-  constructor(i,image){
-    this.img_element = new ImageCard(image,image.image_thumbnail,image.tag,i);
-    this.$caption = $('<div></div>').addClass('carousel-caption')
-    .text(Tags.get_tag_text(image.tag));
-    this.$item = $('<div></div>').addClass('carousel-item')
-    .append(this.img_element.$img_cover).append(this.$caption);
+  constructor(i,image,type){
+    if(type==2){
+      this.img_element = new ImageCard(image,image.image,image.tag,i,type);
+    } else if(type==0) {
+      this.img_element = new ImageCard(image,image.image_thumbnail,image.tag,i,type);
+    } else {
+      this.img_element = new ImageCard(image,image.image_mobile,image.tag,i,type);
+    }
+    try{
+      this.$caption = $('<div></div>').addClass('carousel-caption')
+      .text(Tag.get_option(image.tag).text);
+    } catch(e){
+      this.$caption = $('<div></div>').addClass('carousel-caption')
+      .text('');
+    }
+    this.$item = $('<div></div>').addClass('w-100 minh-200')
+    .css({'text-align':'center'})
+    .append(this.img_element.$img).append(this.$caption);
+    if(type==2){
+      this.$item.addClass('h-100');
+    }
     if(i==0){
       this.$item.addClass('carousel-item active');
     } else {
@@ -2052,8 +2524,12 @@ class CarouselControlPrev extends CarouselControl{
   }
 }
 
+// type 0 - ad on all ads page
+// 1 - ad on details ad page
+// 2 - full screen carousel
 class Carousel{
-  constructor(id,images){
+  constructor(id,images=[],type=0){
+    this.type = type;
     this.$carousel = $('<div></div>').attr('id',id)
     .attr('data-pause','true').attr('data-ride',"false")
     .addClass("carousel slide carousel-fade");
@@ -2066,122 +2542,58 @@ class Carousel{
     if(images.length>0){
       this.$carousel.append(this.next_control.$control)
       .append(this.prev_control.$control);
+    } else {
+      this.add_item(0,{});
     }
     for(var i in images){
       this.add_indicator(id,i);
       this.add_item(i,images[i]);
     }
-    set_carousel(this.$carousel);
+    set_carousel(this.$carousel,type);
   }
 
   add_indicator(id, i) {
     var indicator = new CarouselIndicator(id,i);
     this.$carousel_indicators.append(indicator.$indicator);
   }
+
   add_item(i, image) {
-    this.item = new CarouselItem(i,image);
+    this.item = new CarouselItem(i,image,this.type);
     this.$carousel_inner.append(this.item.$item);
   }
 }
 
 class Image{
   constructor(src,alt,index=0){
-    this.$img = $('<img>').attr('alt',alt);
-    if(index>0){
-      this.$img.attr('data-src',src)
-      .attr('src',window.STATIC_URL+'images/Spinner-1s-51px.gif');
-    } else {
-      this.$img.attr('src',src);
-    }
-  }
-}
-
-class PanzoomIcon{
-  constructor(icon){
-    this.$i = $(`<i class="fa fa-${icon} fa-lg"></i>`);
-  }
-}
-
-class FullView{
-  constructor(image){
-    this.modal = new Modal('image_360',image.tag);
-    this.modal.$modal_body.attr('id','vrview');
-    this.modal.$modal.modal('show');
-    var vrView = new VRView.Player('#vrview', {
-      image: image.image,
-      is_stereo: false
-    });
-    vrView.on('error',()=>{
-      this.$img = $(`<img src="${image.image}" alt="${image.tag}">`);
-      this.modal.$modal_body.append(this.$img);
-      this.$img.panzoom({
-        increment: 0.3,
-        panOnlyWhenZoomed: true,
-        minScale: 1,
-        maxScale: 3,
-        contain: 'invert',
-      });
-      var $image_zoom_in = new PanzoomIcon('search-plus');
-      var $image_zoom_out = new PanzoomIcon('search-minus');
-      var $reset = new PanzoomIcon('');
-      $image_zoom_in.click(()=>{
-        this.$img.panzoom('zoom');
-      });
-      $image_zoom_out.click(()=>{
-        this.$img.panzoom('resetPan');
-        this.$img.panzoom('zoom',true);
-      });
-      $reset.click(()=>{
-        this.$img.panzoom('reset');
-      });
-      this.modal.$modal_body.append($image_zoom_in)
-      .append($image_zoom_out)
-      .append($reset);
-    })
+    this.$img = $('<img>').attr('alt',alt).addClass('center-element');
+    this.$img.attr('data-src',src)
+    .attr('src',window.STATIC_URL+'images/Spinner-1s-51px.gif');
   }
 }
 
 class ImageCard extends Image{
-  constructor(image,src=null,alt=null,index=null){
+  constructor(image,src=null,alt=null,index=null,type){
     if(!src){
       super(window.STATIC_URL+'images/No-image-available.jpg','no image available');
     } else {
       super(src,alt,index);
     }
-    this.$img.addClass('d-block');
-    this.$icon360 = $(`<img src="${window.STATIC_URL}images/360.png">`)
-    .css({'display':'none','position':'absolute','cursor':'pointer',
-    'width':'50px','height':'50px'}).click(()=>{
-      new FullView(image);
-    });
-    this.$img_cover = $('<div></div>')
-    .addClass('view card-img-top justify-content-center minh-200 align-items-center d-flex')
-    .append(this.$img);
-    if(src){
-      this.$img_cover.append(this.$icon360).hover(()=>{
-        if(!this.$img.attr('data-src')){
-          if(this.$icon360.css('display')=='none'){
-            this.$icon360.css('display','block');
-          } else {
-            this.$icon360.css('display','none');
-          }
-        }
-      });
-    }
+    // this.$img_cover = $('<div></div>')
+    // .addClass('view card-img-top m-auto').append(this.$img)
+    // .css({'width':'fit-content','max-width':'100%',
+    // 'display':'inline-block','max-height':'100%','vertical-align':'middle'});
+    // if(type==2){
+    //   this.$img_cover.css({'height':'100%'});
+    // }
   }
 }
 
 class Ad{
-  constructor(ad){
+  constructor(prefix,ad){
     this.card = new Card();
     this.card.$card.addClass('w-270 p-0');
-    if(ad.images.length==0){
-      this.image = new ImageCard(ad.images[0]);
-      this.card.add_image(this.image.$img_cover);
-    } else {
-      this.carousel = new Carousel('my_ad_'+ad.id,ad.images);
-      this.card.add_carousel(this.carousel.$carousel);
-    }
+    this.carousel = new Carousel(prefix+'_my_ad_'+ad.id,ad.images);
+    this.card.add_carousel(this.carousel.$carousel);
     this.ad_details = new AdDetails(ad);
     this.ad_links = new AdLinks(ad);
     this.card.$card_body.append(this.ad_links.$container)
@@ -2190,42 +2602,127 @@ class Ad{
 }
 
 class MyAd extends Ad{
-  constructor(ad){
-    super(ad);
+  constructor(prefix,ad){
+    super(prefix,ad);
+    this.$edit = $(`<div class="cursor-pointer color-5 text-center text-white p-2">
+      <i class="fa fa-pencil"></i> Edit</div>`)
+    .click(()=>{
+      open_property_form('edit_form_'+ad.id,'Edit Ad - '+ad.title,ad);
+    });
+    this.card.$card_body.append(this.$edit);
   }
 }
 
-class MyAds {
-  constructor(ads){
-    this.modal = new Modal('myAdsModal','My Ads');
-    this.modal.$modal_dialog.addClass('modal-lg');
-    for(var ad of ads) {
-      var ad = new MyAd(ad);
-      this.modal.$modal_body.append(ad.card.$card);
-    }
-    var ads = new Ads(this.modal.$modal_body);
-    this.modal.$modal.modal('show');
-    this.modal.remove_on_close();
+function region_exists(ad){
+  if(window.regions_selected){
+    return window.regions_selected.findIndex(obj=>obj.id==ad.region.id)>-1;
   }
+  return false;
 }
 
 class Ads{
-  constructor($ref,myads=false){
-    for(var ad of ads) {
-      if(myads){
-        var ad_object = new MyAd(ad);
-      } else {
-        var ad_object = new Ad(ad);
+  constructor(prefix,$ref,ads,ismyads=false){
+    this.page = 1;
+    this.prefix = prefix;
+    this.ismyads = ismyads;
+    this.ads = ads;
+    this.$ref = $ref;
+    this.$ads = $([]);
+    this.render_ads();
+    $(window).on("add_post",(event, ad)=>{
+      if(ismyads){
+        this.append_ad(ad);
+      } else if(region_exists(ad)) {
+        this.append_ad(ad);
       }
-      $ref.append(ad_object.card.$card);
+    });
+    $(window).on("remove_post",(event, ad)=>{
+      if(ismyads){
+        this.remove_ad(ad);
+      } else if(region_exists(ad)) {
+        this.remove_ad(ad);
+      }
+    });
+    $(window).on('update_ad',(event, ad)=>{
+      this.update_ad(ad);
+    });
+    this.is_more_ads_loading = false;
+    if(!ismyads && window.has_next_page==='True'){
+      this.append_load_more_button();
     }
-    show_loading($ref);
-    this.$grid = $ref.masonry({
+    $(document).on('re-render-ads',(ev,ads,has_next_page)=>{
+      this.rerender_ads(ads);
+      if(this.$load_more_button_container && (has_next_page==='False' || has_next_page===false)){
+        this.$load_more_button_container.remove();
+      } else if(!this.$load_more_button_container && (has_next_page==='True' || has_next_page===true)) {
+        this.append_load_more_button();
+      }
+    });
+  }
+
+  create_ad(ad){
+    if(this.ismyads){
+      return new MyAd(this.prefix,ad);
+    }
+    return new Ad(this.prefix,ad);
+  }
+
+  append_load_more_button(){
+    this.$load_more_button = $(`<button type="button" class="btn btn-md color-2">Load more properties...</button>`).click(()=>{
+      this.page++;
+      if(this.is_more_ads_loading){
+        return
+      }
+      this.is_more_ads_loading=true;
+      $.ajax({
+        url: window.get_paginated_ads_url(this.page),
+        type: 'GET',
+        data: {
+          regions: $('#id_region').val(),
+        }
+      }).done((res)=>{
+        this.ads = this.ads.concat(res.ads);
+        for(var ad of res.ads){
+          this.append_ad(ad);
+        }
+        if(res.has_next_page==='False' || res.has_next_page===false){
+          this.$load_more_button_container.remove();
+          this.$load_more_button_container = null;
+        }
+      }).always(()=>{
+        this.is_more_ads_loading=false;
+      });
+    });
+    this.$load_more_button_container=$('<div style="text-align: center;"></div>').append(this.$load_more_button);
+    this.$ref.after(this.$load_more_button_container);
+  }
+
+  render_ads(){
+    if(this.$ref.masonry){
+      this.$ref.masonry('destroy');
+    }
+    this.$ads.remove();
+    this.$ads = $([]);
+    if(this.ads.length===0){
+      this.$no_property_message = $('<div class="no_property_message btn color-2 btn-sm">No property to show</div>');
+      this.$ref.append(this.$no_property_message);
+      return;
+    } 
+    if(this.$no_property_message){
+      this.$no_property_message.remove();
+    }
+    for(var ad of this.ads) {
+      var $ad_object = this.create_ad(ad).card.$card;
+      this.$ref.append($ad_object);
+      this.$ads = this.$ads.add($ad_object);
+    }
+    show_loading(this.$ref);
+    this.$grid = this.$ref.masonry({
       columnWidth: 270,
       gutter: 20,
     });
-    $ref.children('.card').find('.carousel').each(()=>{
-      $(this).on('slid.bs.carousel', ()=>{
+    this.$ref.children('.card').find('.carousel').each((index,el)=>{
+      $(el).on('slid.bs.carousel', ()=>{
         this.$grid.masonry('layout');
       });
     });
@@ -2234,42 +2731,89 @@ class Ads{
       setTimeout(()=>{
         this.$grid.masonry('layout');
       },2000);
-      remove_loading($ref);
+      remove_loading(this.$ref);
     });
+  }
+
+  update_ad(ad){
+    var ad_index = this.ads.findIndex(obj=>obj.id==ad.id);
+    if(ad_index>-1){
+      this.ads[ad_index]=ad;
+      this.render_ads();
+    }
+  }
+
+  append_ad(ad){
+    var $ad_object = this.create_ad(ad).card.$card;
+    this.$ads = this.$ads.add($ad_object);
+    this.$grid.append($ad_object)
+    .masonry('appended',$ad_object);
+  }
+
+  remove_ad(ad){
+    this.ads = this.ads.filter(obj=>obj.id!=ad.id);
+    this.render_ads();
+  }
+
+  reset_masonry(){
+  }
+
+  rerender_ads(ads){
+    this.page = 1;
+    this.ads=ads;
+    this.render_ads();
+  }
+}
+
+function calc_ads_container_width(max_ads=5){
+  var window_width = $(window).width();
+  var container_width;
+  var ad_width = 270;
+  while(max_ads>1){
+    container_width=max_ads*ad_width+16*2+(max_ads-1)*20;
+    if(container_width<window_width){
+      return container_width;
+    }
+    max_ads--;
+  }
+  return window_width;
+}
+
+class MyAds extends Ads {
+  constructor(prefix,ads){
+    var modal = new Modal('myAdsModal','My Ads');
+    super(prefix,modal.$modal_body,ads,true);
+    this.modal = modal;
+    this.modal.$modal_dialog.addClass('modal-lg')
+    .css('max-width',calc_ads_container_width(3));
+    this.modal.$modal.modal('show');
   }
 }
 
 class PropertyAds extends Ads{
-  constructor(ads){
+  constructor(prefix,ads){
     var $container= $('#ads_wrapper');
-    super($container);
-  }
-
-  append_ad(ad){
-    // TODO append ad if ad's location is in current locations
-    var ad_object = new Ad(ad);
-    this.$grid.append(ad_object.card.$card)
-    .masonry('appended',ad_object.card.$card);
-  }
-
-  remove_ad($elem){
-    this.$grid.masonry('remove',$elem).masonry('layout');
+    super(prefix,$container,ads);
   }
 }
 
 function get_my_ads(){
-  $.ajax({
-    url: window.my_ads_url,
-    beforeSend: function(){
-      show_loading();
-    }
-  }).done(function(res){
-    var myAds = new MyAds(JSON.parse(res.data));
-  }).fail(function(){
-    toastr.error("Unable to get your ads","Error");
-  }).always(function(){
-    remove_loading();
-  });
+  if(window.myads){
+    window.myads.modal.$modal.modal('show');
+  } else {
+    $.ajax({
+      url: window.my_ads_url,
+      beforeSend: function(){
+        show_loading();
+      }
+    }).done(function(res){
+      window.myads = new MyAds('my_property',JSON.parse(res.data));
+    }).fail(function(){
+      toastr.error("Unable to get your ads","Error");
+    }).always(function(){
+      remove_loading();
+    });
+  }
 }
 
 function initialize_editable(id,_this,obj={},callback=()=>{}){
@@ -2278,7 +2822,7 @@ function initialize_editable(id,_this,obj={},callback=()=>{}){
     pk: id,
     url: window.tag_url,
     title: 'Choose tag',
-    source: Tags.get_tags(),
+    source: Tag.get_options(),
     mode: 'inline',
     emptytext: 'Add tag',
     showbuttons: false,
@@ -2378,19 +2922,6 @@ function create_modal_to_add_tag(res){
   });
 }
 
-function get_image_id(form=null){
-  if(form){
-    if(form[0].id=='modalPropertyAdForm'){
-      return '#property_images';
-    }
-  }
-  var image_id='#id_images';
-  if(window.prefix){
-    image_id='#'+window.prefix+'_images';
-  }
-  return image_id;
-}
-
 function set_prefix(id){
   var arr=id.split('_');
   var prefix=null;
@@ -2401,31 +2932,6 @@ function set_prefix(id){
 }
 
 var image_uploading = false;
-
-function formToString(filledForm,select_ids) {
-  formObject = new Object;
-  filledForm.find("input, select, textarea").each(function() {
-    var id=this.id;
-    if (this.id) {
-      $elem = $(this);
-      if(select_ids.includes(this.id)){
-        list = [];
-        $(this).find('option[selected]').each(function(){
-          list.push($('#'+id)[0].selectize.options[$(this).val()]);
-        });
-        formObject[this.id] = list;
-      } else {
-        if ($elem.attr("type") == 'checkbox' || $elem.attr("type") == 'radio') {
-          formObject[this.id] = $elem.is(":checked");
-        } else {
-          formObject[this.id] = $elem.val();
-        }
-      }
-    }
-  });
-  formString = JSON.stringify(formObject);
-  return formString;
-}
 
 function delete_from_localstorage(image_id,$form){
   if(!$form){
@@ -2477,73 +2983,6 @@ function delete_image(event,image_id,$form=null,callback=()=>{}){
   });
 }
 
-function create_images_container(id) {  
-  var div = document.createElement('div');
-  div.id = id+'_contain';
-  div.className = 'images_container';
-  return div;
-}
-
-function stringToForm(formString, unfilledForm, select_ids) {
-  if(!formString){
-    return;
-  }
-  formObject = JSON.parse(formString);
-  unfilledForm.find("input, select, textarea").each(function() {
-      if (this.id) {
-        var id = this.id;
-        var $elem = $(this);
-        if(select_ids.includes(id)){
-          var items = formObject[id];
-          for(var i in items){
-            if(items[i]){
-              $('#'+id)[0].selectize.addOption(items[i]);
-              $('#'+id)[0].selectize.addItem(items[i].id);
-            }
-          }          
-        } else {
-          if ($elem.attr("type") == "checkbox" || $elem.attr("type") == "radio" ) {
-            $elem.prop("checked", !!formObject[id]).trigger('change');
-          } else {
-            $elem.val(formObject[id]).trigger('change');
-            if($elem[0].selectize){
-              if(formObject[id] && formObject[id].constructor === Array){
-                for(var i in formObject[id]){
-                  $elem[0].selectize.addItem(formObject[id][i]);
-                }
-              } else {
-                $elem[0].selectize.addItem(formObject[id]);
-              }
-            }
-          }
-        }
-      }
-  });
-
-  // if(unfilledForm.attr('id')=='modalPropertyAdForm'){
-  //   $el = $('#other_charges_button');
-  //   var htmlString=localStorage.getItem('property_other_charges');
-  //   if(!htmlString){
-  //     return
-  //   }
-  //   var htmlList=JSON.parse(htmlString);
-  //   if(!htmlList || htmlList.constructor!==Array){
-  //     return
-  //   }
-  //   for(var html of htmlList){
-  //     $el.parent().before(html);
-  //     charge_form_id++;
-  //     $el.parent().prev().find('input,checkbox').each(function(){
-  //       if($(this).attr("type") == "checkbox" || $(this).attr("type") == "radio" ){
-  //         $(this).prop('checked',!!formObject[this.id]);
-  //       } else {
-  //         $(this).val(formObject[this.id]).trigger('change');
-  //       }
-  //     });
-  //   }
-  // }
-}
-
 function resend_otp(){
   var form = $('#modalVerifyNumberForm');
   var data;
@@ -2585,75 +3024,79 @@ function get_form(element){
   return $($(element).closest('form')[0]);
 }
 
-function reset_form($form){
-  var form_id=$form.attr('id');
-  var data=localStorage.getItem(form_id);
-  $form.find('input,textarea').each(function(){
-    $(this).val('');
-  });
-  $form.find('select:hidden').each(function(){
-    if(this.selectize){
-      this.selectize.clear();
-    }
-  });
-  localStorage.removeItem(form_id);
-  $form.trigger('reset');
-  if($form.validate().resetForm){
-    $form.validate().resetForm();
+function trigger_form_event($forms,action,$form){
+  var num_forms = $forms.length;
+  if(num_forms==1 && action=="add"){
+    console_trace();
+    $form.trigger('filled');
+  } else if(num_forms==0 && action=='remove'){
+    console_trace();
+    $form.trigger('empty');
   }
-  $form.trigger('change');
-  toastr.success("Form has been reset",'Success');
-}
-
-function hard_reset_form(event){
-  event.preventDefault();
-  var $form=get_form(event.target);
-  reset_form($form);
 }
 
 class TermsAndConditions{
-  constructor($ref){
-    this.$form = get_form($ref);
+  constructor($form,prefix,$ref,ad){
+    this.ad = ad;
+    this.$form = $form;
     this.$button = $('<div class="btn bg-one m-0 btn-sm"></div>')
     .text('New Term and Condition');
     this.$container = $('<div class="col-12 p-0"></div>').append(this.$button);
     $ref.after(this.$container);
     this.$inputs = $([]);
-    this.localStorage_key = 'property_termsAndConditions';
-    
+    this.localStorage_key = prefix+'_termsAndConditions';
     this.$button.on('click',()=>{
       this.create_input();
     });
-
-    this.$form.on('reset',()=>{
-      this.reset();
-    });
-
-    this.string_to_form();
+    if(!ad || (ad && Object.keys(ad).length==0)){
+      this.$form.on('reset',()=>{
+        var total = this.$inputs.length;
+        this.reset();
+        if(total>0){
+          trigger_form_event(this.$inputs,'remove',$form);
+        }
+      });
+      $(window).on('form_rendered',()=>{
+        this.string_to_form();
+        $(window).off('form_rendered');
+      });
+      $form.on('delete_local_storage',()=>{
+        localStorage.removeItem(this.localStorage_key);
+      });
+    } else {
+      if(ad.termsandconditions){
+        for(var data of ad.termsandconditions){
+          this.create_input(data.text);
+        }
+      }
+    }
   }
 
-  create_input(data=null){
+  create_input(data=''){
     var input_count = this.$inputs.length+1;
     var $label = $(`<label for="terms_${input_count}"></label>`)
     .text('Term and Condition '+input_count);
     var $input = $(`<input id="terms_${input_count}" 
-      type="text" class="col-12 form-control">`);
-    if(data){
-      $input.val(data);
+      name="term_and_condition_${input_count}"
+      type="text" class="col-12 term_and_condition form-control">`);
+    if(!this.ad || (this.ad && Object.keys(this.ad).length==0)){
+      $input.change(()=>{
+        this.form_to_string();
+      });
     }
-    $input.change(()=>{
-      this.form_to_string();
-    });
     if(this.$inputs.length>0){
       $(this.$inputs[this.$inputs.length-1]).find('.fa.fa-times-circle').remove();
     }
-    var $div = $('<div class="md-form mb-4"></div>').append($input)
+    var $div = $('<div class="md-form mb-4 mt-0"></div>').append($input)
     .append($label);
     this.add_remove_button($div);
     this.$button.before($div);
+    $input.val(data).trigger('change');
     this.$inputs = this.$inputs.add($div);
-    this.form_to_string();
-    this.$form.trigger('change');
+    if(!this.ad || (this.ad && Object.keys(this.ad).length==0)){
+      this.form_to_string();
+      trigger_form_event(this.$inputs,'add',this.$form);
+    }
   }
 
   add_remove_button($div){
@@ -2665,7 +3108,8 @@ class TermsAndConditions{
         this.add_remove_button($(this.$inputs[this.$inputs.length-1]));
       }
       this.form_to_string();
-      this.$form.trigger('change');
+      trigger_form_event(this.$inputs,'remove',this.$form);
+      // this.$form.trigger('change');
     });
     $div.append(remove_button.$icon);
   }
@@ -2675,7 +3119,7 @@ class TermsAndConditions{
     this.$inputs.each((index,element)=>{
       values.push($(element).find('input').val());
     });
-    return JSON.stringify(values);
+    return values;
   }
 
   reset(){
@@ -2685,11 +3129,7 @@ class TermsAndConditions{
   }
 
   form_to_string(){
-    var elems_data = [];
-    this.$inputs.each(function(index,element){
-      elems_data.push($(element).find('input').val());
-    });
-    localStorage.setItem(this.localStorage_key,JSON.stringify(elems_data));
+    localStorage.setItem(this.localStorage_key,JSON.stringify(this.get_data()));
   }
 
   string_to_form(){
@@ -2704,30 +3144,6 @@ class TermsAndConditions{
   }
 }
 
-function confirm_reset_form(event){
-  event.preventDefault();
-  $.confirm({
-    title: "Are you sure you want to reset form?",
-    text: "All data will be deleted permanently.",
-    confirm: function(){
-      hard_reset_form(event);
-    }
-  });
-}
-
-function initialize_region_selectize($form){
-  $form.find('[name=region]').first().selectize(
-    get_selectize_configurations('property',false)
-  );
-}
-
-function initialize_facilities_selectize($form){
-  $form.find('[name=facilities]').first().selectize({
-    plugins: ['remove_button'],
-    copyClassesToDropdown: false,
-  });
-}
-
 function initialize_all_selects($form=null){
   var selector = 'select:not([hidden])';
   if($form){
@@ -2740,198 +3156,150 @@ function initialize_all_selects($form=null){
     });
   }
 }
-
-function initialize_form_selectize(){
-  $(document).on('initialize_form_selectize',function(){
-    $('#roomie_regions').selectize(get_selectize_configurations('roomie'));
-    initialize_region_selectize($('#modalPropertyAdForm'));
-    initialize_facilities_selectize($('#modalPropertyAdForm'));
-    initialize_all_selects();
-    initialize_auto_save('modalPropertyAdForm',['property_region']);
-    // window.property_charge_form.string_to_form();
-    initialize_auto_save('modalRoomieAdForm',['roomie_regions']);
-  });
+function exitFullScreen(){
+  if (document.exitFullscreen)
+    document.exitFullscreen();
+  else if (document.msExitFullscreen)
+    document.msExitFullscreen();
+  else if (document.mozCancelFullScreen)
+    document.mozCancelFullScreen();
+  else if (document.webkitExitFullscreen)
+    document.webkitExitFullscreen();
 }
 
-function display_full_screen_carousel(ad_images,rent,location,type,available_from,title,images_tag){
-  $('#full_screen_carousel_modal').remove();
-  var carousel = `
-    <div class="modal fade full_screen" id="full_screen_carousel_modal"  
-      tabindex="-1" data-backdrop="static" role="dialog" 
-      aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title" id="full_screen_carousel_modal-title">
-            <small>1/${images_tag.length}</small> ${images_tag[0]}
-            </h4>
-            <div class="zoom-container">
-              <i class="fa fa-search-plus" id="full_screen_carousel_zoom-in"></i>
-              <i class="fa fa-search-minus" id="full_screen_carousel_zoom-out"></i>
-              <i class="fa fa-refresh" id="full_screen_carousel_reset"></i>
-            </div>
-            <button type="button" class="close btn btn-danger" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div id="full_screen_carousel" 
-              class="carousel slide carousel-fade carousel-thumbnails" 
-              data-ride="false"
-              data-pause="true">
-              <div class="carousel-inner" role="listbox">`
-    for(var i in ad_images){
-      if (i==0){
-        carousel += '<div class="carousel-item active">';
-      } else {
-        carousel += '<div class="carousel-item">';
-      }
-      carousel += `
-        <div class="view full-screen-img-container">
-          <img class="d-block" src="${window.loading_icon_big}" data-src="${ad_images[i]}">
-        </div>
-      </div>`;
-    }
-      carousel += `</div>`;
-    if(ad_images.length>1){
-      carousel += `
-            <a class="carousel-control-prev" href="#full_screen_carousel" role="button" data-slide="prev">
-              <span class="fa fa-chevron-left fa-lg" aria-hidden="true"></span>
-              <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#full_screen_carousel" role="button" data-slide="next">
-              <span class="fa fa-chevron-right fa-lg" aria-hidden="true"></span>
-              <span class="sr-only">Next</span>
-            </a>`;
-    }
-    carousel += 
-            `<ol class="carousel-indicators">
-              <li data-target="#full_screen_carousel" data-slide-to="0" class="active"></li>
-              `
-    for(var i in ad_images){
-      if(i>0){
-        carousel += `
-              <li data-target="#full_screen_carousel" data-slide-to="0"></li>
-        `
-      }
-    }
-              `
-            </ol>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  `;
-  $('body').append(carousel);
-  $('#full_screen_carousel_modal').modal({
-    show:true,
-  });
-  $('#full_screen_carousel').carousel('pause');
-  $('#full_screen_carousel').off('slide.bs.carousel');
-  var $title = $('#full_screen_carousel_modal').find('.modal-title');
-  set_carousel($('#full_screen_carousel'));
-  $('#full_screen_carousel').on('slide.bs.carousel',function(event){
-    $title.html(`<small>${event.to+1}/${images_tag.length}</small> ${images_tag[event.to]}`);
-  });
-  initialize_panzoom();
+class PanzoomIcon{
+  constructor(icon_class,callback){
+    this.$icon_container = $(`<span><i class="fa fa-${icon_class}"></i></span>`)
+    .css({'padding-left':'1rem','padding-right':'1rem','font-size':'1.5rem',
+    'cursor':'pointer','border-right':'1px solid white'}).click(callback);
+  }
 }
 
-function initialize_panzoom(){
-  var $full_screen_carousel = $('#full_screen_carousel');
-  $full_screen_carousel.find('img').panzoom({
+function initialize_panzoom($img){
+  $img.panzoom({
     increment: 0.3,
     panOnlyWhenZoomed: true,
     minScale: 1,
     maxScale: 3,
     contain: 'invert',
-    // $reset: ,
-  });
-  $('#full_screen_carousel_zoom-in').click(function(e){
-    e.preventDefault();
-    $full_screen_carousel.find('.carousel-item.active img').panzoom('zoom');
-  });
-  $('#full_screen_carousel_zoom-out').click(function(e){
-    e.preventDefault();
-    var $elem = $full_screen_carousel.find('.carousel-item.active img');
-    $elem.panzoom('resetPan');
-    $elem.panzoom('zoom',true);
-  });
-  $('#full_screen_carousel_reset').click(function(e){
-    e.preventDefault();
-    $full_screen_carousel.find('.carousel-item.active img').panzoom('reset');
   });
 }
 
-function change_src($img){
+class Panzoom{
+  constructor($carousel){
+    this.zoom_icon = new PanzoomIcon("search-plus",()=>{
+      var $img = $carousel.find('.carousel-item.active img')
+      $img.panzoom('zoom',{
+        maxScale: $img[0].naturalWidth / $img[0].clientWidth
+      });
+    });
+    this.zoom_out_icon = new PanzoomIcon('search-minus',()=>{
+      $carousel.find('.carousel-item.active img').panzoom('resetPan').panzoom('zoom',true);
+    });
+    this.reset_zoom = new PanzoomIcon('refresh',()=>{
+      $carousel.find('.carousel-item.active img').panzoom('reset');
+    });
+    this.reset_zoom.$icon_container.css('border-right','none');
+    this.$icons_container = $('<span></span>')
+    .append(this.zoom_icon.$icon_container)
+    .append(this.zoom_out_icon.$icon_container)
+    .append(this.reset_zoom.$icon_container)
+    .css({'color':'white','background':'black','opacity':'0.6',
+    'display':'inline-block'});
+  }
+}
+
+class FullScreenCarousel{
+  constructor($ref,ad){
+    this.ad = ad;
+    var first_time = true;
+    $ref.click((event)=>{
+      if(first_time){
+        this.modal = new Modal('full_screen_carousel_modal_'+(ad.id),
+          this.get_modal_title(0));
+        this.modal.$modal.modal('show').css({'width':'100%','height':'100%'});
+        this.modal.$modal_dialog.css({'margin':'0','max-width':'100%','height':'100%','width':'100%'});
+        this.modal.$modal.on('shown.bs.modal',()=>{
+          this.carousel = new Carousel('full_screen_carousel_'+(ad.id),ad.images,2);
+          this.carousel.$carousel.css({'height':this.modal.$modal_body.height()});
+          this.carousel.$carousel_inner.css({'height':'100%'});
+          this.modal.$modal_body.append(this.carousel.$carousel);
+          this.modal.$modal.off('shown.bs.modal');
+          this.carousel.$carousel.on('slide.bs.carousel',(event)=>{
+            this.modal.$modal_title.html(this.get_modal_title(event.to));
+          });
+          this.panzoom = new Panzoom(this.carousel.$carousel);
+          this.$panzoom_container = $('<div></div>').css({'text-align':'center'})
+          .append(this.panzoom.$icons_container)
+          .css({'position':'absolute','top':'2rem','width':'100%'});
+          this.modal.$modal_body.append(this.$panzoom_container);
+        });
+        this.modal.$close_button.click(()=>{
+          exitFullScreen();
+        });
+        var on_exit_fullscreen = ()=>{
+          if(!document.webkitFullscreenElement && !document.mozFullscreenElement && !document.fullscreenElement && !document.MSFullscreenElement){
+            this.modal.$modal.modal('hide');
+          }
+        }
+        document.addEventListener('webkitfullscreenchange', on_exit_fullscreen, false);
+        document.addEventListener('mozfullscreenchange', on_exit_fullscreen, false);
+        document.addEventListener('fullscreenchange', on_exit_fullscreen, false);
+        document.addEventListener('MSFullscreenChange', on_exit_fullscreen, false);
+        first_time=false;
+      } else {
+        this.modal.$modal.modal('show');
+      }
+      var el = this.modal.$modal_dialog[0],
+        rfs = el.requestFullscreen
+          || el.webkitRequestFullScreen
+          || el.mozRequestFullScreen
+          || el.msRequestFullscreen;
+      rfs.call(el);
+    });
+  }
+
+  get_modal_title(index){
+    return '<small>'+(index+1)+'/'+(this.ad.images.length)+'</small> '+Tag.get_option(this.ad.images[index].tag).text;
+  }
+}
+
+function change_src($img,type){
   if($img.attr('data-src')){
-    $img.attr('src',$img.attr('data-src'));
-    $img.removeAttr('data-src');
+    var $img_carrier = $('<img>');
+    $img_carrier.on('load',()=>{
+      var $div = $('<div></div>').css({'margin':'auto'})
+      if(type==0){
+        $div.css({'height':'200px'});
+      } else if(type==2){
+        $div.css({'height':'fit-content','width':'fit-content'})
+        .addClass('center-element');
+      }
+      $img.parent().append($div);
+      $img.appendTo($div).attr('src',$img.attr('data-src'))
+      .removeAttr('data-src').removeClass('center-element');
+      $img_carrier.remove();
+      initialize_panzoom($img);
+    });
+    $img_carrier.attr('src',$img.attr('data-src'));
   }
 }
 
-function set_carousel($carousel){
+function set_image($carousel,type){
   var $img = $carousel.find('.carousel-item.active img');
-  vertically_center_image_in_carousel($img);
-  change_src($img);
-  $carousel.on('slide.bs.carousel',(event)=>{
-    var $img = $(event.relatedTarget).children().children('img');
-    vertically_center_image_in_carousel($img);
-    change_src($img);
+  change_src($img,type);
+  $img.css({'max-width':'100%','max-height':'100%'});
+}
+
+function set_carousel($carousel,type){
+  set_image($carousel,type);
+  $carousel.on('slid.bs.carousel',(event)=>{
+    set_image($carousel,type);
   });
-}
-
-function show_indeterminate_progess(){
-  // $(document).ajaxStart(function(){
-  //   $('body').append(`
-  //     <div id="spinner-container" class="d-flex align-items-center justify-content-center">
-  //       <i class="fa fa-spinner fa-spin"></i>
-  //     </div>
-  //   `);
-  //   setTimeout(()=>{},1000);
-  // });
-  // $(document).ajaxStop(function(){
-  //   $('#spinner-container').remove();
-  // });
-}
-
-function csrfSafeMethod(method) {
-  // these HTTP methods do not require CSRF protection
-  return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-}
-
-function select_option($form,data){
-  var field_name_list = ['total_floors','floor_no','bathrooms','rooms',
-    'halls','balconies','measuring_unit','flooring'];
-  for(var name of field_name_list){
-    $form.find('[name='+name+']').first().val(data[name]);
-  }
 }
 
 function get_element_using_selector($form,selector){
   return $form.find(selector).first();
-}
-
-function get_element_using_name($form,name){
-  return get_element_using_selector($form,'[name='+name+']');
-}
-
-function create_options_for_property_form_fields($form){
-  create_options(1,20,get_element_using_name($form,'total_floors'));
-  create_options(1,20,get_element_using_name($form,'floor_no'));
-  create_options(0,6,get_element_using_name($form,'bathrooms'));
-  create_options(0,6,get_element_using_name($form,'rooms'));
-  create_options(0,6,get_element_using_name($form,'halls'));
-  create_options(0,6,get_element_using_name($form,'balconies'));
-  create_options_from_array(
-    get_element_using_name($form,'measuring_unit'), 
-    area_units, conversion_value
-  );
-  create_options_from_array(get_element_using_name($form,'flooring'),
-    ['Marble','Vitrified Tile','Vinyl','Hardwood','Granite',
-    'Bamboo','Concrete','Laminate','Linoleum','Tarrazzo','Brick','Other'],
-    ['M','VT','V','H','G','B','C','L','LI','T','BR','O']
-  );
 }
 
 function initialize_other_select(){
@@ -2962,7 +3330,6 @@ function set_validations(){
   change_password_form_validation();
   profile_form_validation();
   roomie_ad_form_validation();
-  property_ad_form_validation();
 }
 
 function set_enter_number_form(){
@@ -2993,6 +3360,8 @@ function toggle_buttons(form){
   }
 }
 
+// Toggle disability of button for forms like login, register
+// button is enabled only if form is valid
 function set_disable_submit_button(){
   $('form.modal').each(function(index,element){
     var form = this;
@@ -3118,7 +3487,7 @@ class InlineTagEditor{
       pk: image_data.id,
       url: window.tag_url,
       title: 'Choose tag',
-      source: Tags.get_tags(),
+      source: Tag.get_options(),
       mode: 'inline',
       emptytext: 'Add tag',
       showbuttons: false,
@@ -3172,16 +3541,16 @@ class ImageGroup{
     .attr('alt',image_data.tag).css('max-width','180px');
     this.$image_container = $('<div></div>')
     .css('text-align','center')
-    .append(this.$image[0]);
+    .append(this.$image);
     this.tag_inline_editor = new InlineTagEditor(this.$div,image_data);
-    this.$delete = new ImageDelete(image_data.id,this.$div);
+    this.delete = new ImageDelete(image_data.id,this.$div);
     this.$div.on('delete_success',()=>{
       this.$div.remove();
       _this.remove_image(image_data.id);
     });
     this.$div2 = $('<div></div>').addClass('p-1 d-flex')
     .css({'justify-content':'space-between','min-width':'180px'})
-    .append(this.$delete.$span).append(this.tag_inline_editor.$elem);
+    .append(this.delete.$span).append(this.tag_inline_editor.$elem);
     this.$div.append(this.$image_container).append(this.$div2);
   }
 }
@@ -3194,7 +3563,10 @@ class ImageTagModal extends Modal{
     this.delete = new ImageDelete(image_data.id,this.$modal);
     this.tag = new InlineTagEditor(this.$modal,image_data);
     this.$modal.on('tag_success',(event,new_tag)=>{
-      this.$modal.remove();
+      this.$modal.modal('hide');
+      this.$modal.on('hidden.bs.modal',()=>{
+        this.$modal.remove();
+      });
       _this.add_new_image_group(Object.assign(image_data,{tag:new_tag}));
     });
     this.$modal.on('delete_success',()=>{
@@ -3202,6 +3574,7 @@ class ImageTagModal extends Modal{
       _this.remove_image(image_data.id);
     });
     this.$modal_body.append(this.$image[0]);
+    this.$modal_content.append(this.$modal_footer);
     this.$modal_footer.append(this.delete.$span[0])
     .append(this.tag.$elem[0]);
     this.$modal.modal('show');
@@ -3209,8 +3582,9 @@ class ImageTagModal extends Modal{
 }
 
 class AddImage{
-  constructor(prefix,$el_ref,url,max_height,max_width){
-    this.$form = get_form($el_ref);
+  constructor($form,prefix,$el_ref,url,max_height,max_width,ad){
+    this.is_new_ad = !ad || (ad && Object.keys(ad).length==0);
+    this.$form = $form;
     this.prefix = prefix;
     this.$ref = $el_ref;
     this.$input = $('<input>').attr('type','file')
@@ -3218,42 +3592,61 @@ class AddImage{
     this.$images_container = $('<div></div>')
     .addClass('row container-fluid');
     this.$images_elem = $('<select></select>')
-    .attr('name',prefix+'_images').css('display','none')
+    .attr('name','images').css('display','none')
     .attr('hidden','true').attr('multiple','multiple');
-    this.$ref.after(this.$input[0]).click(()=>{
+    this.$ref.after(this.$input).click(()=>{
       this.$input.click();
-    }).after(this.$images_elem[0]);
+    }).after(this.$images_elem);
     this.localStorage_key = this.prefix+'_images';
-    this.$ref.before(this.$images_container[0]);
+    this.$ref.before(this.$images_container);
     this.url = url;
     this.$input.change(()=>{
       load_image_file(this.$ref,this.$input[0],url,max_height,max_width);
     });
     this.$ref.on('image_uploaded',(event,res)=>{
       toastr.success('Image Uploaded');
-      this.add_image(res.id);
       new ImageTagModal(this,res);
     });
-    this.string_to_form();
-    this.$form.on('reset',()=>{
-      this.reset();
-    });
+    this.images_data=[];
+    if(this.is_new_ad==true){
+      $(window).on('form_rendered',()=>{
+        this.string_to_form();
+        $(window).off('form_rendered');
+      });
+      this.$form.on('reset',()=>{
+        var total = this.images_data.length;
+        this.reset();
+        if(total>0){
+          trigger_form_event(this.images_data,'remove',$form);
+        }
+      });
+      $form.on('delete_local_storage',()=>{
+        localStorage.removeItem(this.localStorage_key);
+      });
+    } else {
+      if(ad.images){
+        for(var image_data of ad.images){
+          this.add_new_image_group(image_data);
+        }
+      }
+    }
   }
 
   remove_image(image_id){
     var index = this.images_data.findIndex(value=>value==image_id);
     if(index>-1){
-      delete this.images_data[index];
+      this.images_data.splice(index,1);
       this.form_to_string();
       this.$images_elem.find('option[value="'+image_id+'"]').remove();
-      this.$form.trigger('change');
+      trigger_form_event(this.images_data,'remove',this.$form);
+      this.$images_elem.trigger('keyup');
     }
   }
 
   add_new_image_group(image_data){
     var image_group = new ImageGroup(this,image_data,'image_thumbnail');
     this.$images_container.append(image_group.$div);
-    this.add_option(image_data.id);
+    this.add_image(image_data.id);
   }
 
   add_image(image_id){
@@ -3265,11 +3658,14 @@ class AddImage{
   add_option(image_id){
     this.$images_elem.append(`
     <option value="${image_id}" selected="selected"></option>`);
-    this.$form.trigger('change');
+    trigger_form_event(this.images_data,'add',this.$form);
+    this.$images_elem.trigger('keyup');
   }
 
   form_to_string(){
-    localStorage.setItem(this.localStorage_key,JSON.stringify(this.images_data));
+    if(this.is_new_ad){
+      localStorage.setItem(this.localStorage_key,JSON.stringify(this.images_data));
+    }
   }
 
   reset(){
@@ -3277,38 +3673,40 @@ class AddImage{
     this.$images_container.children().remove();
     this.$images_elem.children().remove();
     this.form_to_string();
-    this.$form.trigger('change');
   }
 
   string_to_form(){
-    try{
-      this.images_data = JSON.parse(localStorage.getItem(this.localStorage_key));
-    } catch(err){
-      this.reset();
-      return;
-    }
-    if(!isArray(this.images_data)){
-      this.reset();
-      return;
-    }
-    this.images_data=this.images_data.filter(value=>!isNaN(value) && value!=null);
-    if(this.images_data.length==0){
-      return;
-    }
-    this.form_to_string();
-    $.ajax({
-      url:window.images_url,
-      type:'GET',
-      data: {
-        ids: this.images_data
-      },
-    }).done((res)=>{
-      for(var image of res.images){
-        this.add_new_image_group(image);
+    if(this.is_new_ad){
+      try{
+        this.images_data = JSON.parse(localStorage.getItem(this.localStorage_key));
+      } catch(err){
+        this.reset();
+        return;
       }
-    }).fail((res)=>{
-      this.reset();
-    });
+      if(!isArray(this.images_data)){
+        this.reset();
+        return;
+      }
+      this.images_data=this.images_data.filter(value=>!isNaN(value) && value!=null);
+      if(this.images_data.length==0){
+        return;
+      }
+      this.form_to_string();
+      $.ajax({
+        url:window.images_url,
+        type:'GET',
+        data: {
+          ids: this.images_data
+        },
+      }).done((res)=>{
+        this.images_data=[];
+        for(var image of res.images){
+          this.add_new_image_group(image);
+        }
+      }).fail((res)=>{
+        this.reset();
+      });
+    }
   }
 
   images_count(){
@@ -3334,42 +3732,23 @@ class ProfileAddImage{
   }
 }
 
-function set_image($img){
-  var total_height = $img.parent().height();
-  var total_width = $img.parent().width();
-  var viewport_width = window.innerWidth;
-  if(total_width>0){
-    viewport_width=total_width;
-  }
-  var img_height = $img[0].naturalHeight;
-  var img_width = $img[0].naturalWidth;
-  var desired_img_height, desired_img_width;
-  if(img_height>total_height || img_width>viewport_width){
-    if(img_width/img_height < viewport_width/total_height){
-      // height is bottleneck here
-      desired_img_height = total_height;
-      desired_img_width = desired_img_height*(img_width/img_height);
-    } else {
-      desired_img_width = viewport_width;
-      desired_img_height = desired_img_width*(img_height/img_width);
-    }
-  }
-  $img.height(desired_img_height);
-  $img.width(desired_img_width);
-  $img.css('margin-top',(total_height-desired_img_height)/2);
-}
-
-function vertically_center_image_in_carousel($img){
-  // find size of image before loading
-  var interval = setInterval(()=>{
-    if($img[0].naturalWidth>0 && $img.parent().height()>0){
-      clearInterval(interval);
-      set_image($img);
-    }
-  },10);
-}
-
 $('document').ready(function(){
+  $.validator.addClassRules({
+    "charge_amount": {
+      required: true,
+      not_equal_zero: true,
+      digits: true,
+    },
+    'charge_description': {
+      required: true,
+    },
+    'term_and_condition': {
+      required: true,
+    },
+  });
+  $.validator.setDefaults({ 
+    ignore: [],
+  });
   var window_width = $(window).width();
   if(window_width>768){
     $('.mobile').remove()
@@ -3379,7 +3758,7 @@ $('document').ready(function(){
   
   $(document).ajaxSend(function (event, jqxhr, settings) {
     settings.data += '&csrfmiddlewaretoken=' + window.getCookie('csrftoken');
-    if (settings.type == "POST") {
+    if (settings.type == "POST" || settings.type == "PUT" || settings.type == "DELETE") {
       jqxhr.setRequestHeader('X-CSRFToken', window.getCookie('csrftoken'));
     };
   });
@@ -3388,16 +3767,9 @@ $('document').ready(function(){
     traditional: true
   });
 
-  set_footer();
-  $(window).resize(set_footer);
-
-  initialize_form_selectize();
   set_custom_alerts();
   // enable_add_image();
   initialize_other_select();
-  $('.carousel').each(()=>{
-    set_carousel($(this));
-  });
 
   $('.modal').on('hidden.bs.modal',function(){
     remove_all_messages($(this));
@@ -3408,32 +3780,12 @@ $('document').ready(function(){
     $(this).css('z-index',1050+num_visible_modals);
   });
   
-
-  create_options_for_property_form_fields($('#modalPropertyAdForm'));
-  window.property_charge_form = new OtherChargeForm('property',$('#other_charges_button'));
-  window.add_image_object = new AddImage('property',$('#property_add_image'),window.image_upload_url,2000,2000);
-  window.termsAndConditions = new TermsAndConditions($('#termsAndConditionsRef'));
   new ProfileAddImage($('#upload-image'),window.profile_image_url,1000,1000);
-  set_logout();
   set_character_count();
   set_validations();
   set_disable_submit_button();
   set_enter_number_form();
-  $('#property_available_from').Zebra_DatePicker({
-    default_position: 'below',
-    show_icon: false,
-    open_on_focus: true,
-    format: 'd-m-Y',
-    direction: [1,30],
-    container: $('#datepicker-container'),
-    show_clear_date: true,
-    show_select_today: true,
-    onSelect: function(){
-      $('#property_available_from').trigger('change');
-    }
-  });
   $('#upload-image').css({'visibility':'visible'});
-  show_indeterminate_progess();
 
   $('#modalPropertyAdForm').on('hidden.bs.modal',function(){
     $('.modal-backdrop').remove();

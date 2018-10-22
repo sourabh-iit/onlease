@@ -1,7 +1,9 @@
-def csrf_middleware(get_Response):
-  def middleware(request):
-    response = get_Response(request)
-    response.data['csrf_token'] = response.session
-    import pdb ; pdb.set_trace()
-    return response
-  return middleware
+# class ModifyingResponseMiddleware:
+#   def __init__(self, get_response):
+#     self.get_response = get_response
+
+#   def __call__(self, request):
+#     response = self.get_response(request)
+#     import pdb; pdb.set_trace()
+#     return response
+    

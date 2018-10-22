@@ -79,17 +79,6 @@ function set_tooltip(){
   });
 }
 
-function resize(){
-  var width = window.innerWidth;
-  var padding;
-  if(width<600){
-    padding=(width-270)/2;
-  } else {
-    padding='20';
-  }
-  $('#ads_wrapper').css({'padding-left':padding+'px'});
-}
-
 function resetSearchBox(){
   var business_mobile = `
   <select name="business" id="id_business" class="col-12 d-none">
@@ -122,25 +111,72 @@ function resetSearchBox(){
   }
 }
 
-function set_resize(){
-  $(window).resize(()=>{
-    var times = 0;
-    var poll = setInterval(()=>{
-      times++;
-      resize();
-      if(times==5){
-        clearInterval(poll);
-      }
-    },10);
+(function set_resize(){
+  var window_width = window.innerWidth;
+  var window_height = window.innerHeight;
+  var portrait = true;
+
+  if(window_width>window_height){
+    portrait = false;
+  }
+
+  resize = ()=>{
+    if(portrait){
+      var width = window_width;
+    } else {
+      var width = window_height;
+    }
+    var padding;
+    if(width<600){
+      padding=(width-270)/2;
+    } else {
+      padding='20';
+    }
+    $('#ads_wrapper').css({'padding-left':padding+'px'});
+  }
+
+  $(document).ready(function(){
+    resize();
   });
-}
+
+  $(window).on('orientationchange',()=>{
+    portrait = !portrait;
+    resize();
+  });
+})();
 
 $(document).ready(function(){
   resetSearchBox();
   initialize_selectize();
   add_options_to_region();
   set_tooltip();
-  resize();
-  set_resize();
-  window.property_ads = new PropertyAds(window.ads);
+  window.property_ads = new PropertyAds('property',window.ads);
+  $('#id_business_desktop').submit((e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    window.show_loading();
+    $.ajax({
+      url: window.get_paginated_ads_url(1),
+      data: {
+        regions: $('#id_region').val(),
+      },
+      type: 'GET',
+    }).done((res)=>{
+      $(document).trigger('re-render-ads',[res.ads,res.has_next_page]);
+    }).always(()=>{
+      window.remove_loading();
+    });
+  });
+  $('#id_region').change((event)=>{
+    var url = location.href.split('?')[0]+'?';
+    var regions = $(event.target).val();
+    for(var i in regions){
+      if(i!=0){
+        url+='&regions='+regions[i];
+      } else {
+        url+='regions='+regions[i];
+      }
+    }
+    window.history.pushState('',null,url);
+  });
 });
