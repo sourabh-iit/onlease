@@ -87,11 +87,19 @@ class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsM
     fields = ('lodging_type','lodging_type_other','total_floors','floor_no',
         'furnishing','facilities','rent','area','bathrooms','rooms',
         'balconies','halls','flooring','flooring_other','additional_details','title',
-        'available_from','region','latlng','virtual_tour_link','unit')
+        'available_from','region','latlng','virtual_tour_link','unit','is_booked')
 
   def clean_title(self):
     data = self.cleaned_data.get('title')
     return clean_data(data)
+
+  def clean_is_booked(self):
+    data = self.cleaned_data
+    is_booked = data.get('is_booked',False)
+    available_from = data.get('available_from')
+    if is_booked and available_from and is_booked==False and available_from<datetime.date.today():
+      raise ValidationError("Invalid date")
+    return is_booked
 
   # def clean_facilities(self):
   #   return self.request.POST.getlist('facilities')

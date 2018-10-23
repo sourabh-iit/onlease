@@ -22,7 +22,7 @@ def regions_view(request):
   for region in regions:
     ads=-1
     if business.lower()=='property':
-      ads=region.lodgings.count()
+      ads=region.lodgings.filter(is_booked=False).count()
     serialized_data.append({
       'id':region.id,
       'region':region.name,

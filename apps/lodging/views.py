@@ -41,9 +41,11 @@ class LodgingView(View):
       ad = Lodging.objects.get(id=ad_id)
     except Lodging.DoesNotExist:
       return JsonResponse({'error':'Property does not exist'},404)
-    form = self.form_class(data,instance=ad)
-    sub_form = self.sub_form_class(request,data,instance=ad.sublodging)
     try:
+      if request.user!=ad.posted_by:
+        raise ValidationError('You are not authorized to perform this action')
+      form = self.form_class(data,instance=ad)
+      sub_form = self.sub_form_class(request,data,instance=ad.sublodging)
       sublodging = self.save_lodging(form,sub_form,request,data)
       return JsonResponse({'success': True,'ad':CommonLodgingSerializer(sublodging).data})
     except ValidationError as e:
@@ -68,7 +70,6 @@ class LodgingView(View):
         lodging.save()
         sublodging = sub_form.save(commit=False)
         sublodging.lodging = lodging
-        import pdb; pdb.set_trace()
         sublodging.save()
         for image_id in data.getlist('images'):
           try:

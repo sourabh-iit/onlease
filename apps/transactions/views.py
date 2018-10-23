@@ -51,7 +51,7 @@ def redirect_to_instamojo_view(request,ad_id):
     if sublodging.is_booked or sublodging.is_booking:
       return JsonResponse({
         'errors':{
-          '__all__':['This property is already booked.']
+          '__all__':['This property is already booked or in process of booking.']
         }
       },status=400)
     amount = int(sublodging.rent)//10
@@ -62,7 +62,7 @@ def redirect_to_instamojo_view(request,ad_id):
       amount = amount,
       user = request.user,
       lodging = lodging,
-      trans_id=trans_id
+      trans_id = trans_id
     )
     if settings.DEBUG:
       response = api.payment_request_create(

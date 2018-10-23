@@ -167,3 +167,27 @@
 .bs-switch input:checked+.slider {
   background-color: #2196f3;
 }
+.vertical-align-middle{
+  vertical-align: middle;
+}
+.jusitfy-content-space-between{
+  justify-content: space-between;
+}
+.fw-300{
+  font-weight: 300;
+}
+.fw-400{
+  font-weight: 400;
+}
+.fw-500{
+  font-weight: 500;
+}
+.fw-600{
+  font-weight: 600;
+}
+.fw-700{
+  font-weight: 700;
+}
+.fw-800{
+  font-weight: 800;
+}

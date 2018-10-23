@@ -1564,13 +1564,16 @@ function create_options_from_range(min,max){
 }
 
 class MdFormSwitch{
-  constructor(left_text,right_text,name,value){
-    this.$div = $(`<div class="mt-3">${left_text}</div>`);
-    this.$label = $(`<label class="bs-switch"></label>`).appendTo(this.$div);
-    this.$input = $(`<input type="checkbox" name="${name}">`).appendTo(this.$label);
+  constructor(left_text,right_text,id,name,value){
+    this.$div = $(`
+    <div class="mt-3 d-flex align-items-center jusitfy-content-space-between" style="width: 220px;">
+      <span class="green-text fw-500">${left_text}</span>
+    </div>`);
+    this.$label = $(`<label class="bs-switch m-0"></label>`).appendTo(this.$div);
+    this.$input = $(`<input type="checkbox" id="${id}" name="${name}">`).appendTo(this.$label);
     if(value) this.$input.prop('checked','true');
     this.$span = $(`<span class="slider round"></span>`).appendTo(this.$label);
-    this.$div.append(right_text);
+    this.$div.append($(`<span class="red-text fw-500">${right_text}</span>`));
   }
 }
 
@@ -1593,7 +1596,7 @@ class PropertyAdForm{
     .css({'padding':'0', 'padding-left': '2rem','padding-right': '2rem'});
     this.$form = $('<form></form>').attr('novalidate','true').append(this.modal.$modal);
     if(!this.is_new_ad){
-      this.is_booked_switch = new MdFormSwitch('Vaccant','Booked','is_booked',ad.is_booked);
+      this.is_booked_switch = new MdFormSwitch('Vaccant','Booked',id+'_is_booked','is_booked',ad.is_booked);
       this.is_booked_switch.$div.appendTo(this.modal.$modal_body);
     }
     this.title = new PropertyInputText(this.$form,id+'_title','Title','tag',
@@ -1768,6 +1771,7 @@ class PropertyAdForm{
         },
         available_from: {
           required: true,
+          valid_date: [this.is_new_ad,this.id],
         },
         total_floors: {
           required: true,
@@ -1843,7 +1847,7 @@ class PropertyAdForm{
         },
         virtual_tour_link: {
           remote: window.validate_tour_link_url
-        }
+        },
       },
       messages: {
         property_images: {
@@ -1916,6 +1920,7 @@ class PropertyAdForm{
             'images': this.image.$images_elem.val(),
             'terms_and_conditions': JSON.stringify(this.terms_and_conditions.get_data()),
             'virtual_tour_link': this.virtual_tour_link.$input.val(),
+            'is_booked': this.is_new_ad?false:this.is_booked_switch.$input[0].checked,
           }
           show_loading($form);
           $.ajax({
@@ -2204,6 +2209,16 @@ function custom_validators(){
     jQuery.validator.addMethod('not_equal_zero',function(value,element){
       return $(element).val()!=0;
     },'Zero is not a valid value');
+    jQuery.validator.addMethod('valid_date',function(value,element,params){
+      if(params[0]){
+        return true;
+      }
+      var is_booked = $('#'+params[1]+'_is_booked')[0].checked;
+      var val_array = value.split('-');
+      var date = new Date(val_array[2],val_array[1],val_array[0]);
+      var date_today = new Date(Date.now());
+      return is_booked || (!is_booked && date.getDate()>=date_today.getDate());
+    },'Invalid date. Choose future value.');
 }
 
 function write_character_count(this_,length,span){
@@ -2604,12 +2619,18 @@ class Ad{
 class MyAd extends Ad{
   constructor(prefix,ad){
     super(prefix,ad);
-    this.$edit = $(`<div class="cursor-pointer color-5 text-center text-white p-2">
-      <i class="fa fa-pencil"></i> Edit</div>`)
-    .click(()=>{
+    this.$my_links = $(`<div class="row m-0"></div>`);
+    this.$edit = $(`<div class="cursor-pointer col color-5 text-center text-white p-2">
+      <i class="fa fa-pencil"></i> Edit</div>`).click(()=>{
       open_property_form('edit_form_'+ad.id,'Edit Ad - '+ad.title,ad);
     });
-    this.card.$card_body.append(this.$edit);
+    this.$book_status = $(`<div class="col text-center fw-500 text-white p-2"></div>`);
+    if(ad.is_booked)
+      this.$book_status.text('Booked').addClass('red');
+    else
+      this.$book_status.text('Vaccant').addClass('green');
+    this.$my_links.append(this.$edit).append(this.$book_status);
+    this.card.$card_body.append(this.$my_links);
   }
 }
 

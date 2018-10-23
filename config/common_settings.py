@@ -140,6 +140,8 @@ LANGUAGE_CODE = 'hi-IN'
 
 DATE_INPUT_FORMATS = ['%d-%m-%Y']
 
+DATE_FORMAT = '%d-%m-%Y'
+
 USE_I18N = False
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -150,3 +152,7 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 GOOGLE_MAPS_API_KEY=os.environ.get('GOOGLE_MAPS_API_KEY')
 
 ADMINS_LIST = ['98997612536'] 
+
+REST_FRAMEWORK = {
+  'DATE_FORMAT' : '%d-%m-%Y'
+}
