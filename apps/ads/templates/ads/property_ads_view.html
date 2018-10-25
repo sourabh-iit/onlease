@@ -1,0 +1,17 @@
+{% extends 'base_templates/ad_list.html' %} 
+{% load widget_tweaks %} 
+{% block title %}OnLease{% endblock %} 
+{% load static %}
+{% load i18n %}
+{% load lodging_filters %}
+
+{% block content %}
+
+<div id="ads_wrapper">
+</div>
+<script>
+  var detail_view_url = '{% url "ads:ad-detail-view" %}';
+  var ads = JSON.parse("{{ads_json|escapejs}}");
+  var has_next_page = "{{has_next_page}}";
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from apps.lodging.models import Lodging, CommonlyUsedLodgingModel
+from apps.lodging.models import Lodging, CommonlyUsedLodgingModel, Dealer
 from django.contrib.auth.decorators import login_required
-from .forms import ProfileForm, RefundForm
+from .forms import ProfileForm, RefundForm, DealerProfileForm
 from apps.user.utils import ViewException
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models.query import Prefetch
 from .models import Refund
-from apps.locations.models import Region
+from apps.locations.models import Region, District
 
 User = get_user_model()
 
@@ -170,15 +170,15 @@ def refund_view(request,transaction_id):
 @maintain_cookie
 @login_required
 def edit_profile_view(request):
+    user = request.user
     if request.method=='POST':
-        form=ProfileForm(request.POST,instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request,'Profile has been updated successfully')
+        form=ProfileForm(request.POST,instance=user)
+        form.save()
+        messages.success(request,'Profile has been updated successfully')
     else:
         form=ProfileForm(initial={
-            'email':request.user.email,
-            'mobile_number_alternate2':request.user.mobile_number_alternate2,
-            'mobile_number_alternate1':request.user.mobile_number_alternate1,
-            'is_dealer': request.user.is_dealer})
-    return render(request,'dashboard/profile.html',{'form':form})
+            'first_name':user.first_name,
+            'last_name':user.last_name,
+            'email':user.email})
+    return render(request,'dashboard/profile.html',{
+            'form':form})

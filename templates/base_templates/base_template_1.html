@@ -1,0 +1,41 @@
+{% load static %}
+{% load widget_tweaks %} 
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>{% block title %}{% endblock %}</title>
+    {% include 'common_style_sheets.html' %}
+    {% block head %}{% endblock %}
+  </head>
+  <body class="padding-top-3">
+
+    {% include 'forms/change_password_form.html' %}
+    {% include 'forms/enter_number_form.html' %}
+    {% include 'forms/login_form.html' %}
+    {% include 'forms/property_ad_form.html' %}
+    {% include 'forms/register_form.html' %}
+    {% include 'forms/roomie_ad_form.html' %}
+    {% include 'forms/set_password_form.html' %}
+    {% include 'forms/user_profile_form.html' %}
+    {% include 'forms/verify_number_form.html' %}
+
+    {% include 'common_global_elements.html' %}
+
+        
+    <div id="main-container">
+
+      {% include 'nav.html' %}
+                
+      {% block content %}{% endblock %}
+
+      {% include 'footer.html' %}
+
+    </div>
+
+    {% include 'common_script.html' %}
+    {% block script %}{% endblock %}
+
+  </body>
+</html>

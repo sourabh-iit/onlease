@@ -1,98 +1,72 @@
-{% extends 'navbar.html' %}
-{% load widget_tweaks %}
-{% block title %}OnLease{% endblock %}
-{% load static %}
-{% load i18n %}
-
-{% block home_active %}
-    active
-{% endblock %}
-
+{% extends 'base_templates/base_template_1.html' %} 
+{% load widget_tweaks %} 
+{% block title %}OnLease{% endblock %} 
+{% load static %} 
+{% load i18n %} 
+{% block home_active %} active {% endblock %} 
 {% block head %}
-    <link rel="stylesheet" href="{% static 'home/landing-page.css' %}">
-{% endblock %}
-
+<link rel="stylesheet" href="{% static 'home/landing-page.css' %}">
+{% endblock %} 
 {% block script %}
-    <script src="{% static 'home/landing-page.js' %}"></script>
-{% endblock %}
-
+<script src="{% static 'home/landing-page.js' %}"></script>
+{% endblock %} 
 {% block content %}
-    <div class="container d-flex">
-        <img src="{% static 'images/kari-shea-180802-unsplash_desktop.jpg' %}" alt="">
-        <div class="business">
-            <div class="text-uppercase">
-                <strong>Expand your lease Business</strong>
+<div class="container d-flex">
+  <img src="{% static 'images/kari-shea-180802-unsplash_desktop.jpg' %}" alt="">
+  <div class="business z-depth-2 col-12 col-md-10 col-lg-9 transparent col-xl-8 color-1">
+    <form novalidate class="w-100" name="searchForm" action="{% url 'ads:ads-view' %}" method='GET'>
+      <!-- {% comment %}<div class="business-choices">
+        <div class="business-choice active" id="property">Property</div>
+        <div class="business-choice" id="mates">Mates</div>
+      </div> {%endcomment%} -->
+      <!-- {% comment %} {{form.types}} {% endcomment %} -->
+
+
+      {{form.business}}
+
+      <div class="input-group mt-2 row ml-0 mr-0 d-flex justify-content-center">
+        <!-- {% comment %}
+        <div class="input-group-prepend col-3 p-0">
+          <span class="input-group-text w-100" id="search-filter">
+            Add Filters
+            <i class="fa fa-caret-down caret"></i>
+          </span>
+          <div class="filter-arrow-up hide"></div>
+          <div class="filters hide">
+            <div class="rent-range">
+              <div>Rent Range:</div>
+              <div class="row mt-2">
+                {{form.min_rent|attr:"class:col-5 form-control"}}
+                <div class="col-2">-</div>
+                {{form.max_rent|attr:"class:col-5 form-control"}}
+              </div>
+              <input type="text" class="span2">
+              <hr>
             </div>
-            <a href="{% url 'user:register' %}" class="btn btn-deep-orange text-capitalized">
-                <i class="fa fa-handshake-o"></i> Let's join
-            </a>
+            <div class="property-types">
+              <div>Property Type:</div>
+              <div class="row mt-2">
+                <i class="fa fa-home prefix-large col-1 p-0 prefix"></i>
+                {{form.types|attr:"data-placeholder:e.g. flat"}}
+              </div>
+            </div>
+          </div>
+        </div> {% endcomment %} -->
+        <div id="location_search_container" class="text-align-left">
+            <select name="regions" 
+              id="id_region" 
+              class="w-100 h-40" 
+              multiple="multiple" 
+              data-placeholder="Search location...">
+            </select>
         </div>
-        <div class="rooms">
-            <div class="rooms-text">Looking for room/flat/house?</div>
-            <a href="#find-a-room">
-                <i class="fa fa-arrow-circle-down pointer z-depth-2 waves-effect waves-light"></i>
-            </a>
-        </div>
-    </div>
-    <div class="benefits">
-        <h2 class="text-align-center text-uppercase">
-            <strong>Why us?</strong></h2>
-        <div class="row">
-            <div class="col-12 col-md-6 center-items">
-                <i class="fa fa-laptop icon"></i>
-            </div>
-            <div class="col-12 col-md-6 center-items text-capitalized">
-                <h4 class="benefits-title">Comfort</h4>
-                <div class="detail">
-                    Comfort is center point of an online business. By consdiering this point,
-                    we will ensure that you get the same comfort by joining us as you can
-                     get by doing any other business online. 
-                </div>
-            </div>
-        </div>
-        <div class="row desktop">
-            <div class="col center-items text-capitalized">
-                <h4 class="benefits-title">More customers</h4>
-                <div class="detail">
-                    As you do business with us, you autmoatically increase your customer's crowd
-                    by reaching out to people who were unaware of your business before.
-                </div>
-            </div>
-            <div class="col  center-items">
-                <i class="fa fa-group icon"></i>
-            </div>
-        </div>
-        <div class="row mobile">
-            <div class="col-12 col-md-6  center-items">
-                <i class="fa fa-group icon"></i>
-            </div>
-            <div class="col-12 col-md-6  center-items text-capitalized">
-                <h4 class="benefits-title">More customers</h4>
-                <div class="detail">
-                    As you do business with us, you autmoatically increase your customer's crowd
-                    by reaching out to people who were unaware of your business before.
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 col-md-6  center-items">
-                <i class="fa fa-check icon"></i>
-            </div>
-            <div class="col-12 col-md-6  center-items text-capitalized">
-                <h4>Genuine buyers only</h4>
-                <div class="detail">
-                    You will get genuine buyers only as we do the required check on our end
-                     before forwarding your contact details to them.
-                </div>
-            </div>
-        </div>
-    </div>
-    <a id="find-a-room">
-        <div class="find-a-room text-align-center">
-            <h3><strong>Looking for room/flat/house?</strong></h3>
-            <a href="{% url 'ads:choose-location' %}" class="btn btn-deep-orange text-capitalized mt-4">
-                <i class="fa fa-houzz"></i> Search
-            </a>
-        </div>
-     </a>
+        <button type="submit" id="search_button" 
+          class="h-40 btn color-2 m-0 search">Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  var location_url = "{% url 'locations:regions2' %}";
+</script>
 {% endblock %}

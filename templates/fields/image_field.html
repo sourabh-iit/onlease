@@ -1,0 +1,15 @@
+<div id="uploaded_images_container">
+    <div>Currently Uploaded Images</div>
+</div>
+
+<div id="images_container"></div>
+
+<div style="clear:both"></div>
+
+<div class="md-form">
+    <span class='btn btn-md btn-outline-primary' id="add_image">
+        <i class="fa fa-file-image-o icon"></i> Add image</span>
+    {% if field.errors %}
+        <div class="error"><small>{{field.errors.0}}</small></div>
+    {% endif %}
+</div>

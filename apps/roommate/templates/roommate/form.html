@@ -1,0 +1,156 @@
+{% extends 'navbar.html' %}
+{% load widget_tweaks %}
+{% block title %}Create Roomie Ad{% endblock %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'roommate/form.css' %}">
+<link rel="stylesheet" href="{% static 'css/indeterminate_progress.css' %}">
+<link rel="stylesheet" href="{% static 'css/image-upload.css' %}">
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'roommate/form.js' %}"></script>
+<script src="{% static 'js/location_render.js' %}"></script>
+<script src="{% static 'js/image_field.js' %}"></script>
+<script src="{% static 'js/image-upload.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div id="progress-bar">
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+            <span>Please wait<span class="dotdotdot"></span></span>
+        </div>
+    </div>
+</div>
+<div class="container col-12 col-md-9 col-lg-7 col-xl-6">
+    <form action="{% url 'roommate:create' %}" enctype="multipart/form-data" method="post" novalidate class="mt-5 custom-main-form">
+        {% csrf_token %}
+        <p class="h4 text-center custom-main-form-heading">ROOMMATE AD</p>
+
+        {{formset.management_form}}
+        {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
+
+            <div class="form-row">
+                
+                <div class="md-form col-12 col-sm-6" id="state">
+                    {% render_field form.state class+="btn btn-outline-primary" %}
+                    <div class="form-text">
+                        <small class="text-muted">e.g. Delhi</small>
+                    </div>
+                    {% if form.state.errors %}
+                        <div class="error"><small>{{form.state.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form col-12 col-sm-6" id="district">
+                    {% render_field form.district class+="btn btn-outline-primary" %}
+                    <div class="form-text">
+                        <small class="text-muted">e.g. North West Delhi</small>
+                    </div>
+                    {% if form.district.errors %}
+                        <div class="error"><small>{{form.district.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form col-12 col-sm-6" id="region">
+                    {% render_field form.region class+="btn btn-outline-primary" %}
+                    <div class="form-text">
+                        <small class="text-muted">e.g. Dr. Mukherjee Nagar</small>
+                    </div>
+                    {% if form.region.errors %}
+                        <div class="error"><small>{{form.region.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+                
+                <div class="md-form col-12 col-sm-6">
+                    {% render_field form.type class+="btn btn-outline-primary" %}
+                    {% if form.type.help_text %}
+                    <div class="form-text">
+                        <small class="text-muted">{{form.type.help_text}}</small>
+                    </div>
+                    {% endif %}
+                    {% if form.type.errors %}
+                        <div class="error"><small>{{form.type.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="custom-form col-12 col-sm-6">
+                    <div><label for="id_has_room1">
+                        Do you have rented room/flat already?</label></div>
+                    <input type="radio" name="has_property" id="id_has_room1" class="option-input radio ml-0" value="True" {% if form.has_property.value == "True" %}checked{% endif %}>
+                    <label for="id_has_room1">Yes</label>
+                    <input type="radio" name="has_property" id="id_has_room2" class="option-input radio" value="False" {% if form.has_property.value == "False" %}checked{% endif %}>
+                    <label for="id_has_room2">No</label>
+                    {% if form.has_property.errors %}
+                        <div class="error"><small>{{form.has_property.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+
+                <div class="md-form col-12 col-sm-6" id="rent">
+                    <i class="fa fa-inr prefix"></i>
+                    {% render_field form.rent class+="form-control" %}
+                    <label for="id_rent">
+                    {% if form.has_property.value == 'True' %}
+                    Rent
+                    {% else %}
+                    Budget
+                    {% endif %}
+                    </label>
+                    {% if form.rent.help_text %}
+                    <div class="form-text">
+                        <small class="text-muted">{{form.rent.help_text}}</small>
+                    </div>
+                    {% endif %}
+                    {% if form.rent.errors %}
+                        <div class="error"><small>{{form.rent.errors.0}}</small></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="md-form col-12">
+                <i class="fa fa-info-circle prefix"></i>
+                {% render_field form.lodging_description length="500" placeholder=form.lodging_description.help_text class+="md-textarea form-control" %}
+                <label for="id_lodging_description">Room/Flat details</label>
+                {% if form.lodging_description.errors %}
+                    <div class="error"><small>{{form.lodging_description.errors.0}}</small></div>
+                {% endif %}
+            </div>
+
+            <div id="uploaded_images_container">
+                <div>Currently Uploaded Images</div>
+            </div>
+
+            <h5 class="w-90 mt-4">
+                <strong>Add images of your property to show</strong>
+            </h5>
+            
+            <div id="images_container">
+            </div>
+
+            <div style="clear:both"></div>
+
+            <div class="md-form">
+                <span class='btn btn-sm btn-outline-primary' id="add_image">
+                    <i class="fa fa-file-image-o icon"></i> Add new image</span>
+            </div>
+            {{form.images}}
+        {% endwith %}
+
+        <div class="text-center mt-4">
+            <button class="btn btn-primary btn-md" type="submit">
+                <i class="fa fa-paper-plane icon"></i> post</button>
+        </div>
+
+    </form>
+</div>
+<script>
+    var csrf_token = "{{csrf_token}}";
+    var url = "{% url 'lodging:image-upload' ad_type='roommate' %}";
+    var width = 900;
+    var height = 500;
+</script>
+{% endblock %}

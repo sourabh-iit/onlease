@@ -16,6 +16,7 @@
 #uploaded_images_container{
     margin-top: 1.5rem;
     display: none;
+    width: 90%;
 }
 .uploaded{
     color: #757575;
@@ -27,4 +28,7 @@
     margin-top: 0.5rem;
     max-width: 120px;
     max-height: 100px;
+}
+#images_container{
+    width: 90%;
 }

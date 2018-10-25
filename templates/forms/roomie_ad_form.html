@@ -1,0 +1,90 @@
+<form class="modal fade" id="modalRoomieAdForm" tabindex="-1" role="dialog" 
+  aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static"
+  novalidate>
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Find Roommate</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="custom-form">
+          <div>Do you have room/flat?</div>
+          <input type="radio" name="has_property" id="id_has_room1" class="option-input radio" value="True">
+          <label for="id_has_room1">Yes</label>
+          <input type="radio" name="has_property" id="id_has_room2" class="option-input radio" value="False">
+          <label for="id_has_room2">No</label>
+        </div>
+
+        <div class="d-none">
+
+          <div class="md-form mb-4">
+            <div for="roomie_regions" class="has_property mb-2">Location of accomodation</div>
+            <div for="roomie_regions" class="not_has_property mb-2">Locations of accomodation in which you are looking</div>
+            <select name="regions" id="roomie_regions" multiple="multiple"></select>
+          </div>
+
+          <div class="md-form mb-4">
+            <i class="fa fa-inr prefix grey-text"></i>
+            <input type="text" name="rent" id="roomie_rent" class="form-control">
+            <label for="roomie_rent" class="has_property">Rent</label>
+            <label for="roomie_rent" class="not_has_property">Maximum rent you can pay</label>
+          </div>
+
+          <div class="md-form mb-4">
+            <div class="mb-2 has_property">Choose type of accomodation you have</div>
+            <div class="mb-2 not_has_property">Choose types of accomodation you are looking for</div>
+            <select name="types" id="roomie_types" multiple="multiple">
+              <option value="R">Room(s)</option>
+              <option value="F">Flat</option>
+              <option value="H">House/Apartment</option>
+            </select>
+          </div>
+
+          <div class="md-form mb-4 has_property">
+            <i class="fa fa-pencil prefix grey-text"></i>
+            <textarea rows="3" placeholder="e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished." class="md-textarea form-control"
+              name="lodging_description" id="roomie_lodging_description"></textarea>
+            <label for="roomie_lodging_description">Describe your accomodation</label>
+          </div>
+
+          <div class="md-form mb-4">
+            <i class="fa fa-users prefix grey-text"></i>
+            <input type="text" placeholder="e.g. 3" name="share" id="roomie_share" class+="form-control">
+            <label for="roomie_share" class="has_property">Number of people you want to share with</label>
+            <label for="roomie_share" class="not_has_property">Maximum number of people you can share with</label>
+          </div>
+
+          <div class="md-form mb-4">
+            <div class="mb-2">Looking for</div>
+            <select name="gender" id="roomie_gender">
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="A">Any</option>
+            </select>
+          </div>
+
+          <select name="roomie_images" class="has_property" hidden="true" id="id_images"></select>
+
+          <div id="images_container" class="has_property">
+
+          </div>
+
+          <div class="form-row has_property">
+            <div class="col-12">
+              <span class='btn btn-md btn-outline-primary ml-0 mt-3' id="add_image">
+                <i class="fa fa-file-image-o icon"></i> Add image</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <div class="text-center mt-4">
+          <button class="btn color-2" type="submit">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

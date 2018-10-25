@@ -1,141 +1,103 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import ImageModel, Lodging,CommonlyUsedLodgingModel, image_upload_directory
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
-from .forms import LodgingCreateForm, ImageForm, UpdateImageFormset,\
-                    CommonlyUsedLodgingCreateForm, CommonlyUsedLodgingUpdateForm,\
-                    thumb_size
-from django.urls import reverse
-from apps.user.utils import ViewException
-from django.conf import settings
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse, HttpResponse
 from django.db import transaction
-import os
-import shutil
-from django.dispatch import receiver
-from django.db.models.signals import post_delete, post_save
-from django.contrib import messages
-from django.db.models.query import Prefetch
+from django.core.exceptions import ValidationError
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.http.request import QueryDict
+
+from .forms import LodgingCreateForm, CommonlyUsedLodgingCreateForm, ChargeForm
+from .models import TermAndCondition, Lodging, Charge
+from apps.user.utils import ViewException, number_verfication_required
+from apps.image.models import ImageModel
 from apps.user.utils import maintain_cookie
-from apps.locations.models import Region
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from .utils import generate_random, create_thumbnail
-import re
-import base64
-import io
+from .serializers import CommonLodgingSerializer
 
-def delete_files(*args):
-    for file in args:
-        if os.path.isfile(file):
-            os.remove(file)
+import json
+import requests
+from urllib.parse import urlparse
 
-@receiver(post_delete, sender=ImageModel)
-def delete_image(sender,instance,using,**kwargs):
-    delete_files(
-        instance.image.url,
-        instance.image_thumbnail.url)
 
-@maintain_cookie
-@login_required
-def lodging_create_view(request):
-    if not request.user.is_verified:
-        messages.error(request,'Verify mobile number to add business')
-        return HttpResponseRedirect(reverse('dashboard:home'))
-    if request.method=='POST':
-        form = LodgingCreateForm(request.POST)
-        sub_form = CommonlyUsedLodgingCreateForm(request.POST)
-        if sub_form.is_valid():
-            sublodging = sub_form.save(commit=False)
-            if form.is_valid():
-                lodging = form.save(commit=False)
-                lodging.posted_by = request.user
-                with transaction.atomic():
-                    lodging.save()
-                    sublodging.lodging = lodging
-                    sublodging.save()
-                    for image_id in request.POST.getlist('images'):
-                        image = ImageModel.objects.get(id=image_id)
-                        image.sublodging = sublodging
-                        image.save()
-                messages.success(request,"Lodging created successfully")
-                return HttpResponseRedirect(reverse('ads:list',kwargs={
-                    'state_id':sublodging.region.state.id,
-                    'state':sublodging.region.state.name,
-                    'district_id':sub_form.cleaned_data['district'].id,
-                    'district':sublodging.region.district.name
-                }))
-    else:
-        request.session.set_test_cookie()
-        form = LodgingCreateForm()
-        sub_form = CommonlyUsedLodgingCreateForm()
-    return render(request,'lodging/create_lodging.html',{'form': form,
-        'sub_form': sub_form})
+@method_decorator([login_required,number_verfication_required],name='dispatch')
+class LodgingView(View):
+  form_class = LodgingCreateForm
+  sub_form_class = CommonlyUsedLodgingCreateForm
 
-@maintain_cookie
-@login_required
-def lodging_edit_view(request,ad_id):
+  def post(self,request):
+    data = request.POST
+    form = form_class(data)
+    sub_form = sub_form_class(request,data)
     try:
-        lodging=Lodging.objects.prefetch_related(
-            Prefetch(
-                'sublodging',
-                queryset=CommonlyUsedLodgingModel.objects.prefetch_related('images')
-            ),
-            'posted_by'
-        ).get(id=ad_id)
-        if lodging.posted_by!=request.user:
-            raise ViewException('Unauthorized access')
-        sublodging = lodging.sublodging
-        images = sublodging.images.all()
-    except Lodging.DoesNotExist:
-        messages.error('Bad request')
-        return HttpResponseRedirect(reverse('dashboard:home'))
-    sublodging_form = CommonlyUsedLodgingUpdateForm(None,instance=sublodging)
-    if request.method=='POST':
-        if 'delete' in request.POST:
-            with transaction.atomic():
-                images.delete()
-                lodging.delete()
-            messages.success(request,"Lodging deleted successfully")
-            return HttpResponseRedirect(reverse('dashboard:home'))
-        elif 'update' in request.POST:
-            sublodging_form = CommonlyUsedLodgingUpdateForm(images,request.POST,
-            instance=sublodging)
-            if sublodging_form.is_valid():
-                with transaction.atomic():
-                    sublodging_form.save()
-                    for image_id in request.POST.getlist('delete_images'):
-                        for image in images:
-                            if image.id==int(image_id):
-                                image.delete()
-                    for image_id in request.POST.getlist('images'):
-                        image = ImageModel.objects.get(id=image_id)
-                        image.sublodging = sublodging
-                        image.save()
-                messages.success(request,'Lodging updated successfully')
-                return HttpResponseRedirect(reverse('ads:list',kwargs={
-                    'state': sublodging.region.state.name,
-                    'state_id': sublodging.region.state.id,
-                    'district': sublodging.region.district.name,
-                    'district_id': sublodging.region.district.id,
-                }))
-    return render(request,'lodging/edit_lodging.html',
-        {'sublodging_form': sublodging_form,'images':images})
+      sublodging = self.save_lodging(form,sub_form,request,data)
+      return JsonResponse({'success': True,'ad':CommonLodgingSerializer(sublodging).data})
+    except ValidationError as e:
+      form.add_error(None,e)
+    return JsonResponse({'errors':{**form.errors,**sub_form.errors}},status=400)
 
-def image_upload_view(request):
-    if request.method=="POST":
-        try:
-            dataUrlPattern = re.compile('data:image/(png|jpeg);base64,(.*)$')
-            image_data = request.POST['image']
-            image_data = dataUrlPattern.match(image_data).group(2)
-            image_data = image_data.encode()
-            image_data = base64.b64decode(image_data)
-            image_name = generate_random(32)
-            file = InMemoryUploadedFile(io.BytesIO(image_data),
-                'image',image_name+'.jpeg',None,None,None)
-            thumb_file = create_thumbnail(file,thumb_size,
-                image_name+'.thumbnail.jpeg')
-            im = ImageModel.objects.create(image=file,image_thumbnail=thumb_file)
-            return JsonResponse({
-                'id':im.id,
-                'url': im.image_thumbnail.url})
-        except Exception as e:
-            return HttpResponseBadRequest(request,{'errors':'Sorry, could not upload file.'})
+  def put(self,request,ad_id):
+    data=QueryDict(request.body)
+    try:
+      ad = Lodging.objects.get(id=ad_id)
+    except Lodging.DoesNotExist:
+      return JsonResponse({'error':'Property does not exist'},404)
+    try:
+      if request.user!=ad.posted_by:
+        raise ValidationError('You are not authorized to perform this action')
+      form = self.form_class(data,instance=ad)
+      sub_form = self.sub_form_class(request,data,instance=ad.sublodging)
+      sublodging = self.save_lodging(form,sub_form,request,data)
+      return JsonResponse({'success': True,'ad':CommonLodgingSerializer(sublodging).data})
+    except ValidationError as e:
+      form.add_error(None,e)
+    return JsonResponse({'errors':{**form.errors,**sub_form.errors}},status=400)
+
+  def delete(self, request, ad_id):
+    data = QueryDict(request.body)
+    try:
+      ad = Lodging.objects.get(id=ad_id)
+      ad.delete()
+      return JsonResponse({'success':True})
+    except Lodging.DoesNotExist:
+      return JsonResponse({'error':'Property does not exist'},404)
+
+
+  def save_lodging(self,form,sub_form,request,data):
+    if form.is_valid() and sub_form.is_valid():
+      lodging = form.save(commit=False)
+      lodging.posted_by=request.user
+      with transaction.atomic():
+        lodging.save()
+        sublodging = sub_form.save(commit=False)
+        sublodging.lodging = lodging
+        sublodging.save()
+        for image_id in data.getlist('images'):
+          try:
+            image = ImageModel.objects.get(id=image_id)
+          except ImageModel.DoesNotExist:
+            continue
+          if image.content_object is not None:
+            continue
+          image.content_object = sublodging
+          image.save()
+        sublodging.charges.all().delete()
+        for other_charge in json.loads(data.get('other_charges','[]')):
+          charge_form = ChargeForm(other_charge)
+          if charge_form.is_valid():
+            charge_form.save(sublodging)
+          else:
+            raise ValidationError('Error in other charges')
+        sublodging.termsandconditions.all().delete()
+        for term_and_condition in json.loads(data.get('terms_and_conditions','[]')):
+          TermAndCondition.objects.create(text=term_and_condition,lodging=sublodging)
+        return sublodging
+
+def verify_tour_link(request):
+  tour_link = request.GET.get('virtual_tour_link')
+  try:
+    res = requests.get(tour_link)
+    if res.status_code==200 and 'kuula' in urlparse(tour_link)[1].split('.'):
+      return HttpResponse('true')
+  except:
+    pass
+  return HttpResponse('false')

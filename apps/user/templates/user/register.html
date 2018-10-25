@@ -4,41 +4,13 @@
 {% block register_active %}active{% endblock %}
 
 {% block content %}
-    <div class="container col-11 col-sm-10 col-md-9 col-lg-7 col-xl-5">
-        <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5">
+    <div class="container col-12 col-sm-9 col-md-8 col-lg-7 col-xl-6">
+        <form action="{% url 'user:register' %}" method="post" novalidate class="mt-5 custom-main-form">
             {% csrf_token %}
-            <p class="h4 text-center mb-4">REGISTER</p>
-
-            {% if messages %}
-                <div class="messages-container">
-                    {% for message in messages %}
-                        <div{% if message.tags %} class="custom-{{ message.tags }} mt-2 message icon"{% endif %}>
-                            {{message}}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            
+            <p class="h4 text-center custom-main-form-heading">
+                <i class="fa fa-user-plus"></i> REGISTER</p>
+            <div class="form">
             {% with WIDGET_ERROR_CLASS='invalid' WIDGET_REQUIRED_CLASS='required' %}
-                <div class="row">
-                    <div class="md-form col-12 col-md-6">
-                        <i class="fa fa-user prefix"></i>
-                        {% render_field form.first_name|append_attr:"autofocus" id="first_name" class+="form-control" %}
-                        <label for="first_name">First name</label>
-                        {% if form.first_name.errors %}
-                            <div class="error"><small>{{form.first_name.errors.0}}</small></div>
-                        {% endif %}
-                    </div>
-
-                    <div class="md-form col-12 col-md-6">
-                        <i class="fa fa-user prefix"></i>
-                        {% render_field form.last_name id="last_name" class+="form-control" %}
-                        <label for="last_name">Last name</label>
-                        {% if form.last_name.errors %}
-                            <div class="error"><small>{{form.last_name.errors.0}}</small></div>
-                        {% endif %}
-                    </div>
-                </div>
 
                 <div class="row">
                     <div class="md-form col-12 col-md-6">
@@ -51,7 +23,7 @@
                     </div>
                     
                     <div class="md-form col-12 col-md-6">
-                        <i class="fa fa-envelope prefix"></i>
+                        <i class="fa fa-mobile prefix"></i>
                         {% render_field form.mobile_number id="mobile_number" class+="form-control" %}
                         <label for="mobile_number">Mobile number</label>
                         {% if form.mobile_number.errors %}
@@ -79,31 +51,19 @@
                         {% endif %}
                     </div>
                 </div>
-
-                <div class="custom-form">
-                    <div><label for="label id_is_dealer1">Are you a dealer?</label></div>
-                    {% if form.is_dealer.value == "True" %}
-                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True" checked>
-                    <label for="label id_is_dealer">Yes</label>
-                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False">
-                    <label for="label id_is_dealer2">No</label>
-                    {% else %}
-                    <input type="radio" name="is_dealer" id="id_is_dealer1" class="option-input radio ml-0" value="True">
-                    <label for="label id_is_dealer">Yes</label>
-                    <input type="radio" name="is_dealer" id="id_is_dealer2" class="option-input radio" value="False" checked>
-                    <label for="label id_is_dealer2">No</label>
-                    {% endif %}
-                    {% if form.is_dealer.errors %}
-                        <div class="error"><small>{{form.is_dealer.errors.0}}</small></div>
-                    {% endif %}
-                </div>
             {% endwith %}
 
-            <div class="text-center mt-4">
-                <button class="btn btn-primary" type="submit">Register</button>
+            <div class="text-center mt-5">
+                <button class="btn btn-block submit-1" type="submit">Register</button>
             </div>
 
-            <p class="font-small grey-text d-flex justify-content-end mt-3">Already a member? <a href="{% url 'user:login' %}" class="blue-text ml-1"> Login</a></p>
+            <p class="font-small grey-text d-flex justify-content-end mt-3">
+                Already a member? 
+                <a href="{% url 'user:login' %}" class="dark-text bold-800 ml-1"> 
+                    Login
+                </a>
+            </p>
+            </div>
         </form>
     </div>
 {% endblock %}

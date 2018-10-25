@@ -1,0 +1,5 @@
+thumbnail_size = (270,200)
+mobile_image_size = (1000,1000)
+image_size = (2000,2000)
+profile_thumbnail_size = (50,50)
+profile_moble_image_size = (270,250)

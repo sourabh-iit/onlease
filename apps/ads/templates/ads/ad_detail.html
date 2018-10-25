@@ -1,0 +1,213 @@
+{% extends "base_templates/base_template_1.html" %}
+{% load static %}
+{% load lodging_filters %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'ads/ad_detail.css' %}">
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static 'ads/ad_detail.js' %}"></script>
+{% endblock %}
+
+
+{% block content %}
+<script>
+  var data = JSON.parse("{{ data | escapejs}}");
+</script>
+<div class="row m-0 ad-container">
+  <div class="col-12 col-md-6">
+    <div class="ad-title">
+      {{sublodging.title}}
+    </div>
+    <div id="image_carousel_container"></div>
+    <!-- <div>
+      <button class="btn btn-secondary" onclick="openMap()">Open Address in Map</button>
+    </div> -->
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="basic-details p-3">
+      <div class="indigo badge badge-pill mt-1 fs-3-5">
+        <i class="fa fa-inr"></i>
+        {{sublodging.rent}}
+      </div>
+      <div class="indigo badge badge-pill mt-1 fs-3-5">
+        <i class="fa fa-map-marker"></i>
+        {{sublodging.region}}
+      </div>
+      <div class="indigo badge badge-pill mt-1 fs-3-5">
+        <i class="fa fa-home"></i>
+        {{sublodging | full_form:'type'}}
+      </div>
+    </div>
+    {% if show_contact_details == True %}
+    <div class="mb-3 z-depth-1 p-3 details">
+      <div class="h4">Contact Details</div>
+      <div>
+        Phone numbers - {{lodging|phone_numbers}}
+      </div>
+      <div>
+        Address - {{lodging.address}}
+      </div>
+    </div>
+    {% endif %}
+    <div class="z-depth-1 p-3 mb-3 details">
+      <div class="h4">Property Details</div>
+      <div>Furnishing - {{sublodging|full_form:'furnishing'}}</div>
+      <div>Facilities - 
+        {% for facility in sublodging|full_form:'facilities' %}
+          {{facility.value}}
+        {% endfor %}
+      </div>
+      <div class="d-flex align-items-center">
+        Area - &nbsp;
+        <span id="area_group" class="input-group justify-content-center width-fit-content">
+          <span class="input-group-prepend">
+            <span class="input-group-text fs-1" id="area">{{sublodging.area}}</span>
+          </span>
+        </span>
+      </div>
+      <div>Floor number - 
+        {% if sublodging.ground_floor %}
+        Ground Floor
+        {% elif sublodging.top_floor %}
+        Top Floor
+        {% else %}
+        {{sublodging.floor_no}}<sup>{{sublodging.floor_no|style_number}}</sup> 
+        floor
+        {% endif %}
+        <small>(Total floors: {{sublodging.total_floors}})</small>
+      </div>
+      <div>Flooring - {{sublodging|full_form:'flooring'}}</div>
+      <div>{{sublodging.bathrooms}} Bathrooms, {{sublodging.rooms}} Rooms, 
+        {{sublodging.balconies}} Balconies, {{sublodging.halls}} Halls</div>
+      <div>{{sublodging.additional_details}}</div>
+    </div>
+    <div class="booking-amount z-depth-1 mb-3 d-flex">
+      <div class="heading">Charges</div>
+      {% if sublodging.advance_rent_of_months > 1 %}
+      <div>
+        Rent of {{sublodging.advance_rent_of_months}} in advance
+      </div>
+      {% endif %}
+      <table class="table table-bordered mb-0">
+        <thead class="color-5 text-white">
+          <tr>
+            <th>Charge</th>
+            <th>Amount</th>
+            <th>Per Month</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for charge in sublodging.charges.all %}
+          <tr>
+            <th class="text-capitalize">
+              {{charge.description}}
+            </th>
+            <td>
+              <i class="fa fa-inr"></i>
+              {{charge.amount}}
+            </td>
+            <td>
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="rent" 
+                  {% if charge.is_per_month %}checked{% endif %} disabled>
+                <label class="custom-control-label" for="rent"></label>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% comment %} <tr>
+            <th>
+              Security deposit
+            </th>
+            <td>
+              <i class="fa fa-inr"></i>
+              {{sublodging.security_deposit}}
+            </td>
+          </tr> {% endcomment %}
+          {% comment %} <tr>
+            <th>
+              Booking amount
+            </th>
+            <td>
+              <i class="fa fa-inr"></i>
+              {{sublodging.booking_amount}}
+            </td>
+          </tr> {% endcomment %}
+          <tr>
+            <th>
+              Rent
+            </th>
+            <td>
+              <i class="fa fa-inr"></i>
+              {{sublodging.rent}}
+            </td>
+            <td>
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="rent" checked disabled>
+                <label class="custom-control-label" for="rent"></label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% if sublodging.termsandconditions.count > 0 %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <ol>
+          {% for term_and_condition in sublodging.termsandconditions.all %}
+          <li class="card-text fs-3">{{term_and_condition}}</li>
+          {% endfor %}
+        </ol>
+        <div class="card-text">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" 
+              class="custom-control-input"
+              name="agree_to_terms_and_conditions" 
+              id="agree_to_terms_and_conditions">
+            <label for="agree_to_terms_and_conditions"
+              class="custom-control-label">
+              I agree that I fall under above term(s) and condition(s).
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div class="text-center">
+      <button 
+      onclick="book_now(event)" 
+      class="btn color-4"
+      {% if sublodging.is_booked or sublodging.is_booking %}
+      disabled
+      {% endif %}>
+        Book Now
+        in 
+        <span class="h5 text-success">
+          <i class="fa fa-inr" style="font-size: 1.25rem;"></i>{% widthratio sublodging.rent 10 1 %}
+        </span>
+        only
+      </button>
+      {% if sublodging.is_booked or sublodging.is_booking %}
+      <div>
+        <small class="red-text">
+          Already booked or under process of booking
+        </small>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<div>
+  <script>
+    var latlng = '{{sublodging.latlng}}';
+    var book_now_url = "{% url 'transactions:lodging-redirect-to-instamojo' lodging.id %}";
+  </script>
+  {% comment %} <iframe width="600" height="450" frameborder="0" style="border:0" 
+  src="https://www.google.com/maps/embed/v1/directions?origin=&destination={{sublodging.latlng}}&key=AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ" 
+  allowfullscreen></iframe> {% endcomment %}
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+<footer class="page-footer font-small blue pt-4">
+
+  <!--Footer Links-->
+  <div class="container-fluid text-center text-md-left">
+    <div class="row wow">
+
+      <div class="col-md-4">
+        <div>
+          <p class="column-title white-text">
+            <strong>USEFUL LINKS</strong>
+          </p>
+          <ul class="list-unstyled">
+            {% comment %}
+            <li>
+              <a href="{% url 'dashboard:home' %}">Dashboard</a>
+            </li> {% endcomment %}
+            <li>
+              <a
+              data-toggle="modal"
+              data-target="#modalLoginForm"
+              >Log in</a>
+            </li>
+            <li>
+              <a
+              data-toggle="modal"
+              data-target="#modalRegisterForm"
+              >Register</a>
+            </li>
+            <li>
+              <a data-toggle="modal"
+              {% if user.is_authenticated %}
+              data-target="#modalPropertyAdForm"
+              {% else %}
+              data-target="#modalLoginForm"
+              {% endif %}
+              >Add new property</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div>
+          <p class="column-title white-text text-uppercase">
+            <strong>Sponsor</strong>
+          </p>
+          <ul class="list-unstyled">
+            <li>
+              <a href="https://msg91.com/startups/?utm_source=startup-banner">
+                <img src="https://msg91.com/images/startups/msg91Badge.png" width="120" height="90" 
+                      title="MSG91 - SMS for Startups" alt="Bulk SMS - MSG91">
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div>
+          <p class="column-title white-text text-uppercase">
+            <strong>contact</strong>
+          </p>
+          <ul class="list-unstyled">
+            <li>
+              <i class="fa fa-whatsapp"></i>
+              9050183280
+            </li>
+            <li>
+              <i class="fa fa-phone"></i>
+              9050183280
+            </li>
+            <li>
+              <a target="_blank" href="https://tawk.to/chat/5adef5845f7cdf4f05338e80/default/?$_tawk_popout=true" 
+                  class="btn color-4 btn-sm">
+                <i class="fa fa-comments"></i> Chat with us
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--/.Footer Links-->
+
+  <!--Copyright-->
+  <div class="footer-copyright py-3 text-center">
+    © 2018 Copyright:
+    <a href="/"> OnLease.in </a>
+  </div>
+  <!--/.Copyright-->
+
+</footer>
