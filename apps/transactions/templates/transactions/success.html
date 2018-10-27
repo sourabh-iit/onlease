@@ -27,14 +27,22 @@
           <i class="fa fa-times-circle"></i> Your transaction of <i class="fa fa-inr mr-1"></i>
           {{transaction.amount}} was unsuccessfull.
           {% endif %}
-        </h2><br>
+        </h2>
         <p class="card-text fs-3">Transation id:
           <strong>{{transaction.trans_id}}</strong>
-        </p><br>
+        </p>
+        {% if success %}
+        <p class="card-text fs-3">Mobile number:
+          <strong>{{lodging | phone_numbers}}</strong>
+        </p>
+        <p class="card-text fs-3">Address:
+          <strong>{{lodging.address}}</strong>
+        </p>
+        {% endif %}
       </div>
       {% if success %}
       <div class="card-footer text-center">
-          We will soon send you confirmation message and contact details to your registered mobile number.
+          You can check this contact information later from "My Bookings" in dropdown at top.
       </div>
       {% endif %}
     </div>

@@ -24,6 +24,7 @@ from .forms import ValidateOtpForm, RegisterForm, LoginForm,\
 from .utils import ViewException, maintain_cookie, not_logged_in
 from .models import User, MobileNumber
 from apps.transactions.utils import send_otp, generate_otp
+from .serializers import UserSerializer
 
 cookie_message = 'Cookies are not enabled. We use cookies for better user experience.'
 
@@ -299,10 +300,7 @@ def loginView_ajax(request):
                 if request.user.mobile_number in settings.ADMINS_LIST:
                     request['admin'] = request.user.mobile_number
                 # redirect to required view
-                return HttpResponse(serializers.serialize('json',[user],
-                  fields=('mobile_number','email','first_name','last_name','detail','gender',
-                  'type_of_roommate')
-                ))
+                return JsonResponse(UserSerializer(user).data)
         except ViewException as e:
             form.add_error(None,e);
         return JsonResponse({'errors':form.errors},safe=False,status=400)

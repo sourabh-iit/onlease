@@ -26,8 +26,8 @@ class LodgingView(View):
 
   def post(self,request):
     data = request.POST
-    form = form_class(data)
-    sub_form = sub_form_class(request,data)
+    form = self.form_class(data)
+    sub_form = self.sub_form_class(request,data)
     try:
       sublodging = self.save_lodging(form,sub_form,request,data)
       return JsonResponse({'success': True,'ad':CommonLodgingSerializer(sublodging).data})
@@ -86,6 +86,7 @@ class LodgingView(View):
           if charge_form.is_valid():
             charge_form.save(sublodging)
           else:
+            print(charge_form.errors)
             raise ValidationError('Error in other charges')
         sublodging.termsandconditions.all().delete()
         for term_and_condition in json.loads(data.get('terms_and_conditions','[]')):
