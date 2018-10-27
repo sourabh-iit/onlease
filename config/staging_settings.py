@@ -1,7 +1,7 @@
 from .common_production_settings import *
 import os
 
-ALLOWED_HOSTS = ['103.95.13.160','staging.onlease.in','www.staging.onlease.in']
+ALLOWED_HOSTS = ['103.242.116.203','staging.onlease.in','www.staging.onlease.in']
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases

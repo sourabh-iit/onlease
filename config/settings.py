@@ -1,7 +1,7 @@
 from .common_production_settings import *
 import os
 
-ALLOWED_HOSTS = ['onlease.in','www.onlease.in','103.95.13.160']
+ALLOWED_HOSTS = ['onlease.in','www.onlease.in','103.242.116.203']
 
 DATABASES = {
     'default': {

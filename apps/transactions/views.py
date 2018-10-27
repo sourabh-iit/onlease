@@ -145,6 +145,7 @@ def lodging_post_redirection_view(request):
         transaction_.payment_gateway_fees=data['payment']['fees']
         transaction_.status=LodgingTransaction.SUCCESS
         sublodging.is_booked=True
+        lodging.purchased_by.add(request.user)
         messages.success(request,'Your transaction was successful')
       else:
         messages.error(request,'An invalid amount was paid')
@@ -153,6 +154,7 @@ def lodging_post_redirection_view(request):
     with transaction.atomic():
       sublodging.save()
       transaction_.save()
+      lodging.save()
     send_message(request.user.mobile_number,
       successfull_transaction_message(
         lodging.posted_by,request.user,
