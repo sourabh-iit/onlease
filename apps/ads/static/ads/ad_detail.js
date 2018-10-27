@@ -43,6 +43,7 @@ function book_now(event){
   $el = $(event.target);
   if(window.booking_in_process) return;
   window.booking_in_process = true;
+  var inner = $el.html();
   $.ajax({
     type: 'POST',
     url: window.book_now_url,
@@ -51,15 +52,20 @@ function book_now(event){
     },
     dataType: 'json',
     beforeSend: function(){
+      $el.html('Please wait...');
       loading_icon = window.create_inline_loading_element();
       $el.append(loading_icon);
+      $el.attr('disabled','disabled');
     }
   }).done(function(res){
     toastr.info('Redirecting to secure payment gateway');
     window.location.href = res.url;
   }).fail(function(res){
+    console.log(res)
     display_global_errors(res);
   }).always(function(){
+    $el.removeAttr('disabled');
+    $el.html(inner);
     $(loading_icon).remove();
     window.booking_in_process=false;
   });

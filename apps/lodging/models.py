@@ -215,7 +215,7 @@ class CommonlyUsedLodgingModel(models.Model):
 
 class Charge(models.Model):
   amount=models.CharField(max_length=20, validators=[RegexValidator('^[0-9]+$')])
-  description=models.CharField(max_length=50, validators=[validate_slug])
+  description=models.CharField(max_length=50)
   is_per_month=models.BooleanField(default=False)
   lodging=models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,related_name='charges')
 

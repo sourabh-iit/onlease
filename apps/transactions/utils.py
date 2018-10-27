@@ -63,4 +63,9 @@ def successfull_transaction_message(owner,customer,lodging,transaction):
     return message
 
 def lodging_booked_message(owner,customer,lodging,transaction):
-    return 'Dear '+owner.first_name+', your lodging with id '+str(lodging.id)+' has been booked. This is his/her mobile number: '+customer.mobile_number+'.'+onlease_last_message
+    owner_name = ""
+    if owner.first_name:
+        owner_name += owner.first_name
+    if owner.last_name:
+        owner_name += owner.last_name
+    return 'Dear '+owner_name+', your lodging with id '+str(lodging.id)+' has been booked. This is his/her mobile number: '+customer.mobile_number+'.'+onlease_last_message

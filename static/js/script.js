@@ -14,62 +14,95 @@ function has_keys(data){
   return Object.keys(data).length>0;
 }
 
-(function (){
-  // TODO handle if not user verified
-  // <a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalEnterNumberForm"
-  //       data-action="verify-number">
-  //       Verify your number</a>
-  var $logged_in_nav_items = `
-  <li class="nav-item dropdown">
-    <!-- {% comment %}<a class="nav-link dropdown-toggle waves-effect waves-light btn btn-sm btn-info" id="newAdsLink" data-toggle="dropdown" aria-haspopup="true"
-      aria-expanded="true">
-      New Ad
-    </a>
-    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="newAdsLink">
-      {% if user.is_verified %}
-      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalPropertyAdForm">
-      {% else %}
-      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
-      {% endif %} Property
-      </a>
-      {% if user.is_verified %}
-      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalRoomieAdForm">
-      {% else %}
-      <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
-      {% endif %} Mates
-      </a>
-    </div>{% endcomment %} -->
-    <a class="nav-link color-4 waves-effect waves-light btn btn-sm btn-info" 
-      onclick="open_property_form('propertyAdform','New Property Form')"
-      id="newProperty" 
-      aria-haspopup="true"
-      aria-expanded="true">
-      New Ad
-    </a>
-  </li>
-  <li class="nav-item dropdown-md">
-    <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" 
-      id="navbarDropdownMenuLink" data-toggle="dropdown"
-      aria-haspopup="true" aria-expanded="true">
-      <i class="fa fa-user-circle-o fs-4"></i></a>
-    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">
-      <a class="dropdown-item waves-effect waves-light text-capitalized" 
-        data-toggle="modal" data-target="#modalUserProfileForm">
-        My Profile</a>
-      <a class="dropdown-item waves-effect waves-light text-capitalized"
-        onclick="get_my_ads()">
-        My Ads</a>
-      <div class="dropdown-divider"></div>
-      <a class="dropdown-item text-capitalized waves-effect waves-light" onclick="logout()">
-        Log out</a>
-    </div>
-  </li>`;
-
-  function nav_link(form){
-    return $(`<a class="nav-link waves-effect waves-light" data-toggle="modal" data-target="#${form}"></a>`)
+class NavItems{
+  constructor(){
+    this.$navbar = $('#navbar');
+    $(document).on('login',()=>{
+      this.$navbar.empty().append(this.get_logged_in_nav_items());
+    });
+    $(document).on('logout',()=>{
+      this.$navbar.empty().append(this.get_logged_out_nav_items());
+    });
+    $(document).on('rerender_nav_items',()=>{
+      this.$navbar.empty();
+      this.render_items();
+    });
+    this.render_items();
   }
 
-  function logged_out_nav_items(){
+  render_items(){
+    if(has_keys(window.user_data)){
+      this.$navbar.append(this.get_logged_in_nav_items());
+    } else {
+      this.$navbar.append(this.get_logged_out_nav_items());
+    }
+  }
+
+  get_dropdown(){
+    var dropdown = `<li class="nav-item dropdown-md">
+      <a class="nav-link dropdown-toggle waves-effect waves-light text-capitalized" 
+        id="navbarDropdownMenuLink" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="true">
+        <i class="fa fa-user-circle-o fs-4"></i></a>
+      <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">`;
+    if (!window.user_data.is_verified){
+      dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalEnterNumberForm"
+      data-action="verify-number">Verify your number</a>`;
+    }
+    dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" 
+          data-toggle="modal" data-target="#modalUserProfileForm">
+          My Profile</a>
+        <a class="dropdown-item waves-effect waves-light text-capitalized"
+          onclick="get_my_ads()">
+          My Properties</a>
+        <a class="dropdown-item waves-effect waves-light text-capitalized"
+          onclick="get_my_booked_ads()">
+          My Bookings</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item text-capitalized waves-effect waves-light" onclick="logout()">
+          Log out - ${window.user_data.mobile_number}</a>
+      </div>
+    </li>`;
+    return dropdown;
+  }
+  
+  get_logged_in_nav_items(){
+    var logged_in_nav_items = `
+    <li class="nav-item dropdown">
+      <!-- {% comment %}<a class="nav-link dropdown-toggle waves-effect waves-light btn btn-sm btn-info" id="newAdsLink" data-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="true">
+        New Ad
+      </a>
+      <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="newAdsLink">
+        {% if user.is_verified %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalPropertyAdForm">
+        {% else %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
+        {% endif %} Property
+        </a>
+        {% if user.is_verified %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalRoomieAdForm">
+        {% else %}
+        <a class="dropdown-item waves-effect" data-toggle="modal" data-target="#modalEnterNumberForm" data-action="verify-number">
+        {% endif %} Mates
+        </a>
+      </div>{% endcomment %} -->
+      <a class="nav-link color-4 waves-effect waves-light btn btn-sm btn-info" 
+        onclick="open_property_form('propertyAdform','New Property Form')"
+        id="newProperty" 
+        aria-haspopup="true"
+        aria-expanded="true">
+        New Ad
+      </a>
+    </li>`;
+  
+    return $(logged_in_nav_items+this.get_dropdown());
+  }
+
+  get_logged_out_nav_items(){
+    function nav_link(form){
+      return $(`<a class="nav-link waves-effect waves-light" data-toggle="modal" data-target="#${form}"></a>`)
+    }
     var $nav_item = $(`<li class="nav-item"></li>`);
     if($(window).width()<768){
       $nav_item.append(nav_link('modalLoginForm').append(`<i class="fa fa-sign-in"></i>`).addClass('fs-3-5'))
@@ -80,23 +113,9 @@ function has_keys(data){
     }
     return $nav_item;
   }
+}
 
-  var $logged_out_nav_items = logged_out_nav_items();
-  var $navbar = $('#navbar');
-
-  $(document).on('login',()=>{
-    $navbar.empty().append($logged_in_nav_items);
-  });
-
-  $(document).on('logout',()=>{
-    $navbar.empty().append($logged_out_nav_items);
-  });
-  if(has_keys(window.user_data)){
-    $navbar.append($logged_in_nav_items);
-  } else {
-    $navbar.append($logged_out_nav_items);
-  }
-})();
+new NavItems();
 
 function trace(...values){
   if(DEBUG){
@@ -792,6 +811,7 @@ function login_form_validation(){
                   toastr.success('You are now logged in.');
                   $(document).trigger('login');
                   $(form).modal('hide');
+                  window.user_data = data;
                 }).fail((data)=>{
                   display_errors(data,form);
                 }).always((data)=>{
@@ -1016,6 +1036,8 @@ function verify_number_form_validation(){
                     'data': data,
                 }).done((data)=>{
                   $('#modalVerifyNumberForm').modal('hide');
+                  window.user_data.is_verified = true;
+                  $(document).trigger('rerender_nav_items');
                   if(set_password){
                     $('#modalSetPasswordForm').modal('show');
                   } else {
@@ -1025,9 +1047,6 @@ function verify_number_form_validation(){
                       toggle_add_new_number_button();
                     } else {
                       display_message(form, 'Registered successfully.');
-                      setTimeout(() => {
-                        window.location.reload();
-                      }, 1000);
                     }
                   }
                 }).fail((data)=>{
@@ -2226,24 +2245,24 @@ function write_character_count(this_,length,span){
   $(span).text(written+'/'+length);
 }
 
-function set_character_count(){
-    $('input[length],textarea[length]').focusin(function(){
-        var length = $(this).attr('length');
-        var span = document.createElement('span');
-        $(span).addClass('character-counter');
-        span.innerText = $(this).val().length+'/'+length;
-        $(this).before(span);
-        $(this).keyup(function(){
-          write_character_count(this,length,span);
-        });
-        $(this).change(function(){
-          write_character_count(this,length,span);
-        });
+function set_character_count($el){
+  $el.focusin(function(){
+    var length = $(this).attr('length');
+    var span = document.createElement('span');
+    $(span).addClass('character-counter');
+    span.innerText = $(this).val().length+'/'+length;
+    $(this).before(span);
+    $(this).keyup(function(){
+      write_character_count(this,length,span);
     });
+    $(this).change(function(){
+      write_character_count(this,length,span);
+    });
+  });
 
-    $('input[length],textarea[length]').focusout(function(){
-      $(this).parent().children('.character-counter').remove()
-    });
+  $el.focusout(function(){
+    $(this).parent().children('.character-counter').remove()
+  });
 }
 
 function set_custom_alerts(){
@@ -2800,9 +2819,9 @@ function calc_ads_container_width(max_ads=5){
   return window_width;
 }
 
-class MyAds extends Ads {
-  constructor(prefix,ads){
-    var modal = new Modal('myAdsModal','My Ads');
+class MyProperties extends Ads{
+  constructor(prefix, ads, title){
+    var modal = new Modal(prefix,title);
     super(prefix,modal.$modal_body,ads,true);
     this.modal = modal;
     this.modal.$modal_dialog.addClass('modal-lg')
@@ -2828,9 +2847,28 @@ function get_my_ads(){
         show_loading();
       }
     }).done(function(res){
-      window.myads = new MyAds('my_property',JSON.parse(res.data));
+      window.myads = new MyProperties('my_property',JSON.parse(res.data),'My Properties');
     }).fail(function(){
       toastr.error("Unable to get your ads","Error");
+    }).always(function(){
+      remove_loading();
+    });
+  }
+}
+
+function get_my_booked_ads(){
+  if(window.mybookings){
+    window.mybookings.modal.$modal.modal('show');
+  } else {
+    $.ajax({
+      url: window.my_bookings_url,
+      beforeSend: function(){
+        show_loading();
+      }
+    }).done(function(res){
+      window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings');
+    }).fail(function(){
+      toastr.error("Unable to get your bookings","Error");
     }).always(function(){
       remove_loading();
     });
@@ -3802,7 +3840,6 @@ $('document').ready(function(){
   });
   
   new ProfileAddImage($('#upload-image'),window.profile_image_url,1000,1000);
-  set_character_count();
   set_validations();
   set_disable_submit_button();
   set_enter_number_form();

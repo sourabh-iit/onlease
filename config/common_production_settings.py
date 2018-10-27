@@ -6,10 +6,15 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-INSTAMOJO_API_KEY = os.environ.get('INSTAMOJO_API_KEY')
-INSTAMOJO_AUTH_KEY = os.environ.get('INSTAMOJO_AUTH_KEY')
-INSTAMOJO_SALT = os.environ.get('INSTAMOJO_SALT')
-INSTAMOJO_ENDPOINT = 'https://instamojo.com/api/1.1/'
+# INSTAMOJO_API_KEY = os.environ.get('INSTAMOJO_API_KEY')
+# INSTAMOJO_AUTH_KEY = os.environ.get('INSTAMOJO_AUTH_KEY')
+# INSTAMOJO_SALT = os.environ.get('INSTAMOJO_SALT')
+# INSTAMOJO_ENDPOINT = 'https://instamojo.com/api/1.1/'
+
+INSTAMOJO_API_KEY = 'test_6789fe46ddf86acf17557f8d030'
+INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
+INSTAMOJO_SALT = b'1d83a8d73aa84093857eb269fd825d67'
+INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
 
 RECIPIENTS = ['sourabh7singh@gmail.com','feedback@onlease.in']
 

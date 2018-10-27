@@ -113,3 +113,11 @@ def my_ads_ajax(request):
   return JsonResponse({
     'data':json.dumps(CommonLodgingSerializer(sublodging,many=True).data)
   })
+
+def my_bookings_ajax(request):
+  sublodging = CommonlyUsedLodgingModel.objects.\
+    prefetch_related('lodging','images','region','charges').\
+    filter(lodging__purchased_by=request.user)
+  return JsonResponse({
+    'data':json.dumps(CommonLodgingSerializer(sublodging,many=True).data)
+  })
