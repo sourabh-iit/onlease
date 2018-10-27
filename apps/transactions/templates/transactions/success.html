@@ -2,6 +2,7 @@
 {% load widget_tweaks %} 
 {% block title %}Successful transaction{% endblock%}
 {% load static %} 
+{% load lodging_filters %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'transactions/success.css' %}"> 
@@ -42,7 +43,7 @@
       </div>
       {% if success %}
       <div class="card-footer text-center">
-          You can check this contact information later from "My Bookings" in dropdown at top.
+          You can check this contact information later from <a onclick="get_my_booked_ads()">My Bookings</a> in dropdown at top.
       </div>
       {% endif %}
     </div>
