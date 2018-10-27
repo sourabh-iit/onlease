@@ -59,7 +59,12 @@ def send_otp(request,mobile_number):
         messages.success(request,'An OTP has been sent successfully')
 
 def successfull_transaction_message(owner,customer,lodging,transaction):
-    message = 'Dear '+customer.first_name+', your transaction for lodging id '+str(lodging.id)+' was successfull. Your transaction id is '+str(transaction.id)+'. Contact number of owner/dealer is '+owner.mobile_number+'. You can see further details in your dashboard.'+onlease_last_message
+    owner_name = ""
+    if owner.first_name:
+        owner_name += owner.first_name
+    if owner.last_name:
+        owner_name += owner.last_name
+    message = 'Dear '+owner_name+', your transaction for lodging id '+str(lodging.id)+' was successfull. Your transaction id is '+str(transaction.id)+'. Contact number of owner/dealer is '+owner.mobile_number+'. You can see further details in your dashboard.'+onlease_last_message
     return message
 
 def lodging_booked_message(owner,customer,lodging,transaction):
