@@ -727,20 +727,14 @@ function show_errors(errors,key=null){
 
 function display_global_errors(res){
   if(isDict(res)){
-    if('responseJSON' in res){
-      res = res.responseJSON;
-    } else {
-      res = res.responseText;
-    }
-    if(res && 'errors' in res){
-      for(var key in res.errors){
-        show_errors_in_list(res.errors[key],key);
+    if(isDict(res.responseJSON) && 'errors' in res.responseJSON){
+      var errors = res.responseJSON['errors'];
+      var error_string = "";
+      for(var key in errors){
+        key!='__all__' ? error_string += `${key} - ${errors[key]}<br>`:null;
       }
-    } else {
-      show_error('Unknown error');
+      error_string!="" ? toastr.error(error_string,'Errors occurred'):null;
     }
-  } else {
-    show_error(res);
   }
 }
 
@@ -1037,7 +1031,6 @@ function verify_number_form_validation(){
                 }).done((data)=>{
                   $('#modalVerifyNumberForm').modal('hide');
                   window.user_data.is_verified = true;
-                  $(document).trigger('rerender_nav_items');
                   if(set_password){
                     $('#modalSetPasswordForm').modal('show');
                   } else {
@@ -1047,6 +1040,7 @@ function verify_number_form_validation(){
                       toggle_add_new_number_button();
                     } else {
                       display_message(form, 'Registered successfully.');
+                      $(document).trigger('rerender_nav_items');
                     }
                   }
                 }).fail((data)=>{
@@ -1123,15 +1117,16 @@ function register_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                }).always((data)=>{
-                    if(data.status=='200'){
-                        set_password=false;
-                        $('#modalRegisterForm').modal('hide');
-                        $('#modalVerifyNumberForm').modal('show');
-                    } else {
-                        display_errors(data,form);
-                    }
-                    remove_loading(form);
+                }).done((data)=>{
+                  window.user_data = data.user;
+                  $(document).trigger('rerender_nav_items');
+                  set_password=false;
+                  $('#modalRegisterForm').modal('hide');
+                  $('#modalVerifyNumberForm').modal('show');
+                }).fail((data)=>{
+                  display_errors(data,form);
+                }).always(()=>{
+                  remove_loading(form);
                 });
             }
         }
@@ -2820,9 +2815,9 @@ function calc_ads_container_width(max_ads=5){
 }
 
 class MyProperties extends Ads{
-  constructor(prefix, ads, title){
+  constructor(prefix, ads, title, not_my_bookings=true){
     var modal = new Modal(prefix,title);
-    super(prefix,modal.$modal_body,ads,true);
+    super(prefix,modal.$modal_body,ads,not_my_bookings);
     this.modal = modal;
     this.modal.$modal_dialog.addClass('modal-lg')
     .css('max-width',calc_ads_container_width(3));
@@ -2866,7 +2861,7 @@ function get_my_booked_ads(){
         show_loading();
       }
     }).done(function(res){
-      window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings');
+      window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings',false);
     }).fail(function(){
       toastr.error("Unable to get your bookings","Error");
     }).always(function(){
@@ -3792,6 +3787,30 @@ class ProfileAddImage{
 }
 
 $('document').ready(function(){
+  $(document).ajaxError(function ( event, jqxhr, settings, thrownError ) {
+    if(jqxhr.status==0){
+      toastr.error('Error in connecting to server. Check your internet connection.')
+    }
+    else if(jqxhr.status==500){
+      toastr.error(`${jqxhr.statusText} occurred at ${settings.url} in a ${settings.type} request`,`Error {jqxhr.status} occurred`);
+    } else {
+      if(!jqxhr.responseJSON){
+        toastr.error(`${jqxhr.responseText} occurred at ${settings.url} in a ${settings.type} request`,`${jqxhr.status} ${jqxhr.statusText}`);
+      } else {
+        // {'errors':{'__all__': ['error1','error2', ...],'field1':['error1', ...], ...}}
+        var errors_arr = jqxhr.responseJSON['errors']['__all__'];
+        if(!errors_arr || !errors_arr.length) return;
+        var errors = "";
+        for(var i in jqxhr.responseJSON['errors']['__all__']){
+          if(i!=0){
+            errors += '<br>';
+          }
+          errors += errors_arr[i];
+        }
+        toastr.error(`${errors}`,`${jqxhr.status} ${jqxhr.statusText}`);
+      }
+    }
+  });
   $.validator.addClassRules({
     "charge_amount": {
       required: true,

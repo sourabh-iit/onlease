@@ -100,7 +100,7 @@ def redirect_to_instamojo_view(request,ad_id):
         'status': 200
       })
     return JsonResponse({
-      'errors':{'__all__':['Failed to process request']}.update(response['message'])
+      'errors':{**response['message']}
     },status=400)
   except Lodging.DoesNotExist:
     return JsonResponse({
@@ -114,7 +114,7 @@ def redirect_to_instamojo_view(request,ad_id):
     },status=400)
   except JSONDecodeError as e:
     return JsonResponse({
-      'errors':{'__all__':['Payment gateway server is not responding. Contact about this issue.']}
+      'errors':{'__all__':['Payment gateway server is not responding. Contact us about this issue exists.']}
     },status=400)
 
 
@@ -231,7 +231,9 @@ def lodging_webhook_view(request,trans_id):
             transaction_.status=LodgingTransaction.SUCCESS
             sublodging.is_booked=True
         sublodging.is_booking=False
+        lodging.purchased_by.add(request.user)
         with transaction.atomic():
           sublodging.save()
+          lodging.save()
           transaction_.save()
   return HttpResponse('ok',status=200)
