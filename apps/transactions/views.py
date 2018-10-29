@@ -137,7 +137,7 @@ def on_transaction(trans_id,response,webhook,request):
       if float(response['amount'])==float(transaction_.amount):
         transaction_success = True
         transaction_.amount_paid=float(response['amount'])
-        transaction_.payment_gateway_fees=responsex['fees']
+        transaction_.payment_gateway_fees=response['fees']
         transaction_.status=LodgingTransaction.SUCCESS
         sublodging.is_booked=True
         lodging.purchased_by.add(request.user)
