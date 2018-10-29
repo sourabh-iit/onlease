@@ -327,7 +327,7 @@ function getCurrentLocation(ev,input_id){
         if(res.responseJSON && 'errors' in res.responseJSON && '__all__' in res.responseJSON){
           toastr.error(res.responseJSON.errors['__all__'][0]);
         }
-        display_errors(res,$('#modalPropertyAdForm'));
+        display_form_errors(res,$('#modalPropertyAdForm'));
       }).always((res)=>{
         $el.children('#spinner').remove();
         loadingLocation = false;
@@ -703,28 +703,6 @@ function isArray(v){
   return v instanceof Array;
 }
 
-function show_error(error,key){
-  if(key && key!='__all__' && key!='non_field_errors'){
-    toastr.error(error,key);
-  } else {
-    toastr.error(error,'Error');
-  }
-}
-
-function show_errors_in_list(list_of_errors,key=null){
-  for(var error of list_of_errors){
-    show_error(error,key);
-  }
-}
-
-function show_errors(errors,key=null){
-  if(isArray(errors)){
-    show_errors_in_list(errors,key);
-  } else {
-    show_error(errors,key);
-  }
-}
-
 function display_global_errors(res){
   if(isDict(res)){
     if(isDict(res.responseJSON) && 'errors' in res.responseJSON){
@@ -738,20 +716,13 @@ function display_global_errors(res){
   }
 }
 
-function display_errors(data,form){
+function display_form_errors(data,form){
   let errors = {};
   if(data.responseJSON){
     errors = data.responseJSON.errors;
-    toastr.error(('Error(s) occurred in form submission.'))
-  } else {
-    errors['__all__'] = ['unknown error occurred.'];
-    toastr.error(data.status+' error occurred.')
+    toastr.error(('Error(s) occurred in form submission.'));
+    show_form_field_errors(form,errors);
   }
-  remove_all_messages(form);
-  var globalErrors = errors['__all__'];
-  delete errors['__all__'];
-  show_form_field_errors(form,errors);
-  show_form_global_errors(form, globalErrors);
 }
 
 function display_message(form,message){
@@ -807,7 +778,7 @@ function login_form_validation(){
                   $(form).modal('hide');
                   window.user_data = data;
                 }).fail((data)=>{
-                  display_errors(data,form);
+                  display_form_errors(data,form);
                 }).always((data)=>{
                   remove_loading(form);
                 });
@@ -871,7 +842,7 @@ function enter_number_form_validation(){
               $('#modalEnterNumberForm').modal('hide');
               $('#modalVerifyNumberForm').modal('show');
             }).fail((data)=>{
-              display_errors(data,form);
+              display_form_errors(data,form);
             }).always(()=>{
               remove_loading(form);
             });
@@ -930,7 +901,7 @@ function delete_number(event,mobile_number){
         toggle_add_new_number_button();
       }).fail((data)=>{
         toastr.error('Cannot delete this number','Delete '+mobile_number);
-        display_errors(data);
+        display_form_errors(data);
       }).always(()=>{
         $(loading_el).remove();
       });
@@ -1044,7 +1015,7 @@ function verify_number_form_validation(){
                     }
                   }
                 }).fail((data)=>{
-                  display_errors(data,form);
+                  display_form_errors(data,form);
                 }).always(()=>{
                   remove_loading(form);
                 });
@@ -1124,7 +1095,7 @@ function register_form_validation(){
                   $('#modalRegisterForm').modal('hide');
                   $('#modalVerifyNumberForm').modal('show');
                 }).fail((data)=>{
-                  display_errors(data,form);
+                  display_form_errors(data,form);
                 }).always(()=>{
                   remove_loading(form);
                 });
@@ -1206,7 +1177,7 @@ function roomie_ad_form_validation(){
                     if(data.status=='200'){
                         display_message(form,'Post added.')
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -1957,7 +1928,7 @@ class PropertyAdForm{
               $(window).trigger('update_ad',res.ad);
             }
           }).fail((data)=>{
-            display_errors(data, $form);
+            display_form_errors(data, $form);
           }).always(()=>{
             remove_loading($form);
           })
@@ -2046,7 +2017,7 @@ function set_password_form_validation(){
                             $('#modalLoginForm').modal('show');
                         },1000);
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -2114,7 +2085,7 @@ function change_password_form_validation(){
                             $('#modalSetPasswordForm').modal('hide');
                         },1000);
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -2173,7 +2144,7 @@ function profile_form_validation(){
                     if(data.status=='200'){
                         display_message(form,'Profile Saved.');
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -3059,7 +3030,7 @@ function resend_otp(){
   }).done((data)=>{
     display_message(form,'OTP has been resent.');
   }).fail((data)=>{
-    display_errors(data,form);
+    display_form_errors(data,form);
   }).always((data)=>{
     remove_loading(form);
   });

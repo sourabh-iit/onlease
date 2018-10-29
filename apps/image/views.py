@@ -64,7 +64,7 @@ def image_upload_view(request,ad_type):
         image_mobile=image_mobile,tag=request.POST.get('tag'))
     return JsonResponse(ImageSerializer(im).data)
   except Exception as e:
-    return HttpResponseBadRequest({'errors':'Sorry, could not upload file.'})
+    return JsonResponse({'errors':{'__all__':['Sorry, could not upload file.']}})
 
 @login_required
 def image_action_view(request,action):
@@ -75,7 +75,7 @@ def image_action_view(request,action):
         pk=data.get('pk')
         tag=data['value']
         if not pk:
-          return HttpResponse('Primary key is missing',status=404)
+          return JsonResponse({'errors':{'__all__':['Primary key is missing']}},status=404)
         image=ImageModel.objects.get(pk=pk)
         image.tag=tag
         valid_tag=False
@@ -84,13 +84,13 @@ def image_action_view(request,action):
             valid_tag=True
             break
         if not valid_tag:
-          return HttpResponse('Invalid tag. Choose tag from given options',status=400)
+          return JsonResponse({'errors':{'__all__':['Invalid tag. Choose tag from given options']}},status=400)
         image.save()
         return HttpResponse('Tag added.',status=200)
       except ImageModel.DoesNotExist:
-        return HttpResponse('Image is deleted or not uploaded',status=404)
+        return JsonResponse({'errors':{'__all__':['Image is deleted or not uploaded']}},status=404)
       except KeyError:
-        return HttpResponse('Tag is missing',status=404)
+        return JsonResponse({'errors':{'__all__':['Tag is missing']}},status=404)
     elif action=='delete':
       try:
         data=request.POST
@@ -98,9 +98,9 @@ def image_action_view(request,action):
         ImageModel.objects.get(id=_id).delete()
         return JsonResponse({'success':'true','status':200})
       except ImageModel.DoesNotExist:
-        return HttpResponse('Image does not exist.',status=404)
+        return JsonResponse({'errors':{'__all__':['Image does not exist.']}},status=404)
       except KeyError:
-        return HttpResponse('Image id not provided',status=400)
+        return JsonResponse({'errors':{'__all__':['Image id not provided']}},status=400)
   else:
     if action=='images':
       try:
@@ -112,4 +112,4 @@ def image_action_view(request,action):
         images = ImageModel.objects.filter(id__in=ids)
         return JsonResponse({'images':ImageSerializer(images,many=True).data})
       except KeyError:
-        return HttpResponse('ids key is missing',status=400)
+        return HttpResponse({'errors':{'__all__':['ids key is missing']}},status=400)

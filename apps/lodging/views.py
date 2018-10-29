@@ -40,7 +40,7 @@ class LodgingView(View):
     try:
       ad = Lodging.objects.get(id=ad_id)
     except Lodging.DoesNotExist:
-      return JsonResponse({'error':'Property does not exist'},404)
+      return JsonResponse({'errors':{'__all__':['Property does not exist']}},404)
     try:
       if request.user!=ad.posted_by:
         raise ValidationError('You are not authorized to perform this action')
@@ -59,7 +59,7 @@ class LodgingView(View):
       ad.delete()
       return JsonResponse({'success':True})
     except Lodging.DoesNotExist:
-      return JsonResponse({'error':'Property does not exist'},404)
+      return JsonResponse({'errors':{'__all__':['Property does not exist']}},404)
 
 
   def save_lodging(self,form,sub_form,request,data):
@@ -86,7 +86,6 @@ class LodgingView(View):
           if charge_form.is_valid():
             charge_form.save(sublodging)
           else:
-            print(charge_form.errors)
             raise ValidationError('Error in other charges')
         sublodging.termsandconditions.all().delete()
         for term_and_condition in json.loads(data.get('terms_and_conditions','[]')):
