@@ -157,7 +157,7 @@ def on_transaction(trans_id,response,webhook,request):
     send_message(lodging.posted_by.mobile_number,
       lodging_booked_message(lodging.posted_by,request.user,
       lodging,transaction_))
-  return transaction_success, region, lodging, sublodging
+  return transaction_success, lodging, sublodging, region, transaction_
 
 
 @login_required
