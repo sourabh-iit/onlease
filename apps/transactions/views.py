@@ -119,6 +119,7 @@ def redirect_to_instamojo_view(request,ad_id):
 
 
 def on_transaction(trans_id,response,webhook,request):
+  transaction_success = False
   transaction_ = LodgingTransaction.objects.prefetch_related('user',
     Prefetch('lodging',queryset=Lodging.objects.prefetch_related('posted_by',
       Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region'))
@@ -156,17 +157,17 @@ def on_transaction(trans_id,response,webhook,request):
     send_message(lodging.posted_by.mobile_number,
       lodging_booked_message(lodging.posted_by,request.user,
       lodging,transaction_))
+  return transaction_success, region, lodging, sublodging
 
 
 @login_required
 def lodging_post_redirection_view(request):
   try:
-    transaction_success = False
     payment_id = request.GET.get('payment_id')
     payment_request_id = request.GET.get('payment_request_id')
     response = api.payment_request_payment_status(payment_request_id,payment_id)
     trans_id = response['payment_request']['purpose']
-    transaction_success = on_transaction(trans_id,response['payment_request']['payment'],False,request)
+    transaction_success, lodging, sublodging, region, transaction_ = on_transaction(trans_id,response['payment_request']['payment'],False,request)
   except LodgingTransaction.DoesNotExist:
     messages.error(request,'Invalid transaction')
     return HttpResponseRedirect('/')
