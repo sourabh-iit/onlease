@@ -22,9 +22,9 @@
         </div>
       </div>
       <div class="card-body text-center">
-        <h2 class="card-text fs-4 {% if success %}red-text{% else %}green-text{% endif %}">
+        <h2 class="card-text fs-4 {% if success %}green-text{% else %}red-text{% endif %}">
           {% if success %}
-          <i class="fa fa-check-circle green-text"></i> Your transaction of <i class="fa fa-inr mr-1"></i>
+          <i class="fa fa-check-circle"></i> Your transaction of <i class="fa fa-inr mr-1"></i>
           {{transaction.amount}} was successfull.
           {% else %}
           <i class="fa fa-times-circle"></i> Your transaction of <i class="fa fa-inr mr-1"></i>
