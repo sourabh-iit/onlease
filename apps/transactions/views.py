@@ -124,7 +124,7 @@ def on_transaction(trans_id,response,webhook,request):
       Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region'))
       )
     )
-  ).get(id=trans_id)
+  ).get(trans_id=trans_id)
   if not transaction_.payment_id:
     transaction_.payment_id=payment_id
     lodging = transaction_.lodging
