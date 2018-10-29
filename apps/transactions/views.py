@@ -159,18 +159,14 @@ def on_transaction(trans_id,response,webhook,request):
             lodging,transaction_))
     else:
       messages.error(request,'Transaction was failed')
-        send_message(request.user.mobile_number,
-          failed_transaction_message(
-            lodging.posted_by,request.user,
-            lodging,transaction_,response))
+      send_message(request.user.mobile_number,
+        failed_transaction_message(
+          lodging.posted_by,request.user,
+          lodging,transaction_,response))
     with transaction.atomic():
       sublodging.save()
       transaction_.save()
       lodging.save()
-    send_message(request.user.mobile_number,
-      successfull_transaction_message(
-        lodging.posted_by,request.user,
-        lodging,transaction_))
   return transaction_success, lodging, sublodging, region, transaction_
 
 
