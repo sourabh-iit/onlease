@@ -126,7 +126,7 @@ def on_transaction(trans_id,response,webhook,request):
     )
   ).get(trans_id=trans_id)
   if not transaction_.payment_id:
-    transaction_.payment_id=payment_id
+    transaction_.payment_id=response['payment_id']
     lodging = transaction_.lodging
     sublodging = lodging.sublodging
     region = sublodging.region
