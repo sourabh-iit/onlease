@@ -6,7 +6,7 @@ import random
 import json
 from django.contrib import messages
 
-onlease_last_message = ' onlease.in'
+onlease_last_message = ' www.onlease.in'
 
 def generate_otp(length):
     if settings.DEBUG:
@@ -21,7 +21,7 @@ def send_message(mobile_number,message):
         'mobiles': mobile_number,
         'authkey': os.environ.get('MSG91_AUTH_KEY'),
         'message': message,
-        'sender': 'ONLSMS',
+        'sender': 'ONLNTF',
         'country': '91',
         'route': '4'
     }
@@ -58,19 +58,25 @@ def send_otp(request,mobile_number):
     else:
         messages.success(request,'An OTP has been sent successfully')
 
+def get_name(user):
+    user_name = "User"
+    if user.first_name:
+        user_name += user.first_name
+    if user.last_name:
+        user_name += user.last_name
+
 def successfull_transaction_message(owner,customer,lodging,transaction):
-    owner_name = ""
-    if owner.first_name:
-        owner_name += owner.first_name
-    if owner.last_name:
-        owner_name += owner.last_name
-    message = 'Dear '+owner_name+', your transaction for lodging id '+str(lodging.id)+' was successfull. Your transaction id is '+str(transaction.id)+'. Contact number of owner/dealer is '+owner.mobile_number+'. You can see further details in your dashboard.'+onlease_last_message
+    message = 'Dear '+get_name(customer)+', your transaction for lodging "'+lodging.sublodging.title+'" was successfull. Your transaction id is '+str(transaction.id)+'. Contact number(s) of owner/dealer is/are '+owner.mobile_number+'. You can see further details on our website.'+onlease_last_message
+    return message
+
+def invalid_transaction_message(owner,customer,lodging,transaction,response):
+    message = 'Dear '+get_name(customer)+', your transaction for lodging "'+lodging.sublodging.title+'" was invalid. Your transaction id is '+str(transaction.id)+'. You paid amount '+response['amount']+' while actual amount is '+transaction.amount+onlease_last_message
+    return message
+
+def failed_transaction_message(owner,customer,lodging,transaction):
+    message = 'Dear '+get_name(customer)+', your transaction for lodging "'+lodging.sublodging.title+'" was failed. Your transaction id is '+str(transaction.id)+onlease_last_message
     return message
 
 def lodging_booked_message(owner,customer,lodging,transaction):
-    owner_name = ""
-    if owner.first_name:
-        owner_name += owner.first_name
-    if owner.last_name:
-        owner_name += owner.last_name
-    return 'Dear '+owner_name+', your lodging with id '+str(lodging.id)+' has been booked. This is his/her mobile number: '+customer.mobile_number+'.'+onlease_last_message
+    # TODO User all mobile numbers
+    return 'Dear '+get_name(owner)+', your lodging "'+lodging.sublodging.title+'" has been booked. This is his/her contact number(s): '+customer.mobile_number+'.'+onlease_last_message

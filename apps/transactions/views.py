@@ -142,10 +142,27 @@ def on_transaction(trans_id,response,webhook,request):
         sublodging.is_booked=True
         lodging.purchased_by.add(request.user)
         messages.success(request,'Your transaction was successful')
+        # Notify owner about property being booked and tenant contact numbers
+        send_message(lodging.posted_by.mobile_number,
+          lodging_booked_message(lodging.posted_by,request.user,
+          lodging,transaction_))
+        # Notify user about transaction id and owner contact numbers
+        send_message(request.user.mobile_number,
+          successfull_transaction_message(
+            lodging.posted_by,request.user,
+            lodging,transaction_))
       else:
         messages.error(request,'An invalid amount was paid')
+        send_message(request.user.mobile_number,
+          invalid_transaction_message(
+            lodging.posted_by,request.user,
+            lodging,transaction_))
     else:
       messages.error(request,'Transaction was failed')
+        send_message(request.user.mobile_number,
+          failed_transaction_message(
+            lodging.posted_by,request.user,
+            lodging,transaction_,response))
     with transaction.atomic():
       sublodging.save()
       transaction_.save()
@@ -154,9 +171,6 @@ def on_transaction(trans_id,response,webhook,request):
       successfull_transaction_message(
         lodging.posted_by,request.user,
         lodging,transaction_))
-    send_message(lodging.posted_by.mobile_number,
-      lodging_booked_message(lodging.posted_by,request.user,
-      lodging,transaction_))
   return transaction_success, lodging, sublodging, region, transaction_
 
 
