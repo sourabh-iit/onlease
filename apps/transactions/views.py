@@ -133,7 +133,7 @@ def on_transaction(trans_id,response,webhook,request):
     transaction_.payment_id=response['payment_id']
     sublodging.is_booked=False
     sublodging.is_booking=False
-    if response['status']=='CREDIT':
+    if response['status']=='Credit':
       if float(response['amount'])==float(transaction_.amount):
         transaction_success = True
         transaction_.amount_paid=float(response['amount'])
@@ -158,6 +158,7 @@ def on_transaction(trans_id,response,webhook,request):
             lodging.posted_by,request.user,
             lodging,transaction_,response))
     else:
+      transaction_.status = LodgingTransaction.FAIL
       messages.error(request,'Transaction was failed')
       send_message(request.user.mobile_number,
         failed_transaction_message(
