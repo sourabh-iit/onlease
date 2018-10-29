@@ -67,7 +67,7 @@ def redirect_to_instamojo_view(request,ad_id):
     if settings.DEBUG:
       response = api.payment_request_create(
         amount=amount,
-        purpose=transaction_.id,
+        purpose=trans_id,
         buyer_name=request.user.full_name(),
         send_sms=True,
         phone=request.user.mobile_number,
@@ -76,19 +76,19 @@ def redirect_to_instamojo_view(request,ad_id):
         allow_repeated_payments=False,
         redirect_url=base_url+reverse('transactions:lodging-post-redirection'),
         webhook=base_url+reverse('transactions:lodging-webhook',
-          kwargs={'trans_id':str(transaction_.id)})
+          kwargs={'trans_id':trans_id})
       )
     else:
       response = api.payment_request_create(
         amount=amount,
-        purpose=transaction_.id,
+        purpose=trans_id,
         buyer_name=request.user.first_name,
         send_sms=True,
         phone=request.user.mobile_number,
         allow_repeated_payments=False,
         redirect_url=base_url+reverse('transactions:lodging-post-redirection'),
         # webhook=base_url+reverse('transactions:lodging-webhook',
-        #   kwargs={'trans_id':str(transaction_.id)})  
+        #   kwargs={'trans_id':trans_id})  
       )
     if response['success']:
       sublodging.is_booking = True
@@ -100,7 +100,7 @@ def redirect_to_instamojo_view(request,ad_id):
         'status': 200
       })
     return JsonResponse({
-      'errors':{'__all__':['Failed to process request']}.update(response['message'])
+      'errors':{**response['message']}
     },status=400)
   except Lodging.DoesNotExist:
     return JsonResponse({
@@ -114,35 +114,29 @@ def redirect_to_instamojo_view(request,ad_id):
     },status=400)
   except JSONDecodeError as e:
     return JsonResponse({
-      'errors':{'__all__':['Payment gateway server is not responding. Contact about this issue.']}
+      'errors':{'__all__':['Payment gateway server is not responding. Contact us about this issue exists.']}
     },status=400)
 
 
-@login_required
-def lodging_post_redirection_view(request):
-  try:
-    transaction_success = False
-    payment_id = request.GET.get('payment_id')
-    payment_request_id = request.GET.get('payment_request_id')
-    response = api.payment_request_payment_status(payment_request_id,payment_id)
-    transaction_ = LodgingTransaction.objects.prefetch_related(
-      Prefetch('lodging',queryset=Lodging.objects.prefetch_related('posted_by',
-        Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region'))
-        )
+def on_transaction(trans_id,response,webhook,request):
+  transaction_ = LodgingTransaction.objects.prefetch_related('user',
+    Prefetch('lodging',queryset=Lodging.objects.prefetch_related('posted_by',
+      Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region'))
       )
-    ).get(id=response['payment_request']['purpose'])
+    )
+  ).get(id=trans_id)
+  if not transaction_.payment_id:
     transaction_.payment_id=payment_id
     lodging = transaction_.lodging
     sublodging = lodging.sublodging
     region = sublodging.region
     sublodging.is_booked=False
     sublodging.is_booking=False
-    if response['success']:
-      data = response['payment_request']
-      if float(data['amount'])==float(transaction_.amount):
+    if response['status']=='CREDIT':
+      if float(response['amount'])==float(transaction_.amount):
         transaction_success = True
-        transaction_.amount_paid=float(data['amount'])
-        transaction_.payment_gateway_fees=data['payment']['fees']
+        transaction_.amount_paid=float(response['amount'])
+        transaction_.payment_gateway_fees=responsex['fees']
         transaction_.status=LodgingTransaction.SUCCESS
         sublodging.is_booked=True
         lodging.purchased_by.add(request.user)
@@ -162,6 +156,17 @@ def lodging_post_redirection_view(request):
     send_message(lodging.posted_by.mobile_number,
       lodging_booked_message(lodging.posted_by,request.user,
       lodging,transaction_))
+
+
+@login_required
+def lodging_post_redirection_view(request):
+  try:
+    transaction_success = False
+    payment_id = request.GET.get('payment_id')
+    payment_request_id = request.GET.get('payment_request_id')
+    response = api.payment_request_payment_status(payment_request_id,payment_id)
+    trans_id = response['payment_request']['purpose']
+    transaction_success = on_transaction(trans_id,response['payment_request']['payment'],False,request)
   except LodgingTransaction.DoesNotExist:
     messages.error(request,'Invalid transaction')
     return HttpResponseRedirect('/')
@@ -200,38 +205,5 @@ def lodging_webhook_view(request,trans_id):
     message = "|".join(v for k, v in sorted(request.POST.items(), key=lambda x: x[0].lower()))
     mac_calculated = hmac.new(settings.INSTAMOJO_SALT, message.encode('utf-8'), hashlib.sha1).hexdigest
     if mac_provided == mac_calculated:
-      sublodging.is_booked=False
-      try:
-        transaction_ = LodgingTransaction.objects.prefetch_related('user',
-          Prefetch(
-            'lodging',
-            queryset=Lodging.objects.prefetch_related(
-              Prefetch(
-                'sublodging',
-                queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region')
-              )
-            )
-          )
-        ).get(id=purpose)
-      except LodgingTransaction.DoesNotExist:
-        return HttpResponse('ok',status=200)
-      if trans_id==transaction_.trans_id:
-        return HttpResponse('ok',status=200)
-      status = request.POST.get('status')
-      if not transaction_.payment_id:
-        transaction_.payment_id=request.POST.get('payment_id')
-        lodging = transaction_.lodging
-        sublodging = lodging.sublodging
-        region = sublodging.region
-        if status=='Credit':
-          transaction_.amount_paid=float(request.POST.get('amount'))
-          transaction_.payment_gateway_fees=request.POST.get('fees')
-          transaction_.status=LodgingTransaction.FAIL
-          if float(request.POST.get('amount'))==float(transaction_.amount):
-            transaction_.status=LodgingTransaction.SUCCESS
-            sublodging.is_booked=True
-        sublodging.is_booking=False
-        with transaction.atomic():
-          sublodging.save()
-          transaction_.save()
+      on_transaction(purpose,request.POST,True,request)
   return HttpResponse('ok',status=200)

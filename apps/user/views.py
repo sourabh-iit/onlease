@@ -235,7 +235,7 @@ def register_view_ajax(request):
                 user.save()
                 # login user and set session
                 login(request,user)
-                return HttpResponse(status=200)
+                return JsonResponse({'user':UserSerializer(request.user).data})
         except ViewException as e:
             form.add_error(None, e)
         except ValidationError as e:

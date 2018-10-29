@@ -33,43 +33,47 @@ function calcRoute() {
   }
 }
 
-function book_now(event){
-  var $agree = $('#agree_to_terms_and_conditions');
-  if($agree[0] && !$agree[0].checked){
-    alert('Agree to terms and conditions');
-    return;
+class BookNow{
+  constructor($el){
+    this.$inner = $el.html();
+    $el.on('click',()=>{
+      var $agree = $('#agree_to_terms_and_conditions');
+      if($agree[0] && !$agree[0].checked){
+        alert('Agree to terms and conditions');
+        return;
+      }
+      var loading_icon;
+      if(window.booking_in_process) return;
+      window.booking_in_process = true;
+      $.ajax({
+        type: 'POST',
+        url: window.book_now_url,
+        data: {
+          termsandconditions: $agree[0]?$agree[0].checked:true,
+        },
+        dataType: 'json',
+        beforeSend: function(){
+          $el.html('Please wait...');
+          loading_icon = window.create_inline_loading_element();
+          $el.append(loading_icon);
+          $el.attr('disabled','disabled');
+        }
+      }).done(function(res){
+        toastr.info('Redirecting to secure payment gateway');
+        window.location.href = res.url;
+      }).fail(function(res){
+        display_global_errors(res);
+      }).always(()=>{
+        $el.removeAttr('disabled');
+        $el.html(this.$inner);
+        $(loading_icon).remove();
+        window.booking_in_process=false;
+      });
+    });
   }
-  var loading_icon;
-  $el = $(event.target);
-  if(window.booking_in_process) return;
-  window.booking_in_process = true;
-  var inner = $el.html();
-  $.ajax({
-    type: 'POST',
-    url: window.book_now_url,
-    data: {
-      termsandconditions: $agree[0]?$agree[0].checked:true,
-    },
-    dataType: 'json',
-    beforeSend: function(){
-      $el.html('Please wait...');
-      loading_icon = window.create_inline_loading_element();
-      $el.append(loading_icon);
-      $el.attr('disabled','disabled');
-    }
-  }).done(function(res){
-    toastr.info('Redirecting to secure payment gateway');
-    window.location.href = res.url;
-  }).fail(function(res){
-    console.log(res)
-    display_global_errors(res);
-  }).always(function(){
-    $el.removeAttr('disabled');
-    $el.html(inner);
-    $(loading_icon).remove();
-    window.booking_in_process=false;
-  });
 }
+
+new BookNow($('#book_now'));
 
 function openMap() {
   var modal = `

@@ -327,7 +327,7 @@ function getCurrentLocation(ev,input_id){
         if(res.responseJSON && 'errors' in res.responseJSON && '__all__' in res.responseJSON){
           toastr.error(res.responseJSON.errors['__all__'][0]);
         }
-        display_errors(res,$('#modalPropertyAdForm'));
+        display_form_errors(res,$('#modalPropertyAdForm'));
       }).always((res)=>{
         $el.children('#spinner').remove();
         loadingLocation = false;
@@ -703,61 +703,26 @@ function isArray(v){
   return v instanceof Array;
 }
 
-function show_error(error,key){
-  if(key && key!='__all__' && key!='non_field_errors'){
-    toastr.error(error,key);
-  } else {
-    toastr.error(error,'Error');
-  }
-}
-
-function show_errors_in_list(list_of_errors,key=null){
-  for(var error of list_of_errors){
-    show_error(error,key);
-  }
-}
-
-function show_errors(errors,key=null){
-  if(isArray(errors)){
-    show_errors_in_list(errors,key);
-  } else {
-    show_error(errors,key);
-  }
-}
-
 function display_global_errors(res){
   if(isDict(res)){
-    if('responseJSON' in res){
-      res = res.responseJSON;
-    } else {
-      res = res.responseText;
-    }
-    if(res && 'errors' in res){
-      for(var key in res.errors){
-        show_errors_in_list(res.errors[key],key);
+    if(isDict(res.responseJSON) && 'errors' in res.responseJSON){
+      var errors = res.responseJSON['errors'];
+      var error_string = "";
+      for(var key in errors){
+        key!='__all__' ? error_string += `${key} - ${errors[key]}<br>`:null;
       }
-    } else {
-      show_error('Unknown error');
+      error_string!="" ? toastr.error(error_string,'Errors occurred'):null;
     }
-  } else {
-    show_error(res);
   }
 }
 
-function display_errors(data,form){
+function display_form_errors(data,form){
   let errors = {};
   if(data.responseJSON){
     errors = data.responseJSON.errors;
-    toastr.error(('Error(s) occurred in form submission.'))
-  } else {
-    errors['__all__'] = ['unknown error occurred.'];
-    toastr.error(data.status+' error occurred.')
+    toastr.error(('Error(s) occurred in form submission.'));
+    show_form_field_errors(form,errors);
   }
-  remove_all_messages(form);
-  var globalErrors = errors['__all__'];
-  delete errors['__all__'];
-  show_form_field_errors(form,errors);
-  show_form_global_errors(form, globalErrors);
 }
 
 function display_message(form,message){
@@ -813,7 +778,7 @@ function login_form_validation(){
                   $(form).modal('hide');
                   window.user_data = data;
                 }).fail((data)=>{
-                  display_errors(data,form);
+                  display_form_errors(data,form);
                 }).always((data)=>{
                   remove_loading(form);
                 });
@@ -877,7 +842,7 @@ function enter_number_form_validation(){
               $('#modalEnterNumberForm').modal('hide');
               $('#modalVerifyNumberForm').modal('show');
             }).fail((data)=>{
-              display_errors(data,form);
+              display_form_errors(data,form);
             }).always(()=>{
               remove_loading(form);
             });
@@ -936,7 +901,7 @@ function delete_number(event,mobile_number){
         toggle_add_new_number_button();
       }).fail((data)=>{
         toastr.error('Cannot delete this number','Delete '+mobile_number);
-        display_errors(data);
+        display_form_errors(data);
       }).always(()=>{
         $(loading_el).remove();
       });
@@ -1037,7 +1002,6 @@ function verify_number_form_validation(){
                 }).done((data)=>{
                   $('#modalVerifyNumberForm').modal('hide');
                   window.user_data.is_verified = true;
-                  $(document).trigger('rerender_nav_items');
                   if(set_password){
                     $('#modalSetPasswordForm').modal('show');
                   } else {
@@ -1047,10 +1011,11 @@ function verify_number_form_validation(){
                       toggle_add_new_number_button();
                     } else {
                       display_message(form, 'Registered successfully.');
+                      $(document).trigger('rerender_nav_items');
                     }
                   }
                 }).fail((data)=>{
-                  display_errors(data,form);
+                  display_form_errors(data,form);
                 }).always(()=>{
                   remove_loading(form);
                 });
@@ -1123,15 +1088,16 @@ function register_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                }).always((data)=>{
-                    if(data.status=='200'){
-                        set_password=false;
-                        $('#modalRegisterForm').modal('hide');
-                        $('#modalVerifyNumberForm').modal('show');
-                    } else {
-                        display_errors(data,form);
-                    }
-                    remove_loading(form);
+                }).done((data)=>{
+                  window.user_data = data.user;
+                  $(document).trigger('rerender_nav_items');
+                  set_password=false;
+                  $('#modalRegisterForm').modal('hide');
+                  $('#modalVerifyNumberForm').modal('show');
+                }).fail((data)=>{
+                  display_form_errors(data,form);
+                }).always(()=>{
+                  remove_loading(form);
                 });
             }
         }
@@ -1211,7 +1177,7 @@ function roomie_ad_form_validation(){
                     if(data.status=='200'){
                         display_message(form,'Post added.')
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -1962,7 +1928,7 @@ class PropertyAdForm{
               $(window).trigger('update_ad',res.ad);
             }
           }).fail((data)=>{
-            display_errors(data, $form);
+            display_form_errors(data, $form);
           }).always(()=>{
             remove_loading($form);
           })
@@ -2051,7 +2017,7 @@ function set_password_form_validation(){
                             $('#modalLoginForm').modal('show');
                         },1000);
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -2119,7 +2085,7 @@ function change_password_form_validation(){
                             $('#modalSetPasswordForm').modal('hide');
                         },1000);
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -2178,7 +2144,7 @@ function profile_form_validation(){
                     if(data.status=='200'){
                         display_message(form,'Profile Saved.');
                     } else {
-                        display_errors(data,form);
+                        display_form_errors(data,form);
                     }
                     remove_loading(form);
                 });
@@ -2820,9 +2786,9 @@ function calc_ads_container_width(max_ads=5){
 }
 
 class MyProperties extends Ads{
-  constructor(prefix, ads, title){
+  constructor(prefix, ads, title, not_my_bookings=true){
     var modal = new Modal(prefix,title);
-    super(prefix,modal.$modal_body,ads,true);
+    super(prefix,modal.$modal_body,ads,not_my_bookings);
     this.modal = modal;
     this.modal.$modal_dialog.addClass('modal-lg')
     .css('max-width',calc_ads_container_width(3));
@@ -2866,7 +2832,7 @@ function get_my_booked_ads(){
         show_loading();
       }
     }).done(function(res){
-      window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings');
+      window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings',false);
     }).fail(function(){
       toastr.error("Unable to get your bookings","Error");
     }).always(function(){
@@ -3064,7 +3030,7 @@ function resend_otp(){
   }).done((data)=>{
     display_message(form,'OTP has been resent.');
   }).fail((data)=>{
-    display_errors(data,form);
+    display_form_errors(data,form);
   }).always((data)=>{
     remove_loading(form);
   });
@@ -3792,6 +3758,30 @@ class ProfileAddImage{
 }
 
 $('document').ready(function(){
+  $(document).ajaxError(function ( event, jqxhr, settings, thrownError ) {
+    if(jqxhr.status==0){
+      toastr.error('Error in connecting to server. Check your internet connection.')
+    }
+    else if(jqxhr.status==500){
+      toastr.error(`${jqxhr.statusText} occurred at ${settings.url} in a ${settings.type} request`,`Error {jqxhr.status} occurred`);
+    } else {
+      if(!jqxhr.responseJSON){
+        toastr.error(`${jqxhr.responseText} occurred at ${settings.url} in a ${settings.type} request`,`${jqxhr.status} ${jqxhr.statusText}`);
+      } else {
+        // {'errors':{'__all__': ['error1','error2', ...],'field1':['error1', ...], ...}}
+        var errors_arr = jqxhr.responseJSON['errors']['__all__'];
+        if(!errors_arr || !errors_arr.length) return;
+        var errors = "";
+        for(var i in jqxhr.responseJSON['errors']['__all__']){
+          if(i!=0){
+            errors += '<br>';
+          }
+          errors += errors_arr[i];
+        }
+        toastr.error(`${errors}`,`${jqxhr.status} ${jqxhr.statusText}`);
+      }
+    }
+  });
   $.validator.addClassRules({
     "charge_amount": {
       required: true,

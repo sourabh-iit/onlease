@@ -178,8 +178,8 @@
     </div>
     {% endif %}
     <div class="text-center">
-      <button 
-      onclick="book_now(event)" 
+      <button
+      id="book_now" 
       class="btn color-4"
       {% if sublodging.is_booked or sublodging.is_booking %}
       disabled
