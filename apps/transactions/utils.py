@@ -64,6 +64,7 @@ def get_name(user):
         user_name += user.first_name
     if user.last_name:
         user_name += user.last_name
+    return user_name
 
 def successfull_transaction_message(owner,customer,lodging,transaction):
     message = 'Dear '+get_name(customer)+', your transaction for lodging "'+lodging.sublodging.title+'" was successfull. Your transaction id is '+str(transaction.id)+'. Contact number(s) of owner/dealer is/are '+owner.mobile_number+'. You can see further details on our website.'+onlease_last_message
