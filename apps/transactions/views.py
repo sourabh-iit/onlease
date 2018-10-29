@@ -119,13 +119,13 @@ def redirect_to_instamojo_view(request,ad_id):
 
 
 def on_transaction(trans_id,response,webhook,request):
-  transaction_success = False
   transaction_ = LodgingTransaction.objects.prefetch_related('user',
     Prefetch('lodging',queryset=Lodging.objects.prefetch_related('posted_by',
       Prefetch('sublodging',queryset=CommonlyUsedLodgingModel.objects.prefetch_related('region'))
       )
     )
   ).get(trans_id=trans_id)
+  transaction_success = response['status']=='Credit' and float(response['amount'])==float(transaction_.amount)
   lodging = transaction_.lodging
   sublodging = lodging.sublodging
   region = sublodging.region
