@@ -3322,7 +3322,7 @@ function change_src($img,type){
 function set_image($carousel,type){
   var $img = $carousel.find('.carousel-item.active img');
   change_src($img,type);
-  $img.css({'max-width':'100%','max-height':'100%'});
+  $img.css({'max-width':'100%','max-height':'700px'});
 }
 
 function set_carousel($carousel,type){
