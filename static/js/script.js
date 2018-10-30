@@ -720,8 +720,16 @@ function display_form_errors(data,form){
   let errors = {};
   if(data.responseJSON){
     errors = data.responseJSON.errors;
-    toastr.error(('Error(s) occurred in form submission.'));
-    show_form_field_errors(form,errors);
+    var field_errors = {};
+    for(var field in errors){
+      if(field!='__all__'){
+        field_errors[field] = errors[field];
+      }
+    }
+    if(Object.keys(field_errors).length){
+      toastr.error(('Error(s) occurred in form submission.'));
+      show_form_field_errors(form,errors);
+    }
   }
 }
 
