@@ -76,12 +76,9 @@ def ad_detail_view(request):
         get(id=request.GET.get('id'))
       lodging = sublodging.lodging
       show_contact_details = False
-      if request.user.is_authenticated:
-        if lodging.posted_by == request.user:
-          show_contact_details=True
-        else:
-          if sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0:
-            show_contact_details=True
+      if request.user.is_authenticated and (lodging.posted_by == request.user or \
+            sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0):
+        show_contact_details=True
       time_diff = datetime.datetime.now() - sublodging.last_time_booking
       if sublodging.is_booking and time_diff.seconds > 3*60:
         sublodging.is_booking=False
