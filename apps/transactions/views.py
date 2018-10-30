@@ -26,13 +26,14 @@ from .forms import LodgingTransactionForm
 from apps.lodging.models import Lodging, CommonlyUsedLodgingModel, ImageModel
 from apps.user.utils import ViewException
 from .utils import *
+from apps.user.utils import ajax_login_required
 from apps.lodging.utils import generate_random
 
 api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
         auth_token=settings.INSTAMOJO_AUTH_KEY,
         endpoint=settings.INSTAMOJO_ENDPOINT)
 
-@login_required
+@ajax_login_required
 @require_POST
 def redirect_to_instamojo_view(request,ad_id):
   if settings.DEBUG:
@@ -42,6 +43,8 @@ def redirect_to_instamojo_view(request,ad_id):
   try:
     if request.POST.get('termsandconditions','false')=='false':
       raise ValidationError('You have not agreed to terms and conditions')
+    if not (request.user.first_name and request.user.email):
+      return JsonResponse({'profile_complete':False},status=400)
     lodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
     sublodging = lodging.sublodging
     time_diff = datetime.datetime.now() - sublodging.last_time_booking
@@ -171,7 +174,7 @@ def on_transaction(trans_id,response,webhook,request):
   return transaction_success, lodging, sublodging, region, transaction_
 
 
-@login_required
+@ajax_login_required
 def lodging_post_redirection_view(request):
   try:
     payment_id = request.GET.get('payment_id')

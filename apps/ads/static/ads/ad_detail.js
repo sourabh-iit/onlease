@@ -62,6 +62,10 @@ class BookNow{
         toastr.info('Redirecting to secure payment gateway');
         window.location.href = res.url;
       }).fail(function(res){
+        if(res.responseJSON.profile_complete===false || res.responseJSON.profile_complete==='False'){
+          $('#modalUserProfileForm').modal('show');
+          toastr.error('Please fill your name and email id.','Profile not complete');
+        }
         display_global_errors(res);
       }).always(()=>{
         $el.removeAttr('disabled');

@@ -2293,8 +2293,8 @@ class Modal{
     .addClass('modal-content');
     this.$modal_header = $('<div></div>')
     .addClass('modal-header');
-    this.$modal_title = $('<h5></h5>')
-    .addClass('modal-title')
+    this.$modal_title = $('<h4></h4>')
+    .addClass('modal-title m-auto font-weight-bold')
     .html(title);
     this.$modal_header.append(this.$modal_title);
     if(close_button){
@@ -3773,10 +3773,13 @@ $('document').ready(function(){
     }
     else if(jqxhr.status==500){
       toastr.error(`${jqxhr.statusText} occurred at ${settings.url} in a ${settings.type} request`,`Error {jqxhr.status} occurred`);
+    } else if(jqxhr.status==403) {
+      $('#modalLoginForm').modal('show');
+      toastr.error('Please login to book a property','Login requried')
     } else {
       if(!jqxhr.responseJSON){
         toastr.error(`${jqxhr.responseText} occurred at ${settings.url} in a ${settings.type} request`,`${jqxhr.status} ${jqxhr.statusText}`);
-      } else {
+      } else if('errors' in jqxhr.responseJSON) {
         // {'errors':{'__all__': ['error1','error2', ...],'field1':['error1', ...], ...}}
         var errors_arr = jqxhr.responseJSON['errors']['__all__'];
         if(!errors_arr || !errors_arr.length) return;

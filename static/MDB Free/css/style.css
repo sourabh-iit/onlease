@@ -191,3 +191,10 @@
 .fw-800{
   font-weight: 800;
 }
+.modal-header{
+  background-color: #4b515d!important;
+  color: white;
+}
+.close {
+  opacity: unset;
+}

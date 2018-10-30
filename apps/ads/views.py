@@ -66,7 +66,6 @@ def paginated_ads(request,page_no):
     'has_next_page': has_next_page,
   })
 
-@login_required
 def ad_detail_view(request):
   try:
     business = request.GET.get('business')
@@ -76,21 +75,22 @@ def ad_detail_view(request):
         get(id=request.GET.get('id'))
       lodging = sublodging.lodging
       show_contact_details = False
-      try:
-        if lodging.posted_by == request.user:
-          show_contact_details=True
-        else:
-          _transactions = LodgingTransaction.objects.filter(lodging=lodging,
-            user=request.user,status=LodgingTransaction.SUCCESS)
-          if len(_transactions)>0:
-            latest_transation = _transactions[0]
-            for _transaction in _transactions:
-              if _transaction.updated_at>latest_transation:
-                latest_transation=_transaction
-            if latest_transation.updated_at>lodging.available_from:
-              show_contact_details=True
-      except LodgingTransaction.DoesNotExist:
-        pass
+      if request.user.is_authenticated:
+        try:
+          if lodging.posted_by == request.user:
+            show_contact_details=True
+          else:
+            _transactions = LodgingTransaction.objects.filter(lodging=lodging,
+              user=request.user,status=LodgingTransaction.SUCCESS)
+            if len(_transactions)>0:
+              latest_transation = _transactions[0]
+              for _transaction in _transactions:
+                if _transaction.updated_at>latest_transation:
+                  latest_transation=_transaction
+              if latest_transation.updated_at>lodging.available_from:
+                show_contact_details=True
+        except LodgingTransaction.DoesNotExist:
+          pass
       time_diff = datetime.datetime.now() - sublodging.last_time_booking
       if sublodging.is_booking and time_diff.seconds > 3*60:
         sublodging.is_booking=False

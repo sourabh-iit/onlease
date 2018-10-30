@@ -1,5 +1,4 @@
 
-{% if user.is_authenticated %}
 <form class="modal fade" id="modalUserProfileForm" tabindex="-1" role="dialog"
    aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static"
   novalidate>
@@ -14,7 +13,7 @@
       <div class="modal-body mx-3">
         <div class="col-12 mb-4" id="profile-image-container">
           {% if user.profile_image.first %}
-          <img src="{{user.profile_image.first.image.url}}" alt="profile photo" id="profile-photo">
+          <img src="{{user.profile_image.first.image_mobile.url}}" alt="profile photo" id="profile-photo">
           {% else %}
           <img src="" alt="profile photo" id="profile-photo" style="display:none">
           <i class="fa fa-user-circle-o" id="profile-icon"></i>
@@ -117,4 +116,3 @@
     </div>
   </div>
 </form>
-{% endif %}

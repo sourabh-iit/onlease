@@ -25,6 +25,7 @@ from .utils import ViewException, maintain_cookie, not_logged_in
 from .models import User, MobileNumber
 from apps.transactions.utils import send_otp, generate_otp
 from .serializers import UserSerializer
+from .utils import ajax_login_required
 
 cookie_message = 'Cookies are not enabled. We use cookies for better user experience.'
 
@@ -384,7 +385,7 @@ class PasswordChangeView2(PasswordChangeView):
     success_url=reverse_lazy('dashboard:home')
     template_name = 'user/change_password.html'
 
-@login_required
+@ajax_login_required
 def password_change_view_ajax(request):
     if(request.method=='POST'):
         form = PasswordChangeForm(request.POST)
@@ -459,7 +460,7 @@ def clear_session_data(request, *args):
             del request.session[arg]
 
 @require_POST
-@login_required
+@ajax_login_required
 def add_mobile_number_ajax(request,action):
     if request.method=='POST':
         if action=="add-number":
@@ -521,10 +522,10 @@ def add_mobile_number_ajax(request,action):
     return JsonResponse({'errors':{'__all__':['invalid action.']}},status=400)
 
 @require_POST
-@login_required
+@ajax_login_required
 def edit_profile_view(request):
     form = ProfileForm(request.POST,instance=request.user)
     if form.is_valid():
         form.save()
-        return HttpResponse(status=200)
+        return JsonResponse({'user':UserSerializer(request.user).data},status=200)
     return JsonResponse({'errors':form.errors},status=400)

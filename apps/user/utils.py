@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.db.models import Q
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 
 class ViewException(Exception):
     pass
@@ -23,9 +24,18 @@ def not_logged_in(view):
               messages.info(request,'User already logged in.')
               return HttpResponseRedirect('/')
             else:
-              return HttpResponse('User not logged in required.',status=400)
+              return HttpResponse('User already logged in.',status=400)
         else:
             return view(request,*args,**kwargs)
+    wrap.__doc__ = view.__doc__
+    wrap.__name__ = view.__name__
+    return wrap
+
+def ajax_login_required(view):
+    def wrap(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+        return view(request, *args, **kwargs)
     wrap.__doc__ = view.__doc__
     wrap.__name__ = view.__name__
     return wrap
@@ -33,7 +43,7 @@ def not_logged_in(view):
 def number_verfication_required(view):
     def wrap(request,*args,**kwargs):
         if not request.user.is_verified:
-            return HttpResponse({'errors':['Mobile number verification is required']},status=400)
+            return HttpResponse({'errors':{'__all__':['Mobile number verification is required']}},status=400)
         else:
             return view(request,*args,**kwargs)
     wrap.__doc__ = view.__doc__
