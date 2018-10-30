@@ -2149,13 +2149,13 @@ function profile_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                }).always((data)=>{
-                    if(data.status=='200'){
-                        display_message(form,'Profile Saved.');
-                    } else {
-                        display_form_errors(data,form);
-                    }
-                    remove_loading(form);
+                }).done((data)=>{
+                  window.user_data = data.user;
+                  toastr.success('Profile Saved.');
+                }).fail((data)=>{
+                  display_form_errors(data,form);
+                }).always(()=>{
+                  remove_loading(form);
                 });
             }
         }
