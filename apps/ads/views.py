@@ -71,26 +71,17 @@ def ad_detail_view(request):
     business = request.GET.get('business')
     if business=='PROPERTY':
       sublodging = CommonlyUsedLodgingModel.objects.\
-        prefetch_related('lodging','images','region','charges').\
+        prefetch_related(Prefetch('lodging',queryset=Lodging.objects.prefetch_related('purchased_by')),
+        'images','region','charges').\
         get(id=request.GET.get('id'))
       lodging = sublodging.lodging
       show_contact_details = False
       if request.user.is_authenticated:
-        try:
-          if lodging.posted_by == request.user:
+        if lodging.posted_by == request.user:
+          show_contact_details=True
+        else:
+          if len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0:
             show_contact_details=True
-          else:
-            _transactions = LodgingTransaction.objects.filter(lodging=lodging,
-              user=request.user,status=LodgingTransaction.SUCCESS)
-            if len(_transactions)>0:
-              latest_transation = _transactions[0]
-              for _transaction in _transactions:
-                if _transaction.updated_at>latest_transation:
-                  latest_transation=_transaction
-              if latest_transation.updated_at>lodging.available_from:
-                show_contact_details=True
-        except LodgingTransaction.DoesNotExist:
-          pass
       time_diff = datetime.datetime.now() - sublodging.last_time_booking
       if sublodging.is_booking and time_diff.seconds > 3*60:
         sublodging.is_booking=False
@@ -117,7 +108,7 @@ def my_ads_ajax(request):
 def my_bookings_ajax(request):
   sublodging = CommonlyUsedLodgingModel.objects.\
     prefetch_related('lodging','images','region','charges').\
-    filter(lodging__purchased_by=request.user)
+    filter(lodging__purchased_by=request.user,is_booked=True)
   return JsonResponse({
     'data':json.dumps(CommonLodgingSerializer(sublodging,many=True).data)
   })
