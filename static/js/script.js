@@ -781,10 +781,10 @@ function login_form_validation(){
                     'url': url,
                     'data': data,
                 }).done((data)=>{
-                  toastr.success('You are now logged in.');
-                  $(document).trigger('login');
-                  $(form).modal('hide');
                   window.user_data = data;
+                  toastr.success('You are now logged in.');
+                  $(document).trigger('rerender_nav_items');
+                  $(form).modal('hide');
                 }).fail((data)=>{
                   display_form_errors(data,form);
                 }).always((data)=>{
@@ -1465,10 +1465,10 @@ class PropertyDate extends PropertyInputText{
       show_icon: false,
       open_on_focus: true,
       format: 'd-m-Y',
-      direction: [1,30],
+      direction: true,
       container: this.$datepicker_container,
       show_clear_date: true,
-      show_select_today: true,
+      show_select_today: 'Today',
       onSelect: ()=>{
         this.$input.trigger('change');
         this.$input.trigger('keyup');
@@ -1934,6 +1934,7 @@ class PropertyAdForm{
             } else {
               toastr.success(res.ad.title,'Post Saved');
               $(window).trigger('update_ad',res.ad);
+              this.modal.$modal.modal('hide');
             }
           }).fail((data)=>{
             display_form_errors(data, $form);
@@ -2208,7 +2209,7 @@ function custom_validators(){
       }
       var is_booked = $('#'+params[1]+'_is_booked')[0].checked;
       var val_array = value.split('-');
-      var date = new Date(val_array[2],val_array[1],val_array[0]);
+      var date = new Date(val_array[2],parseInt(val_array[1])-1,val_array[0]);
       var date_today = new Date(Date.now());
       return is_booked || (!is_booked && date.getDate()>=date_today.getDate());
     },'Invalid date. Choose future value.');
