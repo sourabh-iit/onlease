@@ -1,10 +1,12 @@
 {% extends "base_templates/base_template_1.html" %}
 {% load static %}
-{% load sass_tags %}
+{% load compress %}
 {% load lodging_filters %}
 
 {% block head %}
-<link rel="stylesheet" href="{% sass_src 'ads/ad_detail.scss' %}">
+{% compress css %}
+<link rel="stylesheet" type="text/x-scss" href="{% static 'ads/ad_detail.scss' %}">
+{% endcompress %}
 {% endblock %}
 
 

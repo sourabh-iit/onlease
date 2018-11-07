@@ -1,5 +1,5 @@
 {% load static %}
-{% load sass_tags %}
+{% load compress %}
 {% load widget_tweaks %} 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,9 @@
     
     <title>{% block title %}{% endblock %}</title>
     {% include 'common_style_sheets.html' %}
-    <link rel="stylesheet" href="{% sass_src 'ads/ads_view.scss' %}">
+    {% compress css %}
+    <link rel="stylesheet" type="text/x-scss" href="{% static 'ads/ads_view.scss' %}">
+    {% endcompress %}
     {% block head %}{% endblock %}
   </head>
   <body class="padding-top-3">
