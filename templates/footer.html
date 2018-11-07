@@ -6,7 +6,7 @@
 
       <div class="col-md-4">
         <div>
-          <p class="column-title white-text">
+          <p class="column-title">
             <strong>USEFUL LINKS</strong>
           </p>
           <ul class="list-unstyled">
@@ -29,11 +29,15 @@
             <li>
               <a data-toggle="modal"
               {% if user.is_authenticated %}
-              data-target="#modalPropertyAdForm"
+              onclick="open_property_form('propertyAdform','New Property Form')"
               {% else %}
               data-target="#modalLoginForm"
               {% endif %}
               >Add new property</a>
+            </li>
+            <li>
+              <a href="{% url 'privacy-policy' %}"
+              >Privacy Policy</a>
             </li>
           </ul>
         </div>
@@ -41,7 +45,7 @@
 
       <div class="col-md-4">
         <div>
-          <p class="column-title white-text text-uppercase">
+          <p class="column-title text-uppercase">
             <strong>Sponsor</strong>
           </p>
           <ul class="list-unstyled">
@@ -57,7 +61,7 @@
 
       <div class="col-md-4">
         <div>
-          <p class="column-title white-text text-uppercase">
+          <p class="column-title text-uppercase">
             <strong>contact</strong>
           </p>
           <ul class="list-unstyled">
@@ -71,7 +75,7 @@
             </li>
             <li>
               <a target="_blank" href="https://tawk.to/chat/5adef5845f7cdf4f05338e80/default/?$_tawk_popout=true" 
-                  class="btn color-4 btn-sm">
+                  class="btn dark-purple-color btn-sm">
                 <i class="fa fa-comments"></i> Chat with us
               </a>
             </li>

@@ -1,6 +1,8 @@
-.transparent-background{
-    background-color: rgba(0,0,0,.4)!important;
-}
+@import "../../../../static/css/variables";
+
+// .transparent-background{
+//     background-color: rgba(0,0,0,.4)!important;
+// }
 .container{
     padding: 0;
     margin: 0;
@@ -33,6 +35,7 @@ body{
     flex-direction: column;
     padding: 1rem;
     max-width: 90%;
+    background: $onlease-footer-background-color;
 }
 .business-choice.active {
     background: aliceblue;
@@ -207,6 +210,7 @@ div#roommates {
 }
 #search_button{
   width: 16.67%!important;
+  background-color: $onlease-dark-purple-color;
 }
 @media only screen and (max-width: 500px){
   #location_search_container{

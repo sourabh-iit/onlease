@@ -9,4 +9,5 @@ urlpatterns = [
     path('my-ads', views.my_ads_ajax, name="my-ads"),
     path('my-bookings', views.my_bookings_ajax, name="my-bookings"),
     path('ads_view/<int:page_no>', views.paginated_ads, name="paginated-ads"),
+    path('details/<int:lodging_id>',views.get_ad_contact_details, name="property-details")
 ]

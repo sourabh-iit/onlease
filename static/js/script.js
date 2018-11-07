@@ -14,6 +14,175 @@ function has_keys(data){
   return Object.keys(data).length>0;
 }
 
+function hide_and_delete($modal,$el){
+  $modal.modal('hide');
+  $modal.on('hidden.bs.modal',()=>{
+    $el.remove();
+  })
+}
+
+class MyProfile{
+  constructor($ref,id,user_data,read_only=false){
+    this.read_only = read_only;
+    this.id=id;
+    this.user_data = user_data;
+    this.$form = $('<form></form>').appendTo($('body'));
+    this.user_changed = true;
+    $ref.click(()=>{
+      this.render();
+    });
+    if(!read_only){
+      $('document').on('login',()=>{
+        this.rerender();
+      });
+    }
+    $(document).on('rerender_myprofile',()=>{
+      this.rerender();
+    });
+    $(document).on('show_profile',(event, _id)=>{
+      if(_id==id){
+        this.render();
+      }
+    });
+  }
+
+  rerender(){
+    this.user_data = window.user_data;
+    this.user_changed = true;
+    this.render();
+  }
+
+  parse_string(value){
+    if(typeof value!=='string') return '';
+    return value;
+  }
+
+  get_name(){
+    return $.trim(this.parse_string(this.user_data.first_name)+' '+this.parse_string(this.user_data.last_name));
+  }
+
+  render(){
+    if(this.user_changed){
+      if(this.modal){
+        hide_and_delete(this.modal.$modal,this.modal.$modal);
+      }
+      var title = "My Profile";
+      if(this.read_only) title = "User Profile";
+      this.modal = new Modal(this.id,title);
+      this.modal.$modal.appendTo(this.$form);
+      this.modal.$modal_dialog.addClass('modal-lg');
+      this.$image_container = $('<div class="col-12 mb-4" id="profile-image-container"></div>')
+      .appendTo(this.modal.$modal_body);
+      if(this.user_data.profile_image.length>0){
+        this.$image = $(`<img src="${this.user_data.profile_image[0].image_mobile}" alt="profile photo" id="profile-photo">`)
+        .appendTo(this.$image_container);
+      } else {
+        this.$image = $(`<img src="" alt="profile photo" id="profile-photo" style="display:none">`)
+        .appendTo(this.$image_container);
+        this.$icon = $('<i class="fa fa-user-circle-o" id="profile-icon"></i>')
+        .appendTo(this.$image_container);
+      }
+      if(!this.read_only){
+        this.$upload_button = $('<a id="upload-image" class="btn bg-one btn-md">Upload photo</a>')
+        .appendTo(this.$image_container);
+        $('<small>Upload a 270x250 image for best result.</small>').appendTo(this.$image_container);
+        $(`<button class="btn bg-one btn-sm" type="button" data-target="#modalChangePasswordForm" 
+        data-toggle="modal">Change Password</button>`).appendTo(this.modal.$modal_body);
+        new ProfileAddImage(this.$upload_button,window.profile_image_url,1000,1000,this.$image);
+      }
+      $(`
+      <div class="md-form col-12 col-md-10 mb-4">
+          <i class="fa fa-user prefix grey-text"></i>
+          <input type="text" class="form-control" 
+            value="${this.get_name()}"
+            id="profile_name">
+          <label for="profile_name" class="${this.get_name()!=""?'active':''}">Full Name</label>
+      </div>`).appendTo(this.modal.$modal_body);
+      var $mobile_number = $('<div class="row container-fluid mb-4"></div>').append(`
+        <div class="md-form col-12 col-md-6">
+          <i class="fa fa-mobile prefix grey-text active"></i>
+          <input type="text" value="${this.user_data.mobile_number}" id="profile_mobile_number" class="form-control" disabled="disabled">
+          <label for="profile_mobile_number" class="active">Mobile number</label>
+        </div>
+      `).appendTo(this.modal.$modal_body);
+      if(!this.read_only){
+        var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
+        this.$add_new_number = $(`<button type="button" class="btn bg-one btn-primary btn-sm data-action="add-number" 
+          data-target="#modalEnterNumberForm" data-toggle="modal" id="add_new_number">Add new number</button>`);
+        $('<div class="col-12 col-md-6 d-flex align-items-center"></div>').append(this.$add_new_number)
+        .appendTo($mobile_number).click(function(event){
+          event.preventDefault();
+          add_number = true;
+          mobile_number = $enter_mobile_number.val();
+          $enter_mobile_number.val('');
+        });;
+        if(this.user_data.mobile_numbers.length>=3) this.$add_new_number.attr('disabled','disabled');
+      }
+      if(this.user_data.mobile_numbers.length>0){
+        var $alternate_mobile_number = $(`
+          <div class="card w-400" id="alternate_numbers_card">
+            <div class="card-header p-0" id="">
+              <div class="mb-0">
+                
+              </div>
+            </div>
+          </div>
+        `).appendTo(this.modal.$modal_body);
+        this.$alternate_mobile_numbers_toggler = $(`
+        <button type="button" class="btn btn-link" data-toggle="collapse"
+          data-target="#alt_mobile_numbers">Alternate Mobile Numbers 
+          <i class="fa fa-chevron-down" style="color: inherit!important;"></i>
+        </button>`).appendTo($alternate_mobile_number.children().children());
+        var $collapse = $(`<div class="collapse" id="alt_mobile_numbers"></div>`)
+        .appendTo($alternate_mobile_number);
+        this.$alternate_mobile_numbers_container = $('<div class="card-body"></div>').appendTo($collapse);
+        var mobile_numbers = this.user_data.mobile_numbers
+        for(var i in mobile_numbers){
+          $(`
+          <div class="row container-fluid mb-4">
+            <div class="md-form col-12 col-md-6">
+              <i class="fa fa-mobile prefix grey-text"></i>
+              <input type="text" id="profile_alternate_mobile_number_${parseInt(i)+1}" 
+                value="${mobile_numbers[i].value}" class="form-control alternate_mobile_number"
+                disabled>
+            </div>
+            <div class="col-12 col-md-6 d-flex align-items-center">
+              <button class="btn danger-color btn-sm" type="button"
+                onclick="delete_number(event,${mobile_numbers[i].value})">Delete</button>
+            </div>
+          </div>`).appendTo(this.$alternate_mobile_numbers_container);
+        }
+      }
+      $(`
+      <div class="md-form mb-4 col-12 col-md-6">
+        <i class="fa fa-envelope prefix grey-text"></i>
+        <input type="text" id="profile_email" value="${this.user_data.email}" name="email" class="form-control">
+        <label for="profile_email" class="${this.user_data.email?'active':''}">Email address</label>
+      </div>`).appendTo(this.modal.$modal_body);
+      $(`
+      <div class="md-form mb-4 col-12 col-md-10">
+        <i class="fa fa-pencil prefix grey-text"></i>
+        <textarea type="text" class="md-textarea form-control" rows="3" 
+          name="detail" id="profile_detail">${this.user_data.detail?this.user_data.detail:''}</textarea>
+        <label for="profile_detail" class="${this.user_data.detail?'active':''}">Your Description</label>
+      </div>`).appendTo(this.modal.$modal_body);
+      $(`
+      <div class="modal-footer d-flex justify-content-center">
+        <button class="btn color-2" type="submit">Save</button>
+      </div>`).appendTo(this.modal.$modal_body);
+      this.modal.$modal.on('bs.modal.shown',()=>{
+        this.modal.$modal.find('input').trigger('change');
+        this.modal.$modal.off('bs.modal.shown');
+      });
+      this.user_changed = false;
+      if(!this.read_only){
+        profile_form_validation(this.$form);
+      }
+    }
+    this.modal.$modal.modal('show');
+  }
+}
+
 class NavItems{
   constructor(){
     this.$navbar = $('#navbar');
@@ -33,6 +202,7 @@ class NavItems{
   render_items(){
     if(has_keys(window.user_data)){
       this.$navbar.append(this.get_logged_in_nav_items());
+      new MyProfile($("#myProfile"),'modalUserProfileForm',window.user_data);
     } else {
       this.$navbar.append(this.get_logged_out_nav_items());
     }
@@ -49,8 +219,7 @@ class NavItems{
       dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalEnterNumberForm"
       data-action="verify-number">Verify your number</a>`;
     }
-    dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" 
-          data-toggle="modal" data-target="#modalUserProfileForm">
+    dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" id="myProfile">
           My Profile</a>
         <a class="dropdown-item waves-effect waves-light text-capitalized"
           onclick="get_my_ads()">
@@ -87,7 +256,7 @@ class NavItems{
         {% endif %} Mates
         </a>
       </div>{% endcomment %} -->
-      <a class="nav-link color-4 waves-effect waves-light btn btn-sm btn-info" 
+      <a class="nav-link text-white color-4 waves-effect waves-light btn btn-sm btn-info" 
         onclick="open_property_form('propertyAdform','New Property Form')"
         id="newProperty" 
         aria-haspopup="true"
@@ -109,7 +278,10 @@ class NavItems{
       .append(nav_link('modalRegisterForm').append(`<i class="fa fa-user-plus"></i>`).addClass('fs-3-5'));
     } else {
       $nav_item.append(nav_link('modalLoginForm').append(`<i class="fa fa-sign-in">&nbsp;Login</i>`))
-      .append(nav_link('modalRegisterForm').append(`<i class="fa fa-user-plus">&nbsp;Register</i>`));
+      .append(nav_link('modalRegisterForm').append(`
+        <button class="btn btn-md dark-purple-color">
+          <i class="fa fa-user-plus text-white">&nbsp;Register</i>
+        </button>`));
     }
     return $nav_item;
   }
@@ -588,7 +760,7 @@ function get_selectize_configurations(value,remove_button=true){
       <div class="option">
         ${escape(item.region)}, <small class="text-green">${escape(item.state)}</small>`;
       if(item.ads!=undefined && item.ads!=null && item.ads>-1 && value.toLowerCase()=='search'){
-        root += `<span class="ads_count badge color-4">properties: ${escape(item.ads)}</span>`;
+        root += `<span class="ads_count badge dark-purple-color">properties: ${escape(item.ads)}</span>`;
       }
       root += '</div>';
       return root;
@@ -784,6 +956,7 @@ function login_form_validation(){
                   window.user_data = data;
                   toastr.success('You are now logged in.');
                   $(document).trigger('rerender_nav_items');
+                  $(document).trigger('login');
                   $(form).modal('hide');
                 }).fail((data)=>{
                   display_form_errors(data,form);
@@ -818,6 +991,7 @@ function add_tawk_to(){
     //     s0.parentNode.insertBefore(s1,s0);
     // })();
 }
+
 function enter_number_form_validation(){
     var form = $('#modalEnterNumberForm');
     var enterNumberFormValidator = form.validate({
@@ -906,7 +1080,8 @@ function delete_number(event,mobile_number){
       }).done((data)=>{
         $(el).parent().parent().remove();
         toastr.success('Successfully deleted', 'Delete '+mobile_number);
-        toggle_add_new_number_button();
+        window.user_data = data;
+        $(document).trigger('rerender_myprofile');
       }).fail((data)=>{
         toastr.error('Cannot delete this number','Delete '+mobile_number);
         display_form_errors(data);
@@ -937,46 +1112,6 @@ function Input(_id,className,label=null,prefix=null,disabled=false) {
     this.prefix = document.createElement('i');
     this.prefix.className = 'prefix grey-text fa fa-'+prefix;
   }
-}
-
-function create_alternate_mobile_number_container(mobile_number){
-  var count = $('.alternate_mobile_number').length+1;
-  var id = 'profile_alternate_mobile_number_'+count;
-  var alternate_mobile_number_container = `
-  <div class="container-fluid mb-4 row">
-    <div class="md-form col-12 col-md-6">
-      <i class="fa fa-mobile prefix grey-text"></i>
-      <input type="text" id="${id}" value="${mobile_number}" 
-        class="form-control alternate_mobile_number"
-        disabled>
-      <label for="${id}">Alternate Mobile number ${count}</label>
-    </div>
-    <div class="col-12 col-md-6 d-flex align-items-center">
-      <button class="btn danger-color btn-sm"
-        onclick="delete_number(event,${mobile_number})">Delete</button>
-    </div>
-  </div>`;
-  if($('#alternate_numbers_card').length==0){
-    $('#alt_numbers_ref').after(`
-      <div class="card" id="alternate_numbers_card">
-        <div class="card-header" id="">
-          <div class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse"
-              data-target="#alt_mobile_numbers">Alternate Mobile Numbers 
-              <i class="fa fa-chevron-down" style="color: inherit!important;"></i>
-            </button>
-          </div>
-        </div>
-        <div class="collapse" id="alt_mobile_numbers">
-          <div class="card-body">
-            <div class="d-none" id="alternate_mobile_numbers"></div>
-          </div>
-        </div>
-      </div>
-    `);
-  }
-  $('#alternate_mobile_numbers').after(alternate_mobile_number_container);
-  $('#'+id).trigger('change');
 }
 
 function verify_number_form_validation(){
@@ -1014,9 +1149,9 @@ function verify_number_form_validation(){
                     $('#modalSetPasswordForm').modal('show');
                   } else {
                     if (add_number) {
+                      window.user_data = data;
                       toastr.success('New mobile number added', 'Add '+mobile_number);
-                      create_alternate_mobile_number_container(data.mobile_number);
-                      toggle_add_new_number_button();
+                      $(document).trigger('rerender_myprofile');
                     } else {
                       display_message(form, 'Registered successfully.');
                       $(document).trigger('rerender_nav_items');
@@ -1676,10 +1811,7 @@ class PropertyAdForm{
               url: window.get_property_ad_edit_url(ad),
               type: 'DELETE',
             }).done(()=>{
-              this.modal.$modal.modal('hide');
-              this.modal.$modal.on('hidden.bs.modal',()=>{
-                this.$form.remove();
-              });
+              hide_and_delete(this.modal.$modal,this.$form);
               toastr.success('Property successfully deleted');
               $(document).trigger('remove_post',ad);
             }).fail((res)=>{
@@ -2103,8 +2235,7 @@ function change_password_form_validation(){
     });
 }
 
-function profile_form_validation(){
-    var form =  $('#modalUserProfileForm');
+function profile_form_validation(form){
     form.on('show.bs.modal',function(){
         var url = window.image_url;
         var height = 150;
@@ -2142,6 +2273,7 @@ function profile_form_validation(){
                     detail: $('#profile_detail').val(),
                     // type_of_roommate: $('#profile_type_of_roommate').val(),
                 }
+                console.log('data: ', data);
                 var url = API_PREFIX + 'account/save-profile/';
                 show_loading(form);
                 $.ajax({
@@ -2482,7 +2614,7 @@ class CarouselItem{
     }
     try{
       this.$caption = $('<div></div>').addClass('carousel-caption')
-      .text(Tag.get_option(image.tag).text);
+      .html('<h5 class="h5-responsive">'+Tag.get_option(image.tag).text+'</h5>');
     } catch(e){
       this.$caption = $('<div></div>').addClass('carousel-caption')
       .text('');
@@ -2490,11 +2622,13 @@ class CarouselItem{
     this.$item = $('<div></div>').addClass('w-100 minh-200')
     .css({'text-align':'center'})
     .append(this.img_element.$img).append(this.$caption);
+    type==0 ? this.$item.append($('<div class="mask rgba-black-slight"></div>')):
+      this.$item.append($('<div class="mask rgba-black-light"></div>'));
     if(type==2){
       this.$item.addClass('h-100');
     }
     if(i==0){
-      this.$item.addClass('carousel-item active');
+      this.$item.addClass('carousel-item active view');
     } else {
       this.$item.addClass('carousel-item');
     }
@@ -2558,6 +2692,12 @@ class Carousel{
       this.add_indicator(id,i);
       this.add_item(i,images[i]);
     }
+    this.$carousel.on('slide.bs.carousel',()=>{
+      this.$carousel.find('.carousel-item.active').removeClass('view');
+    });
+    this.$carousel.on('slid.bs.carousel',(event)=>{
+      $(event.relatedTarget).addClass('view');
+    });
     set_carousel(this.$carousel,type);
   }
 
@@ -2798,10 +2938,17 @@ class MyProperties extends Ads{
   constructor(prefix, ads, title, not_my_bookings=true){
     var modal = new Modal(prefix,title);
     super(prefix,modal.$modal_body,ads,not_my_bookings);
+    this.user_changed = false;
     this.modal = modal;
     this.modal.$modal_dialog.addClass('modal-lg')
     .css('max-width',calc_ads_container_width(3));
     this.modal.$modal.modal('show');
+    $(document).on('login',()=>{
+      this.user_changed = true;
+    });
+    $(document).on('logout',()=>{
+      this.user_changed = true;
+    });
   }
 }
 
@@ -2813,7 +2960,7 @@ class PropertyAds extends Ads{
 }
 
 function get_my_ads(){
-  if(window.myads){
+  if(window.myads && !window.myads.user_changed){
     window.myads.modal.$modal.modal('show');
   } else {
     $.ajax({
@@ -2823,6 +2970,7 @@ function get_my_ads(){
       }
     }).done(function(res){
       window.myads = new MyProperties('my_property',JSON.parse(res.data),'My Properties');
+      window.myads.user_changed = false;
     }).fail(function(){
       toastr.error("Unable to get your ads","Error");
     }).always(function(){
@@ -2832,7 +2980,7 @@ function get_my_ads(){
 }
 
 function get_my_booked_ads(){
-  if(window.mybookings){
+  if(window.mybookings && !window.myads.user_changed){
     window.mybookings.modal.$modal.modal('show');
   } else {
     $.ajax({
@@ -2842,6 +2990,7 @@ function get_my_booked_ads(){
       }
     }).done(function(res){
       window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings',false);
+      window.mybookings.user_changed = false;
     }).fail(function(){
       toastr.error("Unable to get your bookings","Error");
     }).always(function(){
@@ -3302,14 +3451,14 @@ function change_src($img,type){
   if($img.attr('data-src')){
     var $img_carrier = $('<img>');
     $img_carrier.on('load',()=>{
-      var $div = $('<div></div>').css({'margin':'auto'})
+      var $div = $('<div></div>').css({'margin':'auto'});
       if(type==0){
         $div.css({'height':'200px'});
       } else if(type==2){
         $div.css({'height':'fit-content','width':'fit-content'})
         .addClass('center-element');
       }
-      $img.parent().append($div);
+      $img.css('margin','auto').parent().prepend($div);
       $img.appendTo($div).attr('src',$img.attr('data-src'))
       .removeAttr('data-src').removeClass('center-element');
       $img_carrier.remove();
@@ -3362,18 +3511,10 @@ function set_validations(){
   enter_number_form_validation();
   set_password_form_validation();
   change_password_form_validation();
-  profile_form_validation();
-  roomie_ad_form_validation();
+  // roomie_ad_form_validation();
 }
 
 function set_enter_number_form(){
-  var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
-  $('[data-action=add-number]').click(function(event){
-    event.preventDefault();
-    add_number = true;
-    mobile_number = $enter_mobile_number.val();
-    $enter_mobile_number.val('');
-  });
   $('[data-action=verify-number]').click(function(){
       add_number = false;
       if(mobile_number!=""){
@@ -3597,10 +3738,7 @@ class ImageTagModal extends Modal{
     this.delete = new ImageDelete(image_data.id,this.$modal);
     this.tag = new InlineTagEditor(this.$modal,image_data);
     this.$modal.on('tag_success',(event,new_tag)=>{
-      this.$modal.modal('hide');
-      this.$modal.on('hidden.bs.modal',()=>{
-        this.$modal.remove();
-      });
+      hide_and_delete(this.modal.$modal,this.modal.$modal);
       _this.add_new_image_group(Object.assign(image_data,{tag:new_tag}));
     });
     this.$modal.on('delete_success',()=>{
@@ -3749,7 +3887,7 @@ class AddImage{
 }
 
 class ProfileAddImage{
-  constructor($el_ref,url,max_height,max_width){
+  constructor($el_ref,url,max_height,max_width,$image){
     this.$ref = $el_ref;
     this.$input = $('<input type="file">').addClass('d-none');
     this.$ref.click(()=>{
@@ -3759,9 +3897,9 @@ class ProfileAddImage{
       load_image_file(this.$ref,event.target,url,max_height,max_width);
     });
     this.$ref.on('image_uploaded',(event,image)=>{
-      $('#profile-photo').attr('src',image.image);
+      $image.attr('src',image.image_mobile);
       $('#profile-icon').css({'display':'none'});
-      $('#profile-photo').css({'display':'block'});
+      $image.css({'display':'block'});
     });
   }
 }
@@ -3841,15 +3979,9 @@ $('document').ready(function(){
     $(this).css('z-index',1050+num_visible_modals);
   });
   
-  new ProfileAddImage($('#upload-image'),window.profile_image_url,1000,1000);
   set_validations();
   set_disable_submit_button();
   set_enter_number_form();
-  $('#upload-image').css({'visibility':'visible'});
-
-  $('#modalPropertyAdForm').on('hidden.bs.modal',function(){
-    $('.modal-backdrop').remove();
-  });
 
   $('#resend_otp').click(function(){
     resend_otp();

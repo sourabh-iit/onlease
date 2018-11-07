@@ -1,4 +1,5 @@
 {% load static %}
+{% load sass_tags %}
 {% load widget_tweaks %} 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +9,7 @@
     
     <title>{% block title %}{% endblock %}</title>
     {% include 'common_style_sheets.html' %}
-    <link rel="stylesheet" href="{% static 'ads/ads_view.css' %}">
+    <link rel="stylesheet" href="{% sass_src 'ads/ads_view.scss' %}">
     {% block head %}{% endblock %}
   </head>
   <body class="padding-top-3">
@@ -42,7 +43,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" class="btn color-2 m-0 search p-0 search-element">Search</button>
+              <button type="submit" class="btn dark-purple-color m-0 search p-0 search-element">Search</button>
             </div>
           </form>
         </div>
@@ -54,13 +55,13 @@
 
       {% include 'nav.html' %}
 
-      <div class="filters mobile btn color-6" data-target="#filters" data-toggle="modal">
+      <div class="filters mobile btn dark-purple-color" data-target="#filters" data-toggle="modal">
         <div class="filter-toggler text-uppercase">
           <i class="fa fa-filter"></i> Change Locations
         </div>
       </div>
 
-      <div class="desktop container-fluid color-1 transparent p-4">
+      <div class="desktop container-fluid z-depth-2 location-search footer-background-color transparent">
         <form method="GET" class="row filter-nav desktop justify-content-center"
           id="id_business_desktop">
           
@@ -68,7 +69,7 @@
             
           </div>
           <div class="col-2 p-0">
-            <button type="submit" class="btn color-2 m-0 search p-0 search-element">Search</button>
+            <button type="submit" class="btn dark-purple-color m-0 search p-0 search-element">Search</button>
           </div>
         </form>
       </div>

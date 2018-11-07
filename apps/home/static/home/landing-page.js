@@ -50,19 +50,6 @@ function set_select_2() {
 
   // $($('.select-2')[0]).removeClass('col-7').addClass('form-control property-type')
 }
-function set_navbar_transparency() {
-  $('.navbar').addClass('transparent-background');
-  $(window).on("scroll", function () {
-    if ($(window).scrollTop() >= 50) {
-      $('.navbar').removeClass('transparent-background');
-    } else {
-      $('.navbar').addClass('transparent-background');
-    }
-  });
-  $('#id_region').change(function () {
-    $($('span.select2-container')[1]).popover('hide');
-  });
-}
 function display_popover() {
   $($('span.select2-container')[1]).popover({
     content: 'Choose location',
@@ -109,7 +96,6 @@ $(document).ready(function () {
 
   // set_slider();
   // set_select_2();
-  set_navbar_transparency();
   AddToggleClassEvent('mates', 'property');
 
   $('form[name=searchForm]').submit(function (e) {

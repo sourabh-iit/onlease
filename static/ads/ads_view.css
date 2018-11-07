@@ -1,0 +1,61 @@
+.business-choice {
+  background: green;
+  color: white;
+  font-weight: 600;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer; }
+
+.business-choice.active {
+  background: white;
+  color: green;
+  border: 1px solid green; }
+
+.search-element {
+  width: 100%;
+  height: 40px;
+  vertical-align: middle; }
+
+.select2-container--default .select2-selection--multiple {
+  border-radius: 0;
+  height: 35px; }
+
+.ol-image {
+  width: 270px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly; }
+
+#ads_wrapper {
+  margin: 0;
+  padding: 20px;
+  text-align: center; }
+
+#ads_wrapper .card {
+  margin-top: 1rem;
+  max-width: 270px !important; }
+
+.filter-nav {
+  align-self: center; }
+
+#main-container {
+  display: flex;
+  flex-direction: column; }
+
+.location-detail {
+  position: absolute;
+  right: 0px;
+  color: blue;
+  background-color: aliceblue; }
+
+.location-search {
+  padding: 0.8rem 1.5rem 0.6rem 1.5rem; }
+
+@media (min-width: 768px) {
+  .selectize-input.items {
+    height: 40px; } }
+
+/*# sourceMappingURL=ads_view.css.map */

@@ -505,7 +505,7 @@ def add_mobile_number_ajax(request,action):
                         request.user.save()
                     # clear session variables not required anymore
                     clear_session_data(request,'otp','attempts','time','mobile_number')
-                    return JsonResponse({'mobile_number': mobile_number},status=200)
+                    return JsonResponse(UserSerializer(request.user).data)
             except ViewException as e:
                 form.add_error(None, e)
             return JsonResponse({'errors':form.errors},status=400)
@@ -515,7 +515,7 @@ def add_mobile_number_ajax(request,action):
                 mobile_number = form.cleaned_data['mobile_number']
                 try:
                     request.user.mobile_numbers.filter(value=mobile_number,is_verified=True).delete()
-                    return JsonResponse({'mobile_number':mobile_number})
+                    return JsonResponse(UserSerializer(request.user).data)
                 except ObjectDoesNotExist:
                     return JsonResponse({'errors':{'__all__':['Mobile number not found']}})
             return JsonResponse({'errors':form.errors},status=400)

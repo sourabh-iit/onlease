@@ -2,10 +2,11 @@
 {% load widget_tweaks %} 
 {% block title %}OnLease{% endblock %} 
 {% load static %} 
+{% load sass_tags %}
 {% load i18n %} 
 {% block home_active %} active {% endblock %} 
 {% block head %}
-<link rel="stylesheet" href="{% static 'home/landing-page.css' %}">
+<link href="{% sass_src 'home/landing-page.scss' %}" rel="stylesheet" type="text/css" />
 {% endblock %} 
 {% block script %}
 <script src="{% static 'home/landing-page.js' %}"></script>
@@ -13,7 +14,7 @@
 {% block content %}
 <div class="container d-flex">
   <img src="{% static 'images/kari-shea-180802-unsplash_desktop.jpg' %}" alt="">
-  <div class="business z-depth-2 col-12 col-md-10 col-lg-9 transparent col-xl-8 color-1">
+  <div class="business z-depth-2 col-12 col-md-10 col-lg-9 col-xl-8">
     <form novalidate class="w-100" name="searchForm" action="{% url 'ads:ads-view' %}" method='GET'>
       <!-- {% comment %}<div class="business-choices">
         <div class="business-choice active" id="property">Property</div>
@@ -61,7 +62,7 @@
             </select>
         </div>
         <button type="submit" id="search_button" 
-          class="h-40 btn color-2 m-0 search">Search</button>
+          class="h-40 btn m-0 search">Search</button>
       </div>
     </form>
   </div>

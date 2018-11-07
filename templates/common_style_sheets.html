@@ -1,4 +1,5 @@
 {% load static %}
+{% load sass_tags %}
 {% load lodging_filters %}
 <script>
   var API_PREFIX = '/api/';
@@ -26,13 +27,15 @@
     return "{% url 'ads:paginated-ads' page_no='1' %}".replace('1',page_no);
   }
   var detail_view_url = '{% url "ads:ad-detail-view" %}';
+  function get_property_details_url(lodging_id){
+    return "{% url 'ads:property-details' lodging_id='13232' %}".replace('13232',lodging_id);
+  }
 </script>
 <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link href="{% static 'MDB Free/css/bootstrap.min.css' %}" rel="stylesheet">
-<link href="{% static 'MDB Free/css/mdb.min.css' %}" rel="stylesheet">
-<link href="{% static 'MDB Free/css/style.css' %}" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link href="{% sass_src 'MDB Free/scss/mdb.scss' %}" rel="stylesheet" type="text/css" />
+<link href="{% sass_src 'css/styles.scss' %}" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/image-upload.css' %}">
 <link rel="stylesheet" href="{% static 'css/zebra_datepicker.min.css' %}">

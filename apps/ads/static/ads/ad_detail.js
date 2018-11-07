@@ -62,8 +62,8 @@ class BookNow{
         toastr.info('Redirecting to secure payment gateway');
         window.location.href = res.url;
       }).fail(function(res){
-        if(res.responseJSON.profile_complete===false || res.responseJSON.profile_complete==='False'){
-          $('#modalUserProfileForm').modal('show');
+        if(res.responseJSON && (res.responseJSON.profile_complete===false || res.responseJSON.profile_complete==='False')){
+          $(document).trigger('show_profile','modalUserProfileForm')
           toastr.error('Please fill your name and email id.','Profile not complete');
         }
         display_global_errors(res);
@@ -107,6 +107,72 @@ function openMap() {
 function new_button(icon,text){
   return $(`<div class="p-2 color-2 col text-white text-center cursor-pointer"><i class="fa fa-${icon}"></i>&nbsp;${text}</div>`);
 }
+
+(function (){
+  var data = window.data;
+  var $ref = $('#basic-details');
+  var contact_details_id = 'contact-details';
+  $booking_button_ref = $('#booking_button');
+
+  function phone_numbers_string(data){
+    var mobile_numbers = [data.mobile_number];
+    for(var mobile_number of data.mobile_numbers)
+      mobile_numbers.push(mobile_number.value);
+    return mobile_numbers.join(', ');
+  }
+
+  function show_contact_details(data){
+    $ref.after(`
+    <div class="mb-3 z-depth-1 p-3 details" id="${contact_details_id}">
+      <div class="h4">Contact Details</div>
+      <div>
+        Phone numbers - ${phone_numbers_string(data.posted_by)}
+      </div>
+      <div>
+        Address - ${data.address}
+      </div>
+    </div>`); 
+  }
+
+  function render_booking_button(){
+    $booking_button_ref.next().remove();
+    var $div = $('<div class="text-center"></div>');
+    var $booking_button = $(`
+    <button id="book_now" class="btn color-4">
+      Book Now in 
+      <span class="h5 text-success">
+        <i class="fa fa-inr" style="font-size: 1.25rem;"></i>${data.rent}
+      </span> 
+      only
+    </button>`).appendTo($div);
+    if(data.is_booked || data.is_booking){
+      $div.append(`
+      <div>
+        <small class="red-text">
+          Already booked or under process of booking
+        </small>
+      </div>`);
+    }
+    $booking_button_ref.after($div);
+    new BookNow($booking_button);
+  }
+
+  $(document).on('login',()=>{
+    $.ajax({
+      url : window.get_property_details_url(data.id),
+    }).done((data)=>{
+      if(data.address){
+        show_contact_details(data);
+        $booking_button_ref.next().remove();
+      }
+    }).fail(()=>{});
+  });
+
+  $(document).on('logout',()=>{
+    $('#'+contact_details_id).remove();
+    render_booking_button();
+  });
+})();
 
 $('document').ready(function(){
   var data = window.data;

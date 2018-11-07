@@ -1,9 +1,10 @@
 {% extends "base_templates/base_template_1.html" %}
 {% load static %}
+{% load sass_tags %}
 {% load lodging_filters %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'ads/ad_detail.css' %}">
+<link rel="stylesheet" href="{% sass_src 'ads/ad_detail.scss' %}">
 {% endblock %}
 
 
@@ -27,7 +28,7 @@
     </div> -->
   </div>
   <div class="col-12 col-md-6">
-    <div class="basic-details p-3">
+    <div class="basic-details p-3" id="basic-details">
       <div class="indigo badge badge-pill mt-1 fs-3-5">
         <i class="fa fa-inr"></i>
         {{sublodging.rent}}
@@ -42,7 +43,7 @@
       </div>
     </div>
     {% if show_contact_details == True %}
-    <div class="mb-3 z-depth-1 p-3 details">
+    <div class="mb-3 z-depth-1 p-3 details" id="contact-details">
       <div class="h4">Contact Details</div>
       <div>
         Phone numbers - {{lodging|phone_numbers}}
@@ -177,6 +178,7 @@
       </div>
     </div>
     {% endif %}
+    <div class="d-none" id="booking_button"></div>
     {% if show_contact_details == False %}
     <div class="text-center">
       <button
@@ -207,6 +209,7 @@
   <script>
     var latlng = '{{sublodging.latlng}}';
     var book_now_url = "{% url 'transactions:lodging-redirect-to-instamojo' lodging.id %}";
+    var show_contact_details = "{{show_contact_details | escapejs}}";
   </script>
   {% comment %} <iframe width="600" height="450" frameborder="0" style="border:0" 
   src="https://www.google.com/maps/embed/v1/directions?origin=&destination={{sublodging.latlng}}&key=AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ" 

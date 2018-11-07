@@ -198,3 +198,19 @@
 .close {
   opacity: unset;
 }
+.w-400{
+  width: 400px;
+}
+.navbar-brand {
+  position: absolute;
+}
+.logo {
+  max-height: 140px!important;
+}
+.nav-link {
+  color: #3b2d3a!important;
+}
+.navbar{
+  background: #fffbee;
+  height: 60px;
+}

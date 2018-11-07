@@ -15,7 +15,10 @@ import datetime
 from apps.roommate.models import RoomieAd
 from apps.locations.models import Region
 from apps.lodging.models import CommonlyUsedLodgingModel, Lodging
-from apps.lodging.serializers import CommonLodgingSerializer
+from apps.lodging.serializers import \
+  CommonLodgingSerializer, \
+  MyLodgingSerializer, \
+  LodgingSerializer
 from apps.transactions.models import LodgingTransaction
 
 User = get_user_model()
@@ -99,7 +102,7 @@ def my_ads_ajax(request):
     prefetch_related('lodging','images','region','charges').\
     filter(lodging__posted_by=request.user)
   return JsonResponse({
-    'data':json.dumps(CommonLodgingSerializer(sublodging,many=True).data)
+    'data':json.dumps(MyLodgingSerializer(sublodging,many=True).data)
   })
 
 def my_bookings_ajax(request):
@@ -107,5 +110,12 @@ def my_bookings_ajax(request):
     prefetch_related('lodging','images','region','charges').\
     filter(lodging__purchased_by=request.user,is_booked=True)
   return JsonResponse({
-    'data':json.dumps(CommonLodgingSerializer(sublodging,many=True).data)
+    'data':json.dumps(MyLodgingSerializer(sublodging,many=True).data)
   })
+
+def get_ad_contact_details(request,lodging_id):
+  lodging = Lodging.objects.prefetch_related('sublodging').get(id=lodging_id)
+  if request.user.is_authenticated and (lodging.posted_by == request.user or \
+    lodging.sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0):
+    return JsonResponse(LodgingSerializer(lodging).data)
+  return JsonResponse({'data':'Not available'})

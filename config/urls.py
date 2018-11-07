@@ -37,5 +37,6 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('api/',include('apps.image.urls')),
     path('vrview/',TemplateView.as_view(template_name="vrview-master/index.html"),
-                   name='vrview')
+                   name='vrview'),
+    path('privacy-policy/',TemplateView.as_view(template_name='privacy-policy.html'), name="privacy-policy")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
