@@ -2,11 +2,13 @@
 {% load widget_tweaks %} 
 {% block title %}OnLease{% endblock %} 
 {% load static %} 
-{% load sass_tags %}
+{% load compress %}
 {% load i18n %} 
 {% block home_active %} active {% endblock %} 
 {% block head %}
-<link href="{% sass_src 'home/landing-page.scss' %}" rel="stylesheet" type="text/css" />
+{% compress css %}
+<link href="{% static 'home/landing-page.scss' %}"  type="text/x-scss" rel="stylesheet" />
+{% endcompress %}
 {% endblock %} 
 {% block script %}
 <script src="{% static 'home/landing-page.js' %}"></script>

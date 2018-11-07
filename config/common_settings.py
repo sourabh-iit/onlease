@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'apps.locations',
     # 'apps.legal',
     'apps.roommate',
-    'sass_processor',
+    "compressor",
 ]
 
 MIDDLEWARE = [
@@ -124,7 +124,7 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
   'django.contrib.staticfiles.finders.FileSystemFinder',
   'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-  'sass_processor.finders.CssFinder',
+    'compressor.finders.CompressorFinder',
 )
 
 MEDIA_URL = '/media/'
@@ -159,9 +159,13 @@ REST_FRAMEWORK = {
 }
 
 # django sass processor settings
-SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR,'static')
-SASS_PROCESSOR_AUTO_INCLUDE = False
-SASS_PRECISION = 8
-SASS_PROCESSOR_INCLUDE_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+# SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR,'static')
+# SASS_PRECISION = 8
+# SASS_PROCESSOR_INCLUDE_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
+
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'django_libsass.SassCompiler'),
+)
+COMPRESS_ROOT = os.path.join(BASE_DIR,'static')
