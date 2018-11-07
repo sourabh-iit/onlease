@@ -127,10 +127,6 @@ STATICFILES_FINDERS = (
   'sass_processor.finders.CssFinder',
 )
 
-STATICFILES_DIRS = [
-  os.path.join(BASE_DIR,'sass')
-]
-
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
