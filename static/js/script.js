@@ -187,7 +187,7 @@ class NavItems{
   constructor(){
     this.$navbar = $('#navbar');
     $(document).on('login',()=>{
-      this.$navbar.empty().append(this.get_logged_in_nav_items());
+      this.appendLoggedInItems();
     });
     $(document).on('logout',()=>{
       this.$navbar.empty().append(this.get_logged_out_nav_items());
@@ -201,11 +201,15 @@ class NavItems{
 
   render_items(){
     if(has_keys(window.user_data)){
-      this.$navbar.append(this.get_logged_in_nav_items());
-      new MyProfile($("#myProfile"),'modalUserProfileForm',window.user_data);
+      this.appendLoggedInItems();
     } else {
       this.$navbar.append(this.get_logged_out_nav_items());
     }
+  }
+
+  appendLoggedInItems(){
+    this.$navbar.empty().append(this.get_logged_in_nav_items());
+    new MyProfile($("#myProfile"),'modalUserProfileForm',window.user_data);
   }
 
   get_dropdown(){
@@ -1795,7 +1799,16 @@ class PropertyAdForm{
     if(this.is_new_ad){
       this.$buttons_cotnainer.append(this.$reset);
       this.$reset.click((event)=>{
-        confirm_reset_form(event,this.$form);
+        event.preventDefault();
+        event.stopPropagation();
+        $.confirm({
+          title: 'Reset form',
+          text: 'Data will be deleted permanently. Are you sure you want to delete it?',
+          confirm: ()=>{
+            this.$form.trigger('reset');
+            this.propertyFormValidator.resetForm();
+          }
+        });
       });
       this.$post.text('Post');
     } else {
@@ -3738,7 +3751,7 @@ class ImageTagModal extends Modal{
     this.delete = new ImageDelete(image_data.id,this.$modal);
     this.tag = new InlineTagEditor(this.$modal,image_data);
     this.$modal.on('tag_success',(event,new_tag)=>{
-      hide_and_delete(this.modal.$modal,this.modal.$modal);
+      hide_and_delete(this.$modal,this.$modal);
       _this.add_new_image_group(Object.assign(image_data,{tag:new_tag}));
     });
     this.$modal.on('delete_success',()=>{

@@ -398,7 +398,7 @@ def password_change_view_ajax(request):
                 request.user.set_password(password)
                 request.user.save()
                 login(request,request.user)
-                return HttpResponse(status=200)
+                return JsonResponse({'success': True})
             except ViewException as e:
                 form.add_error(None,e)
         return JsonResponse({'errors':form.errors},status=400)
