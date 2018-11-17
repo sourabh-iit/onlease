@@ -98,7 +98,7 @@ class MyProfile{
             id="profile_name">
           <label for="profile_name" class="${this.get_name()!=""?'active':''}">Full Name</label>
       </div>`).appendTo(this.modal.$modal_body);
-      var $mobile_number = $('<div class="row container-fluid mb-4"></div>').append(`
+      var $mobile_number = $('<div class="row container-fluid"></div>').append(`
         <div class="md-form col-12 col-md-6">
           <i class="fa fa-mobile prefix grey-text active"></i>
           <input type="text" value="${this.user_data.mobile_number}" id="profile_mobile_number" class="form-control" disabled="disabled">
@@ -118,40 +118,22 @@ class MyProfile{
         });;
         if(this.user_data.mobile_numbers.length>=3) this.$add_new_number.attr('disabled','disabled');
       }
-      if(this.user_data.mobile_numbers.length>0){
+      var mobile_numbers = this.user_data.mobile_numbers
+      for(var i in mobile_numbers){
         var $alternate_mobile_number = $(`
-          <div class="card w-400" id="alternate_numbers_card">
-            <div class="card-header p-0" id="">
-              <div class="mb-0">
-                
-              </div>
-            </div>
+        <div class="row container-fluid">
+          <div class="md-form col-12 col-md-6">
+            <i class="fa fa-mobile prefix grey-text"></i>
+            <input type="text" id="profile_alternate_mobile_number_${parseInt(i)+1}" 
+              value="${mobile_numbers[i].value}" class="form-control alternate_mobile_number"
+              disabled>
           </div>
-        `).appendTo(this.modal.$modal_body);
-        this.$alternate_mobile_numbers_toggler = $(`
-        <button type="button" class="btn btn-link" data-toggle="collapse"
-          data-target="#alt_mobile_numbers">Alternate Mobile Numbers 
-          <i class="fa fa-chevron-down" style="color: inherit!important;"></i>
-        </button>`).appendTo($alternate_mobile_number.children().children());
-        var $collapse = $(`<div class="collapse" id="alt_mobile_numbers"></div>`)
-        .appendTo($alternate_mobile_number);
-        this.$alternate_mobile_numbers_container = $('<div class="card-body"></div>').appendTo($collapse);
-        var mobile_numbers = this.user_data.mobile_numbers
-        for(var i in mobile_numbers){
-          $(`
-          <div class="row container-fluid mb-4">
-            <div class="md-form col-12 col-md-6">
-              <i class="fa fa-mobile prefix grey-text"></i>
-              <input type="text" id="profile_alternate_mobile_number_${parseInt(i)+1}" 
-                value="${mobile_numbers[i].value}" class="form-control alternate_mobile_number"
-                disabled>
-            </div>
-            <div class="col-12 col-md-6 d-flex align-items-center">
-              <button class="btn danger-color btn-sm" type="button"
-                onclick="delete_number(event,${mobile_numbers[i].value})">Delete</button>
-            </div>
-          </div>`).appendTo(this.$alternate_mobile_numbers_container);
-        }
+        </div>`).appendTo(this.modal.$modal_body);
+        if(!this.read_only)
+          $(`<div class="col-12 col-md-6 d-flex align-items-center">
+            <button class="btn danger-color btn-sm" type="button"
+              onclick="delete_number(event,${mobile_numbers[i].value})">Delete</button>
+          </div>`).appendTo($alternate_mobile_number);
       }
       $(`
       <div class="md-form mb-4 col-12 col-md-6">
@@ -1154,10 +1136,10 @@ function verify_number_form_validation(){
                   } else {
                     if (add_number) {
                       window.user_data = data;
-                      toastr.success('New mobile number added', 'Add '+mobile_number);
+                      toastr.success('New mobile number added', mobile_number);
                       $(document).trigger('rerender_myprofile');
                     } else {
-                      display_message(form, 'Registered successfully.');
+                      toastr.success('Mobile number verified.');
                       $(document).trigger('rerender_nav_items');
                     }
                   }
@@ -1239,6 +1221,7 @@ function register_form_validation(){
                   window.user_data = data.user;
                   $(document).trigger('rerender_nav_items');
                   set_password=false;
+                  toastr.success('Registered successfully')
                   $('#modalRegisterForm').modal('hide');
                   $('#modalVerifyNumberForm').modal('show');
                 }).fail((data)=>{
@@ -2232,16 +2215,16 @@ function change_password_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
+                }).done((data)=>{
+                  toastr.success('Password changed successfully.');
+                  setTimeout(()=>{
+                    $('#modalSetPasswordForm').modal('hide');
+                  },1000);
+                  $(form).modal('hide');
+                }).fail((data)=>{
+                  display_form_errors(data,form);
                 }).always((data)=>{
-                    if(data.status=='200'){
-                        display_message(form,'Password changed successfully.');
-                        setTimeout(()=>{
-                            $('#modalSetPasswordForm').modal('hide');
-                        },1000);
-                    } else {
-                        display_form_errors(data,form);
-                    }
-                    remove_loading(form);
+                  remove_loading(form);
                 });
             }
         }
@@ -2286,7 +2269,6 @@ function profile_form_validation(form){
                     detail: $('#profile_detail').val(),
                     // type_of_roommate: $('#profile_type_of_roommate').val(),
                 }
-                console.log('data: ', data);
                 var url = API_PREFIX + 'account/save-profile/';
                 show_loading(form);
                 $.ajax({

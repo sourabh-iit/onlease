@@ -372,7 +372,7 @@ def reset_password_view_ajax(request):
                 user.save()
                 # clear session
                 request.session.flush()
-                return HttpResponse(status=200)
+                return HttpResponse('success',status=200)
         except (KeyError):
             form.add_error(None,'Cannot process request. Invalid request')
         except User.DoesNotExist:
