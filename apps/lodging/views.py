@@ -29,7 +29,9 @@ class LodgingView(View):
     form = self.form_class(data)
     sub_form = self.sub_form_class(request,data)
     try:
-      sublodging = self.save_lodging(form,sub_form,request,data)
+      errors, sublodging = self.save_lodging(form,sub_form,request,data)
+      if errors:
+        return JsonResponse({'success':False, 'errors': errors},status=400)
       return JsonResponse({'success': True,'ad':CommonLodgingSerializer(sublodging).data})
     except ValidationError as e:
       form.add_error(None,e)
@@ -46,7 +48,9 @@ class LodgingView(View):
         raise ValidationError('You are not authorized to perform this action')
       form = self.form_class(data,instance=ad)
       sub_form = self.sub_form_class(request,data,instance=ad.sublodging)
-      sublodging = self.save_lodging(form,sub_form,request,data)
+      errors, sublodging = self.save_lodging(form,sub_form,request,data)
+      if errors:
+        return JsonResponse({'success':False, 'errors': errors},status=400)
       return JsonResponse({'success': True,'ad':CommonLodgingSerializer(sublodging).data})
     except ValidationError as e:
       form.add_error(None,e)
@@ -90,7 +94,9 @@ class LodgingView(View):
         sublodging.termsandconditions.all().delete()
         for term_and_condition in json.loads(data.get('terms_and_conditions','[]')):
           TermAndCondition.objects.create(text=term_and_condition,lodging=sublodging)
-        return sublodging
+        return None, sublodging
+    else:
+      return {**form.errors,**sub_form.errors}, None
 
 def verify_tour_link(request):
   tour_link = request.GET.get('virtual_tour_link')

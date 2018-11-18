@@ -2582,7 +2582,7 @@ class AdDetails{
     this.rent = new AdDetailItem('Rent','fa fa-inr',ad.rent);
     this.rent.$li.removeClass('col-4').addClass('col-3');
     if(ad.lodging_type=='O'){
-      this.type = new AdDetailItem('Type','fa fa-home',ad.lodging_type_other);
+      this.type = new AdDetailItem('Type','fa fa-home','Other');
     } else {
       this.type = new AdDetailItem('Type','fa fa-home',Type.get_option(ad.lodging_type).text);
     }
@@ -3957,7 +3957,7 @@ $('document').ready(function(){
       toastr.error('Error in connecting to server. Check your internet connection.')
     }
     else if(jqxhr.status==500){
-      toastr.error(`${jqxhr.statusText} occurred at ${settings.url} in a ${settings.type} request`,`Error {jqxhr.status} occurred`);
+      toastr.error(`${jqxhr.statusText} occurred at ${settings.url} in a ${settings.type} request`,`Error ${jqxhr.status} occurred`);
     } else if(jqxhr.status==403) {
       $('#modalLoginForm').modal('show');
       toastr.error('Please login to book a property','Login requried')
