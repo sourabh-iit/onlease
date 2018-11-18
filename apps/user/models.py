@@ -92,11 +92,13 @@ class User(AbstractUser):
 
 
 class MobileNumber(models.Model):
-  value = models.CharField(max_length=16,validators=[
+  value = models.CharField(max_length=16,unique=True,validators=[
       RegexValidator(mobile_number_regex,
           message="Enter a valid mobile number.")])
   user = models.ForeignKey(User, related_name='mobile_numbers', on_delete=models.CASCADE)
   is_verified = models.BooleanField(default=False)
+  time = models.PositiveIntegerField(null=True)
+  otp = models.CharField(max_length=10,null=True)
 
 
 class ContactModel(models.Model):

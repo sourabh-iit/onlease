@@ -13,6 +13,10 @@ class MobileNumberForm(forms.Form):
         code='invalid_number')])
 
 class ValidateOtpForm(forms.Form):
+    mobile_number=forms.CharField(max_length=10,
+        validators=[RegexValidator(regex=mobile_number_regex,
+        message='Enter valid mobile number',
+        code='invalid_number')])
     otp = forms.CharField(
         max_length=6,
         required=True,
@@ -109,14 +113,19 @@ class ContactForm(forms.ModelForm):
         }
 
 class ResetPasswordForm(forms.ModelForm):
+    mobile_number=forms.CharField(max_length=10,
+        validators=[RegexValidator(regex=mobile_number_regex,
+        message='Enter valid mobile number',
+        code='invalid_number')])
+    confirm_password = forms.CharField(
+        max_length=50,
+        widget = forms.PasswordInput)
+    otp = forms.CharField(max_length=10)
+
     class Meta:
         model = User
         fields = ('password',)
         widgets = {'password':forms.PasswordInput}
-
-    confirm_password = forms.CharField(
-        max_length=50,
-        widget = forms.PasswordInput)
 
     def clean(self):
         cleaned_data = super().clean()

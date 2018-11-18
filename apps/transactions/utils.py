@@ -4,7 +4,9 @@ import os
 import requests
 import random
 import json
+import time
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 
 onlease_last_message = ' www.onlease.in'
 
@@ -27,36 +29,27 @@ def send_message(mobile_number,message):
     }
     url = 'http://api.msg91.com/api/sendhttp.php'
     response = requests.get(url,params=params)
-    
 
-def send_otp(request,mobile_number):
+def send_otp(session, mobile_number, user, otp):
+    if 'time' in session and time.time() - session['time']<60:
+        raise ValidationError('Request to send OTP can be made only after 1 minute')
+    session['otp'] = otp
+    session['time'] = time.time()
     if settings.DEBUG==True:
         return
-    mobile_number=mobile_number
     url = 'http://control.msg91.com/api/sendotp.php'
-    otp = request.session['otp']
+    otp = session['otp']
     params={
         'mobile': mobile_number,
         'authkey': os.environ.get('MSG91_AUTH_KEY'),
-        'message': 'This code will expire in 3 minutes. Your verification code is '+otp+'.',
+        'message': 'Your verification code is '+otp+'. This code will expire in 3 minutes.'+onlease_last_message,
         'sender': 'ONLOTP',
         'otp': otp
     }
-    # TODO make ajax compatible
-    if 'total_otps' in request.session:
-        if request.session['total_otps']>=5:
-            messages.error(request,'Too many OTPs has been sent to this number')
-            return
-    else:
-        request.session['total_otps']=0
     res = requests.post(url=url, params=params)
     data = json.loads(res.text)
-    if request.is_ajax():
-      return
     if data['type']=='error':
-        messages.error(request,'Sorry, OTP was not sent. Please try again')
-    else:
-        messages.success(request,'An OTP has been sent successfully')
+        raise ValidationError('Sorry, OTP was not sent. Please try again')
 
 def get_name(user):
     user_name = "User"

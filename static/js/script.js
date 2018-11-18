@@ -105,6 +105,7 @@ class MyProfile{
           <label for="profile_mobile_number" class="active">Mobile number</label>
         </div>
       `).appendTo(this.modal.$modal_body);
+      var mobile_numbers = this.user_data.mobile_numbers.filter(mobile_number=>mobile_number.is_verified==true);
       if(!this.read_only){
         var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
         this.$add_new_number = $(`<button type="button" class="btn bg-one btn-primary btn-sm data-action="add-number" 
@@ -112,28 +113,31 @@ class MyProfile{
         $('<div class="col-12 col-md-6 d-flex align-items-center"></div>').append(this.$add_new_number)
         .appendTo($mobile_number).click(function(event){
           event.preventDefault();
-          add_number = true;
+          window.add_number = true;
+          window.set_password = false;
           mobile_number = $enter_mobile_number.val();
+          window.mobile_number=mobile_number;
           $enter_mobile_number.val('');
-        });;
-        if(this.user_data.mobile_numbers.length>=3) this.$add_new_number.attr('disabled','disabled');
+        });
+        if(mobile_numbers.length>=3) this.$add_new_number.attr('disabled','disabled');
       }
-      var mobile_numbers = this.user_data.mobile_numbers
       for(var i in mobile_numbers){
-        var $alternate_mobile_number = $(`
-        <div class="row container-fluid">
-          <div class="md-form col-12 col-md-6">
-            <i class="fa fa-mobile prefix grey-text"></i>
-            <input type="text" id="profile_alternate_mobile_number_${parseInt(i)+1}" 
-              value="${mobile_numbers[i].value}" class="form-control alternate_mobile_number"
-              disabled>
-          </div>
-        </div>`).appendTo(this.modal.$modal_body);
-        if(!this.read_only)
-          $(`<div class="col-12 col-md-6 d-flex align-items-center">
-            <button class="btn danger-color btn-sm" type="button"
-              onclick="delete_number(event,${mobile_numbers[i].value})">Delete</button>
-          </div>`).appendTo($alternate_mobile_number);
+        if(mobile_numbers[i].is_verified){
+          var $alternate_mobile_number = $(`
+          <div class="row container-fluid">
+            <div class="md-form col-12 col-md-6">
+              <i class="fa fa-mobile prefix grey-text"></i>
+              <input type="text" id="profile_alternate_mobile_number_${parseInt(i)+1}" 
+                value="${mobile_numbers[i].value}" class="form-control alternate_mobile_number"
+                disabled>
+            </div>
+          </div>`).appendTo(this.modal.$modal_body);
+          if(!this.read_only)
+            $(`<div class="col-12 col-md-6 d-flex align-items-center">
+              <button class="btn danger-color btn-sm" type="button"
+                onclick="delete_number(event,${mobile_numbers[i].value})">Delete</button>
+            </div>`).appendTo($alternate_mobile_number);
+        }
       }
       $(`
       <div class="md-form mb-4 col-12 col-md-6">
@@ -191,6 +195,26 @@ class NavItems{
 
   appendLoggedInItems(){
     this.$navbar.empty().append(this.get_logged_in_nav_items());
+    $('#verify-number').click((e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      window.mobile_number=window.user_data.mobile_number;
+      window.add_number=false;
+      window.set_password=false;
+      show_loading();
+      $.ajax({
+        url: API_PREFIX+'account/request-otp/',
+        data: {
+          mobile_number: window.mobile_number
+        },
+        type: 'POST'
+      }).done((data)=>{
+        toastr.success('You will receive an OTP shortly')
+        $('#modalVerifyNumberForm').modal('show');
+      }).always(()=>{
+        remove_loading();
+      });
+    });
     new MyProfile($("#myProfile"),'modalUserProfileForm',window.user_data);
   }
 
@@ -202,8 +226,7 @@ class NavItems{
         <i class="fa fa-user-circle-o fs-4"></i></a>
       <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="navbarDropdownMenuLink">`;
     if (!window.user_data.is_verified){
-      dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" data-toggle="modal" data-target="#modalEnterNumberForm"
-      data-action="verify-number">Verify your number</a>`;
+      dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" id="verify-number">Verify your number</a>`;
     }
     dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" id="myProfile">
           My Profile</a>
@@ -954,8 +977,9 @@ function login_form_validation(){
     });
     $('#forgot_password_modal').click((e)=>{
         e.preventDefault();
-        set_password = true;
-    })
+        window.set_password=true;
+        window.add_number=false;
+    });
     close_and_open_modal('forgot_password_modal','modalLoginForm','modalEnterNumberForm');
     close_and_open_modal('register_modal','modalLoginForm','modalRegisterForm');
 }
@@ -995,7 +1019,7 @@ function enter_number_form_validation(){
             var data = {
               mobile_number: $('#enter_mobile_number').val(),
             }
-            if(!add_number){
+            if(!window.add_number){
               var url = API_PREFIX + 'account/request-otp/';
             } else {
               var url = API_PREFIX + 'account/add-number/add-number';
@@ -1007,8 +1031,12 @@ function enter_number_form_validation(){
               'url': url,
               'data': data,
             }).done((data)=>{
+              toastr.success('You will get an OTP on your mobile number shortly');
+              $(document).trigger('otp_clock_start');
               $('#modalEnterNumberForm').modal('hide');
-              $('#modalVerifyNumberForm').modal('show');
+              var $form = window.set_password?$('#modalSetPasswordForm'):$('#modalVerifyNumberForm');
+              $form.modal('show');
+              window.mobile_number = data.mobile_number;
             }).fail((data)=>{
               display_form_errors(data,form);
             }).always(()=>{
@@ -1116,8 +1144,9 @@ function verify_number_form_validation(){
             if($(form).valid()){
                 var data = {
                     otp: $('#verify_otp').val(),
+                    mobile_number: window.mobile_number
                 }
-                if(!add_number){
+                if(!window.add_number){
                     var url = API_PREFIX + 'account/verify-number/';
                 } else {
                     var url = API_PREFIX + 'account/add-number/verify-number'
@@ -1131,17 +1160,13 @@ function verify_number_form_validation(){
                 }).done((data)=>{
                   $('#modalVerifyNumberForm').modal('hide');
                   window.user_data.is_verified = true;
-                  if(set_password){
-                    $('#modalSetPasswordForm').modal('show');
+                  if (window.add_number) {
+                    window.user_data = data;
+                    toastr.success('New mobile number added', 'Add '+mobile_number);
+                    $(document).trigger('rerender_myprofile');
                   } else {
-                    if (add_number) {
-                      window.user_data = data;
-                      toastr.success('New mobile number added', mobile_number);
-                      $(document).trigger('rerender_myprofile');
-                    } else {
-                      toastr.success('Mobile number verified.');
-                      $(document).trigger('rerender_nav_items');
-                    }
+                    toastr.success('Mobile number verified.');
+                    $(document).trigger('rerender_nav_items');
                   }
                 }).fail((data)=>{
                   display_form_errors(data,form);
@@ -1224,6 +1249,8 @@ function register_form_validation(){
                   toastr.success('Registered successfully')
                   $('#modalRegisterForm').modal('hide');
                   $('#modalVerifyNumberForm').modal('show');
+                  window.set_password=false;
+                  window.add_number=false;
                 }).fail((data)=>{
                   display_form_errors(data,form);
                 }).always(()=>{
@@ -2102,6 +2129,10 @@ function set_password_form_validation(){
     var form =  $('#modalSetPasswordForm');
     var setPasswordFormValidator = form.validate({
         rules: {
+            otp: {
+                required: true,
+                minlength: 4
+            },
             password: {
                 required: true,
                 minlength: 8
@@ -2138,6 +2169,8 @@ function set_password_form_validation(){
                 var data = {
                     password: $('#set_password').val(),
                     confirm_password: $('#set_confirm_password').val(),
+                    otp: $('#reset_password_otp').val(),
+                    mobile_number: window.mobile_number
                 }
                 var url = API_PREFIX + 'account/reset-password/';
                 show_loading(form);
@@ -2146,16 +2179,16 @@ function set_password_form_validation(){
                     'dataType':'json',
                     'url': url,
                     'data': data,
-                }).always((data)=>{
-                    if(data.status=='200'){
-                        display_message(form,'Password re-set successfully.');
-                        setTimeout(()=>{
-                            $('#modalSetPasswordForm').modal('hide');
-                            $('#modalLoginForm').modal('show');
-                        },1000);
-                    } else {
-                        display_form_errors(data,form);
-                    }
+                }).done((data)=>{
+                    toastr.success('Password re-set successfully');
+                    setTimeout(()=>{
+                        $('#modalSetPasswordForm').modal('hide');
+                        $('#modalLoginForm').modal('show');
+                    },1000);
+                }).fail((data)=>{
+                    console.log(data.responseJSON);
+                    display_form_errors(data,form);
+                }).always(()=>{
                     remove_loading(form);
                 });
             }
@@ -3163,17 +3196,12 @@ function delete_image(event,image_id,$form=null,callback=()=>{}){
 
 function resend_otp(){
   var form = $('#modalVerifyNumberForm');
-  var data;
-  if(mobile_number!=""){
-    data = {
-      mobile_number: mobile_number,
-    }
-  } else {
-    data = {
-      mobile_number: $('#enter_mobile_number').val(),
-    }
+  var data = {
+    mobile_number: window.mobile_number,
   }
   var url = API_PREFIX + 'account/request-otp/';
+  if(window.add_number)
+    url = API_PREFIX + 'account/add-number/add-number';
   show_loading(form);
   $.ajax({
     'type':'POST',
@@ -3181,10 +3209,11 @@ function resend_otp(){
     'url': url,
     'data': data,
   }).done((data)=>{
-    display_message(form,'OTP has been resent.');
+    toastr.success('You will get a new OTP shortly');
+    $(document).trigger('otp_clock_start');
   }).fail((data)=>{
     display_form_errors(data,form);
-  }).always((data)=>{
+  }).always(()=>{
     remove_loading(form);
   });
 }
@@ -3898,6 +3927,29 @@ class ProfileAddImage{
     });
   }
 }
+
+(function(){
+  var $resend_otp_btn = $('#resend_otp');
+  var resend_otp_text = 'Re-send OTP';
+  $(document).on('otp_clock_start',()=>{
+    var start_time = new Date();
+    var otp_clock_interval = setInterval(()=>{
+      var time_gap = Math.round((new Date().getTime() - start_time.getTime())/1000);
+      if(time_gap>=60){
+        $resend_otp_btn.text(resend_otp_text);
+        $resend_otp_btn.removeAttr('disabled');
+        clearInterval(otp_clock_interval);
+      } else {
+        var time_text = '1:00';
+        if(time_gap<60){
+          time_text = `0:${60-time_gap}`;
+        }
+        $resend_otp_btn.text(`${resend_otp_text} (${time_text})`);
+        $resend_otp_btn.attr('disabled','disabled');
+      }
+    },1000)
+  });
+})();
 
 $('document').ready(function(){
   $(document).ajaxError(function ( event, jqxhr, settings, thrownError ) {
