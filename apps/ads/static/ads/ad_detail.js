@@ -64,7 +64,7 @@ class BookNow{
       }).fail(function(res){
         if(res.responseJSON && (res.responseJSON.profile_complete===false || res.responseJSON.profile_complete==='False')){
           $(document).trigger('show_profile','modalUserProfileForm')
-          toastr.error('Please fill your name and email id.','Profile not complete');
+          toastr.error('Please fill your name and email id.','Profile is not complete');
         }
         display_global_errors(res);
       }).always(()=>{

@@ -24,6 +24,7 @@ from apps.transactions.models import LodgingTransaction
 User = get_user_model()
 
 num_ads_per_page = 10
+num_minutes = 1
 
 def get_paginated_data(ads,page_no=1):
   paginator = Paginator(ads,num_ads_per_page)
@@ -83,7 +84,7 @@ def ad_detail_view(request):
             sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0):
         show_contact_details=True
       time_diff = datetime.datetime.now() - sublodging.last_time_booking
-      if sublodging.is_booking and time_diff.seconds > 3*60:
+      if sublodging.is_booking and time_diff.seconds > num_minutes*60:
         sublodging.is_booking=False
         sublodging.save()
       return render(request,'ads/ad_detail.html',{
