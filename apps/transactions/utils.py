@@ -52,25 +52,23 @@ def send_otp(session, mobile_number, user, otp):
         raise ValidationError('Sorry, OTP was not sent. Please try again')
 
 def get_name(user):
-    user_name = "User"
-    if user.first_name:
-        user_name += user.first_name
-    if user.last_name:
-        user_name += user.last_name
+    if not user.first_name and user.last_name:
+        user_name = "User"
+    else:
+        if user.first_name:
+            user_name += user.first_name
+        if user.last_name:
+            user_name += ' ' + user.last_name
     return user_name
 
 def successfull_transaction_message(owner,customer,lodging,transaction):
-    message = 'Dear '+get_name(customer)+', your transaction for lodging "'+lodging.sublodging.title+'" was successfull. Your transaction id is '+str(transaction.id)+'. Contact number(s) of owner/dealer is/are '+owner.mobile_number+'. You can see further details on our website.'+onlease_last_message
+    message = 'Dear '+get_name(customer)+', your transaction id is '+str(transaction.id)+'. Contact number of owner is '+owner.mobile_number+'. You can see further details on our website.'+onlease_last_message
     return message
 
 def invalid_transaction_message(owner,customer,lodging,transaction,response):
-    message = 'Dear '+get_name(customer)+', your transaction for lodging "'+lodging.sublodging.title+'" was invalid. Your transaction id is '+str(transaction.id)+'. You paid amount '+response['amount']+' while actual amount is '+transaction.amount+onlease_last_message
-    return message
-
-def failed_transaction_message(owner,customer,lodging,transaction):
-    message = 'Dear '+get_name(customer)+', your transaction for lodging "'+lodging.sublodging.title+'" was failed. Your transaction id is '+str(transaction.id)+onlease_last_message
+    message = 'Dear '+get_name(customer)+', your transaction id is '+str(transaction.id)+'. Your transaction was invalid.'+onlease_last_message
     return message
 
 def lodging_booked_message(owner,customer,lodging,transaction):
     # TODO User all mobile numbers
-    return 'Dear '+get_name(owner)+', your lodging "'+lodging.sublodging.title+'" has been booked. This is his/her contact number(s): '+customer.mobile_number+'.'+onlease_last_message
+    return 'Dear '+get_name(owner)+', your property has been booked. This is his/her contact number: '+customer.mobile_number+'.'+onlease_last_message
