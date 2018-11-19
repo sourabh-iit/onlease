@@ -73,27 +73,25 @@ def paginated_ads(request,page_no):
 def ad_detail_view(request):
   try:
     business = request.GET.get('business')
-    if business=='PROPERTY':
-      sublodging = CommonlyUsedLodgingModel.objects.\
-        prefetch_related(Prefetch('lodging',queryset=Lodging.objects.prefetch_related('purchased_by')),
-        'images','region','charges').\
-        get(id=request.GET.get('id'))
-      lodging = sublodging.lodging
-      show_contact_details = False
-      if request.user.is_authenticated and (lodging.posted_by == request.user or \
-            sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0):
-        show_contact_details=True
-      time_diff = datetime.datetime.now() - sublodging.last_time_booking
-      if sublodging.is_booking and time_diff.seconds > num_minutes*60:
-        sublodging.is_booking=False
-        sublodging.save()
-      return render(request,'ads/ad_detail.html',{
-        'lodging':lodging,
-        'sublodging':sublodging,
-        'data': json.dumps(CommonLodgingSerializer(sublodging).data),
-        'show_contact_details': show_contact_details
-      })
-    return HttpResponse('')
+    sublodging = CommonlyUsedLodgingModel.objects.\
+      prefetch_related(Prefetch('lodging',queryset=Lodging.objects.prefetch_related('purchased_by')),
+      'images','region','charges').\
+      get(id=request.GET.get('id'))
+    lodging = sublodging.lodging
+    show_contact_details = False
+    if request.user.is_authenticated and (lodging.posted_by == request.user or \
+          sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0):
+      show_contact_details=True
+    time_diff = datetime.datetime.now() - sublodging.last_time_booking
+    if sublodging.is_booking and time_diff.seconds > num_minutes*60:
+      sublodging.is_booking=False
+      sublodging.save()
+    return render(request,'ads/ad_detail.html',{
+      'lodging':lodging,
+      'sublodging':sublodging,
+      'data': json.dumps(CommonLodgingSerializer(sublodging).data),
+      'show_contact_details': show_contact_details
+    })
   except Lodging.DoesNotExist:
     messages.error(request,'Ad does not exist or has been deleted.')
     return HttpResponseRedirect('/')
