@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     # for custom widgets
     'django.forms',
     'rest_framework',
+    "compressor",
     # external library to add class in django template tags
     'widget_tweaks',
     'apps.user',
@@ -39,7 +40,6 @@ INSTALLED_APPS = [
     'apps.locations',
     # 'apps.legal',
     'apps.roommate',
-    "compressor",
 ]
 
 MIDDLEWARE = [

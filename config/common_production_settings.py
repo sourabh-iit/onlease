@@ -38,3 +38,5 @@ CORS_ORIGIN_WHITELIST = (
     'www.onlease.in',
     'onlease.in',
 )
+
+COMPRESS_OFFLINE = True
