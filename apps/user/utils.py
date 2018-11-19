@@ -34,6 +34,8 @@ def not_logged_in(view):
 def ajax_login_required(view):
     def wrap(request, *args, **kwargs):
         if not request.user.is_authenticated:
+            if not request.is_ajax():
+                return HttpResponseRedirect('/')
             raise PermissionDenied
         return view(request, *args, **kwargs)
     wrap.__doc__ = view.__doc__
