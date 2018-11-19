@@ -3001,7 +3001,7 @@ class MyProperties extends Ads{
     $(document).on('logout',()=>{
       this.user_changed = true;
     });
-    modal.$modal.on('bs.modal.shown',()=>{
+    modal.$modal.on('shown.bs.modal',()=>{
       this.render_ads();
     });
   }
