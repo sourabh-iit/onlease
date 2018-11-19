@@ -3036,7 +3036,7 @@ function get_my_ads(){
 }
 
 function get_my_booked_ads(){
-  if(window.mybookings && !window.myads.user_changed){
+  if(window.mybookings && !window.mybookings.user_changed){
     window.mybookings.modal.$modal.modal('show');
   } else {
     $.ajax({
