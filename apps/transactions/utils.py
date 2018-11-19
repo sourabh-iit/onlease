@@ -52,11 +52,10 @@ def send_otp(session, mobile_number, user, otp):
         raise ValidationError('Sorry, OTP was not sent. Please try again')
 
 def get_name(user):
-    if not user.first_name and user.last_name:
+    if not user.first_name:
         user_name = "User"
     else:
-        if user.first_name:
-            user_name += user.first_name
+        user_name = user.first_name
         if user.last_name:
             user_name += ' ' + user.last_name
     return user_name
