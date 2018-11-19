@@ -2836,7 +2836,6 @@ class Ads{
     this.ads = ads;
     this.$ref = $ref;
     this.$ads = $([]);
-    this.render_ads();
     $(window).on("add_post",(event, ad)=>{
       if(ismyads){
         this.append_ad(ad);
@@ -2990,19 +2989,20 @@ function calc_ads_container_width(max_ads=5){
 class MyProperties extends Ads{
   constructor(prefix, ads, title, not_my_bookings=true){
     var modal = new Modal(prefix,title);
+    super(prefix,modal.$modal_body,ads,not_my_bookings);
+    this.user_changed = false;
+    this.modal = modal;
     modal.$modal.modal('show');
+    this.modal.$modal_dialog.addClass('modal-lg')
+    .css('max-width',calc_ads_container_width(3));
+    $(document).on('login',()=>{
+      this.user_changed = true;
+    });
+    $(document).on('logout',()=>{
+      this.user_changed = true;
+    });
     modal.$modal.on('bs.modal.shown',()=>{
-      super(prefix,modal.$modal_body,ads,not_my_bookings);
-      this.user_changed = false;
-      this.modal = modal;
-      this.modal.$modal_dialog.addClass('modal-lg')
-      .css('max-width',calc_ads_container_width(3));
-      $(document).on('login',()=>{
-        this.user_changed = true;
-      });
-      $(document).on('logout',()=>{
-        this.user_changed = true;
-      });
+      this.render_ads();
     });
   }
 }
@@ -3011,6 +3011,7 @@ class PropertyAds extends Ads{
   constructor(prefix,ads){
     var $container= $('#ads_wrapper');
     super(prefix,$container,ads);
+    this.render_ads();
   }
 }
 
