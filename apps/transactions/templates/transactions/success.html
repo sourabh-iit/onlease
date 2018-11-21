@@ -1,6 +1,6 @@
 {% extends "base_templates/base_template_1.html" %} 
 {% load widget_tweaks %} 
-{% block title %}Successful transaction{% endblock%}
+{% block title %}Onlease - Transaction {% if success %}Success{% else %}Fail{% endif %}{% endblock%}
 {% load static %} 
 {% load lodging_filters %}
 

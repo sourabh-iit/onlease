@@ -70,17 +70,17 @@ def paginated_ads(request,page_no):
     'has_next_page': has_next_page,
   })
 
-def ad_detail_view(request):
+def ad_detail_view(request,lodging_id,lodging_slug):
   try:
     business = request.GET.get('business')
     sublodging = CommonlyUsedLodgingModel.objects.\
       prefetch_related(Prefetch('lodging',queryset=Lodging.objects.prefetch_related('purchased_by')),
       'images','region','charges').\
-      get(id=request.GET.get('id'))
+      get(id=lodging_id)
     lodging = sublodging.lodging
     show_contact_details = False
     if request.user.is_authenticated and (lodging.posted_by == request.user or \
-          sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0):
+        sublodging.is_booked and len(lodging.purchased_by.filter(pk=request.user.mobile_number))>0):
       show_contact_details=True
     time_diff = datetime.datetime.now() - sublodging.last_time_booking
     if sublodging.is_booking and time_diff.seconds > num_minutes*60:

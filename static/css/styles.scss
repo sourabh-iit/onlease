@@ -595,6 +595,10 @@ input[id='profile'] {
 #images_container{
   width: 90%;
 }
+.carousel-item.active div:first-child {
+  display: flex;
+  background: #c9d2d8;
+}
 
 
 

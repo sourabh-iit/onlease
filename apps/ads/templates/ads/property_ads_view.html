@@ -1,9 +1,9 @@
 {% extends 'base_templates/ad_list.html' %} 
 {% load widget_tweaks %} 
-{% block title %}OnLease{% endblock %} 
+{% load lodging_filters %}
+{% block title %}OnLease - FLAT|HOUSE|HOME|PG on rent in {{regions|join:'region'}}{% endblock %} 
 {% load static %}
 {% load i18n %}
-{% load lodging_filters %}
 
 {% block content %}
 

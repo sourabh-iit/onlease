@@ -103,3 +103,14 @@ def serialize_user(user):
   if user.is_authenticated:
     return json.dumps(UserSerializer(user).data)
   return '{}'
+
+@register.filter(name='join')
+def join(data_list,key=None):
+  values=[]
+  n=len(data_list)
+  for data in data_list:
+    if not key:
+      values.append(data)
+    else:
+      values.append(data[key])
+  return ', '.join(values)

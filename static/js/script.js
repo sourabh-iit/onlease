@@ -29,6 +29,11 @@ class MyProfile{
     this.$form = $('<form></form>').appendTo($('body'));
     this.user_changed = true;
     $ref.click(()=>{
+      var title = "My Profile";
+      if(this.read_only) title = "User Profile";
+      this.modal = new Modal(this.id,title);
+      this.modal.$modal.appendTo(this.$form);
+      this.modal.$modal_dialog.addClass('modal-lg');
       this.render();
     });
     if(!read_only){
@@ -63,14 +68,7 @@ class MyProfile{
 
   render(){
     if(this.user_changed){
-      if(this.modal){
-        hide_and_delete(this.modal.$modal,this.modal.$modal);
-      }
-      var title = "My Profile";
-      if(this.read_only) title = "User Profile";
-      this.modal = new Modal(this.id,title);
-      this.modal.$modal.appendTo(this.$form);
-      this.modal.$modal_dialog.addClass('modal-lg');
+      this.modal.$modal_body.empty();
       this.$image_container = $('<div class="col-12 mb-4" id="profile-image-container"></div>')
       .appendTo(this.modal.$modal_body);
       if(this.user_data.profile_image.length>0){
@@ -866,9 +864,8 @@ function show_form_global_errors(form,globalErrors){
   $(form).find('.modal-body').prepend(ul);
 }
 
-function redirect_to_ad_detail_view(id){
-  window.location.href = window.detail_view_url+
-    '?business='+$('#id_business').val()+'&id='+id;
+function redirect_to_ad_detail_view(ad){
+  window.location.href = window.get_ad_detail_view_url(ad);
 }
 
 function show_form_field_errors(form,errors){
@@ -2545,7 +2542,7 @@ class AdLinks{
       this.$container.append(this.virtual_tour_link.$link_container);
     }
     this.view_details = new AdLink('Details','fa fa-external-link');
-    this.view_details.add_click_event(redirect_to_ad_detail_view,ad.id)
+    this.view_details.add_click_event(redirect_to_ad_detail_view,ad)
     this.$container.append(this.view_details.$link_container);
   }
 }
@@ -2675,8 +2672,6 @@ class CarouselItem{
     this.$item = $('<div></div>').addClass('w-100 minh-200')
     .css({'text-align':'center'})
     .append(this.img_element.$img).append(this.$caption);
-    type==0 ? this.$item.append($('<div class="mask rgba-black-slight"></div>')):
-      this.$item.append($('<div class="mask rgba-black-light"></div>'));
     if(type==2){
       this.$item.addClass('h-100');
     }

@@ -26,7 +26,9 @@
   function get_paginated_ads_url(page_no){
     return "{% url 'ads:paginated-ads' page_no='1' %}".replace('1',page_no);
   }
-  var detail_view_url = '{% url "ads:ad-detail-view" %}';
+  function get_ad_detail_view_url(ad){
+    return "{% url 'ads:ad-detail-view' lodging_id='13232' lodging_slug='slug' %}".replace('13232',ad.id).replace('slug',ad.title);
+  }
   function get_property_details_url(lodging_id){
     return "{% url 'ads:property-details' lodging_id='13232' %}".replace('13232',lodging_id);
   }
