@@ -29,6 +29,16 @@ class LodgingView(View):
     form = self.form_class(data)
     sub_form = self.sub_form_class(request,data)
     try:
+      total_images = 0
+      for image_id in data.getlist('images'):
+        try:
+          image = ImageModel.objects.get(id=image_id)
+        except ImageModel.DoesNotExist:
+          continue
+        if image.content_object is None:
+          total_images+=1
+      if total_images<2:
+        raise ValidationError('Atleast two images are required')
       errors, sublodging = self.save_lodging(form,sub_form,request,data)
       if errors:
         return JsonResponse({'success':False, 'errors': errors},status=400)
@@ -94,7 +104,7 @@ class LodgingView(View):
         sublodging.termsandconditions.all().delete()
         for term_and_condition in json.loads(data.get('terms_and_conditions','[]')):
           TermAndCondition.objects.create(text=term_and_condition,lodging=sublodging)
-        return None, sublodging
+      return None, sublodging
     else:
       return {**form.errors,**sub_form.errors}, None
 

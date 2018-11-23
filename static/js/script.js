@@ -29,11 +29,13 @@ class MyProfile{
     this.$form = $('<form></form>').appendTo($('body'));
     this.user_changed = true;
     $ref.click(()=>{
-      var title = "My Profile";
-      if(this.read_only) title = "User Profile";
-      this.modal = new Modal(this.id,title);
-      this.modal.$modal.appendTo(this.$form);
-      this.modal.$modal_dialog.addClass('modal-lg');
+      if(!this.modal){
+        var title = "My Profile";
+        if(this.read_only) title = "User Profile";
+        this.modal = new Modal(this.id,title);
+        this.modal.$modal.appendTo(this.$form);
+        this.modal.$modal_dialog.addClass('modal-lg');
+      }
       this.render();
     });
     if(!read_only){
@@ -2816,6 +2818,19 @@ class MyAd extends Ad{
   }
 }
 
+class MyBookedAd extends Ad{
+  constructor(prefix,ad){
+    super(prefix,ad);
+    this.$my_links = $(`<div class="row m-0"></div>`);
+    this.$owner_profile = $(`<div class="cursor-pointer col color-5 text-center text-white p-2">
+      <i class="fa fa-pencil"></i> Owner's Profile</div>`).click(()=>{
+      new MyProfile(event.target,'owner_profile_'+ad.id,ad.posted_by,true);
+    });
+    this.$my_links.append(this.$owner_profile);
+    this.card.$card_body.append(this.$my_links);
+  }
+}
+
 function region_exists(ad){
   if(window.regions_selected){
     return window.regions_selected.findIndex(obj=>obj.id==ad.region.id)>-1;
@@ -2866,7 +2881,7 @@ class Ads{
     if(this.ismyads){
       return new MyAd(this.prefix,ad);
     }
-    return new Ad(this.prefix,ad);
+    return new MyBookedAd(this.prefix,ad);
   }
 
   append_load_more_button(){
@@ -2906,6 +2921,7 @@ class Ads{
     this.$ads.remove();
     this.$ads = $([]);
     if(this.ads.length===0){
+      this.$ref.empty();
       this.$no_property_message = $('<div class="no_property_message btn color-2 btn-sm">No property to show</div>');
       this.$ref.append(this.$no_property_message);
       return;
@@ -3192,8 +3208,6 @@ function send_image_delete_request(event,image_id,$form,callback=()=>{}){
   }).done((res)=>{
     toastr.success('Image has been deleted');
     callback();
-  }).fail((res)=>{
-    toastr.error('Error!',res);
   }).always((res)=>{
     if(res.status==404 || res.status==200){
       delete_from_localstorage(image_id,$form);
@@ -3743,7 +3757,6 @@ class ImageDelete{
             toastr.success('Image has been deleted');
             $elem.trigger('delete_success');
           }).fail((res)=>{
-            toastr.error('Error!',res);
             $elem.trigger('delete_error');
             if(res.status==404){
               $elem.trigger('delete_success');

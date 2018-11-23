@@ -5,11 +5,13 @@ from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
 
 from apps.constants import *
 from .models import ImageModel
 from apps.utils import generate_random, create_thumbnail
 from .serializers import ImageSerializer
+from apps.lodging.models import CommonlyUsedLodgingModel
 
 import re
 import base64
@@ -92,15 +94,23 @@ def image_action_view(request,action):
       except KeyError:
         return JsonResponse({'errors':{'__all__':['Tag is missing']}},status=404)
     elif action=='delete':
+      status=400
       try:
         data=request.POST
         _id=data['id']
-        ImageModel.objects.get(id=_id).delete()
+        image = ImageModel.objects.get(id=_id)
+        if isinstance(image.content_object, CommonlyUsedLodgingModel) and image.content_object.images.count()<3:
+          raise ValidationError('Cannot delete image. Atleast two images are required')
+        image.delete()
         return JsonResponse({'success':'true','status':200})
       except ImageModel.DoesNotExist:
-        return JsonResponse({'errors':{'__all__':['Image does not exist.']}},status=404)
+        status = 404
+        error = 'Image does not exist.'
       except KeyError:
-        return JsonResponse({'errors':{'__all__':['Image id not provided']}},status=400)
+        error = 'Image id not provided'
+      except ValidationError as e:
+        error=e.message
+      return JsonResponse({'errors':{'__all__':[error]}},status=status)
   else:
     if action=='images':
       try:
