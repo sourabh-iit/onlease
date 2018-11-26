@@ -2823,10 +2823,12 @@ class MyBookedAd extends Ad{
     super(prefix,ad);
     this.$my_links = $(`<div class="row m-0"></div>`);
     this.$owner_profile = $(`<div class="cursor-pointer col color-5 text-center text-white p-2">
-      <i class="fa fa-pencil"></i> Owner's Profile</div>`).click(()=>{
-      new MyProfile(event.target,'owner_profile_'+ad.id,ad.posted_by,true);
+      <i class="fa fa-eye"></i> Owner's Info</div>`).click(()=>{
+      new MyProfile(event.target,'owner_profile_'+ad.id,ad.lodging.posted_by,true);
     });
-    this.$my_links.append(this.$owner_profile);
+    this.$address = $(`<div class="col text-center fw-500 text-white p-2"></div>`)
+    .text('Address').addClass('color-5');
+    this.$my_links.append(this.$owner_profile).append(this.$address);
     this.card.$card_body.append(this.$my_links);
   }
 }
@@ -2839,32 +2841,36 @@ function region_exists(ad){
 }
 
 class Ads{
-  constructor(prefix,$ref,ads,ismyads=false){
+  constructor(prefix,$ref,ads,ad_type){
     this.page = 1;
     this.prefix = prefix;
-    this.ismyads = ismyads;
+    this.ad_type = ad_type;
     this.ads = ads;
     this.$ref = $ref;
     this.$ads = $([]);
     $(window).on("add_post",(event, ad)=>{
-      if(ismyads){
-        this.append_ad(ad);
-      } else if(region_exists(ad)) {
-        this.append_ad(ad);
+      if(ad_type!=2){
+        if(ad_type==1){
+          this.append_ad(ad);
+        } else if(region_exists(ad)) {
+          this.append_ad(ad);
+        }
       }
     });
     $(window).on("remove_post",(event, ad)=>{
-      if(ismyads){
-        this.remove_ad(ad);
-      } else if(region_exists(ad)) {
-        this.remove_ad(ad);
+      if(ad_type!=2){
+        if(ad_type==1){
+          this.remove_ad(ad);
+        } else if(region_exists(ad)) {
+          this.remove_ad(ad);
+        }
       }
     });
     $(window).on('update_ad',(event, ad)=>{
       this.update_ad(ad);
     });
     this.is_more_ads_loading = false;
-    if(!ismyads && window.has_next_page==='True'){
+    if(ad_type==3 && window.has_next_page==='True'){
       this.append_load_more_button();
     }
     $(document).on('re-render-ads',(ev,ads,has_next_page)=>{
@@ -2878,10 +2884,11 @@ class Ads{
   }
 
   create_ad(ad){
-    if(this.ismyads){
+    if(this.ad_type==1)
       return new MyAd(this.prefix,ad);
-    }
-    return new MyBookedAd(this.prefix,ad);
+    else if(this.ad_type==2)
+      return new MyBookedAd(this.prefix,ad);
+    return new Ad(this.prefix,ad);
   }
 
   append_load_more_button(){
@@ -2997,10 +3004,13 @@ function calc_ads_container_width(max_ads=5){
   return window_width;
 }
 
+// 1 for My Properties
+// 2 for My Bookings
+// 3 for Properties list on search
 class MyProperties extends Ads{
-  constructor(prefix, ads, title, not_my_bookings=true){
+  constructor(prefix, ads, title, ad_type=1){
     var modal = new Modal(prefix,title);
-    super(prefix,modal.$modal_body,ads,not_my_bookings);
+    super(prefix,modal.$modal_body,ads,ad_type);
     this.user_changed = false;
     this.modal = modal;
     modal.$modal.modal('show');
@@ -3036,7 +3046,7 @@ function get_my_ads(){
         show_loading();
       }
     }).done(function(res){
-      window.myads = new MyProperties('my_property',JSON.parse(res.data),'My Properties');
+      window.myads = new MyProperties('my_property',JSON.parse(res.data),'My Properties',1);
       window.myads.user_changed = false;
     }).fail(function(){
       toastr.error("Unable to get your ads","Error");
@@ -3056,7 +3066,7 @@ function get_my_booked_ads(){
         show_loading();
       }
     }).done(function(res){
-      window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings',false);
+      window.mybookings = new MyProperties('my_bookings',JSON.parse(res.data),'My Bookings',2);
       window.mybookings.user_changed = false;
     }).fail(function(){
       toastr.error("Unable to get your bookings","Error");
