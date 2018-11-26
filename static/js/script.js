@@ -29,13 +29,6 @@ class MyProfile{
     this.$form = $('<form></form>').appendTo($('body'));
     this.user_changed = true;
     $ref.click(()=>{
-      if(!this.modal){
-        var title = "My Profile";
-        if(this.read_only) title = "User Profile";
-        this.modal = new Modal(this.id,title);
-        this.modal.$modal.appendTo(this.$form);
-        this.modal.$modal_dialog.addClass('modal-lg');
-      }
       this.render();
     });
     if(!read_only){
@@ -69,9 +62,14 @@ class MyProfile{
   }
 
   render(){
+    if(!this.modal){
+      var title = "My Profile";
+      if(this.read_only) title = "User Profile";
+      this.modal = new Modal(this.id,title);
+      this.modal.$modal.appendTo(this.$form);
+      this.modal.$modal_dialog.addClass('modal-lg');
+    }
     if(this.user_changed){
-      if(this.modal)
-        this.modal.$modal_body.empty();
       this.$image_container = $('<div class="col-12 mb-4" id="profile-image-container"></div>')
       .appendTo(this.modal.$modal_body);
       if(this.user_data.profile_image.length>0){
