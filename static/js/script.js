@@ -70,7 +70,8 @@ class MyProfile{
 
   render(){
     if(this.user_changed){
-      this.modal.$modal_body.empty();
+      if(this.modal)
+        this.modal.$modal_body.empty();
       this.$image_container = $('<div class="col-12 mb-4" id="profile-image-container"></div>')
       .appendTo(this.modal.$modal_body);
       if(this.user_data.profile_image.length>0){
