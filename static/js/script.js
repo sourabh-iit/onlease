@@ -2822,10 +2822,9 @@ class MyBookedAd extends Ad{
     super(prefix,ad);
     this.$my_links = $(`<div class="row m-0"></div>`);
     this.$owner_profile = $(`<div class="cursor-pointer col color-5 text-center text-white p-2">
-      <i class="fa fa-eye"></i> Owner's Info</div>`).click(()=>{
-      new MyProfile(event.target,'owner_profile_'+ad.id,ad.lodging.posted_by,true);
-    });
-    this.$address = $(`<div class="col text-center fw-500 text-white p-2"></div>`)
+      <i class="fa fa-eye"></i> Owner's Info</div>`);
+    new MyProfile(this.$owner_profile,'owner_profile_'+ad.id,ad.lodging.posted_by,true);
+    this.$address = $(`<div class="col text-center fw-500 text-white border-left-white p-2"></div>`)
     .text('Address').addClass('color-5');
     this.$my_links.append(this.$owner_profile).append(this.$address);
     this.card.$card_body.append(this.$my_links);
