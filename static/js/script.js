@@ -157,10 +157,11 @@ class MyProfile{
           name="detail" id="profile_detail">${this.user_data.detail?this.user_data.detail:''}</textarea>
         <label for="profile_detail" class="${this.user_data.detail?'active':''}">Your Description</label>
       </div>`).appendTo(this.modal.$modal_body);
-      $(`
-      <div class="modal-footer d-flex justify-content-center">
-        <button class="btn color-2" type="submit">Save</button>
-      </div>`).appendTo(this.modal.$modal_body);
+      if(!this.read_only)
+        $(`
+        <div class="modal-footer d-flex justify-content-center">
+          <button class="btn color-2" type="submit">Save</button>
+        </div>`).appendTo(this.modal.$modal_body);
       this.modal.$modal.on('bs.modal.shown',()=>{
         this.modal.$modal.find('input').trigger('change');
         this.modal.$modal.off('bs.modal.shown');
