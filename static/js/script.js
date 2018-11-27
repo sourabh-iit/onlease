@@ -94,6 +94,7 @@ class MyProfile{
           <i class="fa fa-user prefix grey-text"></i>
           <input type="text" class="form-control" 
             value="${this.get_name()}"
+            ${this.read_only?'disabled="disabled"':''}
             id="profile_name">
           <label for="profile_name" class="${this.get_name()!=""?'active':''}">Full Name</label>
       </div>`).appendTo(this.modal.$modal_body);
@@ -126,7 +127,8 @@ class MyProfile{
           <div class="row container-fluid">
             <div class="md-form col-12 col-md-6">
               <i class="fa fa-mobile prefix grey-text"></i>
-              <input type="text" id="profile_alternate_mobile_number_${parseInt(i)+1}" 
+              <input type="text" id="profile_alternate_mobile_number_${parseInt(i)+1}"
+                ${this.read_only?'disabled="disabled"':''} 
                 value="${mobile_numbers[i].value}" class="form-control alternate_mobile_number"
                 disabled>
             </div>
@@ -141,13 +143,17 @@ class MyProfile{
       $(`
       <div class="md-form mb-4 col-12 col-md-6">
         <i class="fa fa-envelope prefix grey-text"></i>
-        <input type="text" id="profile_email" value="${this.user_data.email}" name="email" class="form-control">
+        <input type="text" id="profile_email"
+          ${this.read_only?'disabled="disabled"':''}
+          value="${this.user_data.email}" 
+          name="email" class="form-control">
         <label for="profile_email" class="${this.user_data.email?'active':''}">Email address</label>
       </div>`).appendTo(this.modal.$modal_body);
       $(`
       <div class="md-form mb-4 col-12 col-md-10">
         <i class="fa fa-pencil prefix grey-text"></i>
-        <textarea type="text" class="md-textarea form-control" rows="3" 
+        <textarea type="text" class="md-textarea form-control" rows="3"
+          ${this.read_only?'disabled="disabled"':''} 
           name="detail" id="profile_detail">${this.user_data.detail?this.user_data.detail:''}</textarea>
         <label for="profile_detail" class="${this.user_data.detail?'active':''}">Your Description</label>
       </div>`).appendTo(this.modal.$modal_body);
