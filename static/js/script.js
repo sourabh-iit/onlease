@@ -1,3 +1,13 @@
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/5bfd8cf940105007f379d99f/default';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+
 var set_password = false;
 var add_number = false;
 var mobile_number = "";
@@ -2832,7 +2842,7 @@ class MyBookedAd extends Ad{
       <i class="fa fa-eye"></i> Owner's Info</div>`);
     new MyProfile(this.$owner_profile,'owner_profile_'+ad.id,ad.lodging.posted_by,true);
     this.$address = $(`<div data-toggle="collapse" data-target="#address_${ad.id}"
-      class="col text-center fw-500 text-white border-left-white p-2"></div>`)
+      class="col text-center cursor-pointer fw-500 text-white border-left-white p-2"></div>`)
     .text('Address').addClass('color-5');
     this.$my_links.append(this.$owner_profile).append(this.$address);
     this.card.$card_body.append(this.$my_links).append(`
