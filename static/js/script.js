@@ -250,6 +250,9 @@ class NavItems{
           onclick="get_my_ads()">
           My Properties</a>
         <a class="dropdown-item waves-effect waves-light text-capitalized"
+          onclick="get_my_favorite_properties()">
+          My Favorites</a>
+        <a class="dropdown-item waves-effect waves-light text-capitalized"
           onclick="get_my_booked_ads()">
           My Bookings</a>
         <div class="dropdown-divider"></div>
@@ -2451,6 +2454,7 @@ function logout(){
   }).always((data)=>{
     remove_loading();
     toastr.success('Your are now logged out');
+    user_data = {};
     $(document).trigger('logout');
   });
 }
@@ -2803,10 +2807,51 @@ class ImageCard extends Image{
   }
 }
 
+class FavoriteToggler{
+  constructor($ref,ad) {
+    if(user_data.favorite_properties && user_data.favorite_properties.indexOf(ad.id)>-1)
+      $ref.attr('title','Remove from favorites').tooltip();
+    else
+      $ref.attr('title','Add to favorites').tooltip();
+    $ref.click(()=>{
+      var action = 'add_to_favorites';
+      var success_message = ['Property added to My Favorites'];
+      if(user_data.favorite_properties && user_data.favorite_properties.indexOf(ad.id)>-1){
+        success_message = ['Property removed from My Favorites'];
+        action = 'remove_from_favorites';
+      }
+      $.ajax({
+        url: window.get_favorite_property_url(ad,action),
+        type: 'POST'
+      }).done((data)=>{
+        $ref.tooltip('hide');
+        window.user_data=data;
+        toastr.success(success_message[0],success_message[1]);
+        action = 'favorite';
+        if(data.favorite_properties.indexOf(ad.id)>-1){
+          $(window).trigger('add_post',[ad, action]);
+          $ref.addClass('active');
+        } else{
+          $(window).trigger('remove_post',[ad, action]);
+          $ref.removeClass('active');
+        }
+        $(window).trigger('update_ad', ad);
+      });
+    });
+    if(user_data.favorite_properties && user_data.favorite_properties.indexOf(ad.id)>-1)
+      $ref.addClass('active');
+  }
+}
+
 class Ad{
   constructor(prefix,ad){
     this.card = new Card();
     this.card.$card.addClass('w-270 p-0');
+    if(user_data){
+      var $favorite_button = $('<i class="fa fa-heart favorite-button"></i>');
+      this.card.$card.append($favorite_button);
+      new FavoriteToggler($favorite_button, ad);
+    }
     this.carousel = new Carousel(prefix+'_my_ad_'+ad.id,ad.images);
     this.card.add_carousel(this.carousel.$carousel);
     this.ad_details = new AdDetails(ad);
@@ -2867,20 +2912,24 @@ class Ads{
     this.ads = ads;
     this.$ref = $ref;
     this.$ads = $([]);
-    $(window).on("add_post",(event, ad)=>{
+    $(window).on("add_post",(event, ad, action=null)=>{
       if(ad_type!=2){
-        if(ad_type==1){
+        if (ad_type==4 && action=='favorite') {
           this.append_ad(ad);
-        } else if(region_exists(ad)) {
+        } else if(ad_type==1 && !action){
+          this.append_ad(ad);
+        } else if(region_exists(ad) && !action) {
           this.append_ad(ad);
         }
       }
     });
-    $(window).on("remove_post",(event, ad)=>{
+    $(window).on("remove_post",(event, ad, action=null)=>{
       if(ad_type!=2){
-        if(ad_type==1){
+        if(ad_type==1 && !action){
           this.remove_ad(ad);
-        } else if(region_exists(ad)) {
+        } else if(ad_type==4 && action=='favorite'){
+          this.remove_ad(ad);
+        } else if(region_exists(ad) && !action) {
           this.remove_ad(ad);
         }
       }
@@ -2892,12 +2941,19 @@ class Ads{
     if(ad_type==3 && window.has_next_page==='True'){
       this.append_load_more_button();
     }
-    $(document).on('re-render-ads',(ev,ads,has_next_page)=>{
-      this.rerender_ads(ads);
-      if(this.$load_more_button_container && (has_next_page==='False' || has_next_page===false)){
-        this.$load_more_button_container.remove();
-      } else if(!this.$load_more_button_container && (has_next_page==='True' || has_next_page===true)) {
-        this.append_load_more_button();
+    $(document).on('login logout', (ev)=>{
+      if(ad_type==3)
+        this.rerender_ads(this.ads);
+    });
+    $(document).on('re-render-ads',(ev,ads,has_next_page,_ad_type)=>{
+      if(ad_type==_ad_type){
+        this.ads = ads;
+        this.rerender_ads(ads);
+        if(this.$load_more_button_container && (has_next_page==='False' || has_next_page===false)){
+          this.$load_more_button_container.remove();
+        } else if(!this.$load_more_button_container && (has_next_page==='True' || has_next_page===true)) {
+          this.append_load_more_button();
+        }
       }
     });
   }
@@ -2992,6 +3048,7 @@ class Ads{
     this.$ads = this.$ads.add($ad_object);
     this.$grid.append($ad_object)
     .masonry('appended',$ad_object);
+    this.ads.push(ad);
   }
 
   remove_ad(ad){
@@ -3026,6 +3083,7 @@ function calc_ads_container_width(max_ads=5){
 // 1 for My Properties
 // 2 for My Bookings
 // 3 for Properties list on search
+// 4 for My Favorites
 class MyProperties extends Ads{
   constructor(prefix, ads, title, ad_type=1){
     var modal = new Modal(prefix,title);
@@ -3050,7 +3108,7 @@ class MyProperties extends Ads{
 class PropertyAds extends Ads{
   constructor(prefix,ads){
     var $container= $('#ads_wrapper');
-    super(prefix,$container,ads);
+    super(prefix,$container,ads,3);
     this.render_ads();
   }
 }
@@ -3089,6 +3147,26 @@ function get_my_booked_ads(){
       window.mybookings.user_changed = false;
     }).fail(function(){
       toastr.error("Unable to get your bookings","Error");
+    }).always(function(){
+      remove_loading();
+    });
+  }
+}
+
+function get_my_favorite_properties(){
+  if(window.my_favorite_properties && !window.my_favorite_properties.user_changed){
+    window.my_favorite_properties.modal.$modal.modal('show');
+  } else {
+    $.ajax({
+      url: window.my_favorite_properties_url,
+      beforeSend: function(){
+        show_loading();
+      }
+    }).done(function(res){
+      window.my_favorite_properties = new MyProperties('my_favorite_properties',JSON.parse(res.data),'My Favorites',4);
+      window.my_favorite_properties.user_changed = false;
+    }).fail(function(){
+      toastr.error("Unable to get your favorite properties","Error");
     }).always(function(){
       remove_loading();
     });
@@ -3449,13 +3527,17 @@ class PanzoomIcon{
 }
 
 function initialize_panzoom($img){
-  $img.panzoom({
-    increment: 0.3,
-    panOnlyWhenZoomed: true,
-    minScale: 1,
-    maxScale: 3,
-    contain: 'invert',
-  });
+  try {
+    $img.panzoom({
+      increment: 0.3,
+      panOnlyWhenZoomed: true,
+      minScale: 1,
+      maxScale: 3,
+      contain: 'invert',
+    });
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 class Panzoom{

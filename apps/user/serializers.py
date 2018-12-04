@@ -15,5 +15,5 @@ class UserSerializer(serializers.ModelSerializer):
     model = User
     fields = ('mobile_number','email','first_name','last_name',
      'is_verified','gender','created_at','updated_at','detail',
-     'profile_image','mobile_numbers')
+     'profile_image','mobile_numbers', 'favorite_properties')
      

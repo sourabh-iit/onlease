@@ -8,24 +8,38 @@ from django.utils.decorators import method_decorator
 from django.http.request import QueryDict
 
 from .forms import LodgingCreateForm, CommonlyUsedLodgingCreateForm, ChargeForm
-from .models import TermAndCondition, Lodging, Charge
+from .models import TermAndCondition, Lodging, Charge, CommonlyUsedLodgingModel
 from apps.user.utils import ViewException, number_verfication_required
 from apps.image.models import ImageModel
 from apps.user.utils import maintain_cookie
 from .serializers import CommonLodgingSerializer
+from apps.user.utils import ajax_login_required
+from apps.user.serializers import UserSerializer
 
 import json
 import requests
 from urllib.parse import urlparse
 
 
-@method_decorator([login_required,number_verfication_required],name='dispatch')
+@method_decorator([ajax_login_required,number_verfication_required],name='dispatch')
 class LodgingView(View):
   form_class = LodgingCreateForm
   sub_form_class = CommonlyUsedLodgingCreateForm
 
-  def post(self,request):
+  def post(self,request, ad_id=None, action=None):
     data = request.POST
+    if action is not None:
+      try:
+          prop = CommonlyUsedLodgingModel.objects.get(id=ad_id)
+      except CommonlyUsedLodgingModel.DoesNotExist:
+          return JsonResponse({'errors':{'__all__':['Property does not exist']}})
+      if action=='add_to_favorites':
+          request.user.favorite_properties.add(prop)
+      elif action=='remove_from_favorites':
+          request.user.favorite_properties.remove(prop)
+      else:
+          return JsonResponse({'errors':{'__all__':['Unrecognized action']}})
+      return JsonResponse(UserSerializer(request.user).data)
     form = self.form_class(data)
     sub_form = self.sub_form_class(request,data)
     try:
@@ -47,7 +61,7 @@ class LodgingView(View):
       form.add_error(None,e)
     return JsonResponse({'errors':{**form.errors,**sub_form.errors}},status=400)
 
-  def put(self,request,ad_id):
+  def put(self,request,ad_id, action=None):
     data=QueryDict(request.body)
     try:
       ad = Lodging.objects.get(id=ad_id)
@@ -66,7 +80,7 @@ class LodgingView(View):
       form.add_error(None,e)
     return JsonResponse({'errors':{**form.errors,**sub_form.errors}},status=400)
 
-  def delete(self, request, ad_id):
+  def delete(self, request, ad_id, action=None):
     data = QueryDict(request.body)
     try:
       ad = Lodging.objects.get(id=ad_id)

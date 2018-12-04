@@ -162,7 +162,7 @@ $(document).ready(function(){
       },
       type: 'GET',
     }).done((res)=>{
-      $(document).trigger('re-render-ads',[res.ads,res.has_next_page]);
+      $(document).trigger('re-render-ads',[res.ads,res.has_next_page,3]);
     }).always(()=>{
       window.remove_loading();
     });

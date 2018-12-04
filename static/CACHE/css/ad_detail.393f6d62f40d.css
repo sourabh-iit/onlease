@@ -1,0 +1,89 @@
+/* line 1, apps/ads/static/ads/ad_detail.scss */
+.heading {
+  width: fit-content;
+  padding: 0.2rem;
+  font-size: small;
+  background: #ba0dbd;
+  color: white;
+  font-weight: 600;
+  margin-bottom: 0;
+  writing-mode: vertical-lr;
+  text-orientation: upright;
+  text-transform: uppercase;
+  margin: 0; }
+
+/* line 14, apps/ads/static/ads/ad_detail.scss */
+.content {
+  border: 1px solid #dee2e6;
+  padding: 0.5rem; }
+
+/* line 18, apps/ads/static/ads/ad_detail.scss */
+.ad-title {
+  padding: 0.5rem;
+  color: #3f51b5 !important;
+  font-weight: bold; }
+
+/* line 23, apps/ads/static/ads/ad_detail.scss */
+.detail-label {
+  font-size: small; }
+
+/* line 26, apps/ads/static/ads/ad_detail.scss */
+.zoom-icon {
+  padding: 0.5rem;
+  background: #dee2e6;
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: red;
+  cursor: pointer; }
+
+/* line 35, apps/ads/static/ads/ad_detail.scss */
+.table-borderless th, .table-borderless td {
+  border: none; }
+
+/* line 38, apps/ads/static/ads/ad_detail.scss */
+#map {
+  width: 100%;
+  height: 500px; }
+
+/* line 42, apps/ads/static/ads/ad_detail.scss */
+#contact_details th {
+  background-color: #03567b !important;
+  color: white;
+  font-size: 1rem; }
+
+/* line 47, apps/ads/static/ads/ad_detail.scss */
+.image-container img {
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto; }
+
+/* line 52, apps/ads/static/ads/ad_detail.scss */
+.image-container {
+  height: 500px; }
+
+/* line 55, apps/ads/static/ads/ad_detail.scss */
+.details > div {
+  padding: 0.5rem; }
+
+/* line 59, apps/ads/static/ads/ad_detail.scss */
+.ad-container .favorite {
+  font-size: 1rem;
+  background: #03567b;
+  color: white;
+  padding: 8px 3px;
+  cursor: pointer;
+  margin-top: 0.25rem; }
+  /* line 66, apps/ads/static/ads/ad_detail.scss */
+  .ad-container .favorite.active {
+    color: red; }
+
+@media (min-width: 768px) {
+  /* line 74, apps/ads/static/ads/ad_detail.scss */
+  .image-container {
+    height: 600px; } }
+
+@media (min-width: 992px) {
+  /* line 79, apps/ads/static/ads/ad_detail.scss */
+  .image-container {
+    height: 700px; } }

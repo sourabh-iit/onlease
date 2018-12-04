@@ -55,6 +55,19 @@
 .details > div{
   padding: 0.5rem;
 }
+.ad-container {
+  .favorite {
+    font-size: 1rem;
+    background: darkblue;
+    color: white;
+    padding: 8px 5px;
+    cursor: pointer;
+    margin-top: 0.25rem;
+    &.active {
+      color: red;
+    }
+  }
+}
 @media (min-width: 576px){
 }
 @media (min-width: 768px){

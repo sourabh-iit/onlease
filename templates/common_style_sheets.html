@@ -32,6 +32,10 @@
   function get_property_details_url(lodging_id){
     return "{% url 'ads:property-details' lodging_id='13232' %}".replace('13232',lodging_id);
   }
+  function get_favorite_property_url(ad, action){
+    return "{% url 'lodging_ajax:action' ad_id='ad_id' action='action' %}".replace('ad_id',ad.id).replace('action',action);
+  }
+  var my_favorite_properties_url = "{% url 'ads:my-favorite-properties' %}"
 </script>
 <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">

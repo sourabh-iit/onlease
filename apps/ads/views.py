@@ -112,6 +112,16 @@ def my_bookings_ajax(request):
     'data':json.dumps(MyLodgingSerializer(sublodging,many=True).data)
   })
 
+def my_favorite_properties(request):
+  return JsonResponse({
+    'data':json.dumps(CommonLodgingSerializer(
+      request.user.favorite_properties.prefetch_related(
+        Prefetch('lodging',queryset=Lodging.objects.prefetch_related('purchased_by')),
+        'images','region','charges'
+      ).filter(is_booked=False),many=True
+    ).data)
+  })
+
 def get_ad_contact_details(request,lodging_id):
   lodging = Lodging.objects.prefetch_related('sublodging').get(id=lodging_id)
   if request.user.is_authenticated and (lodging.posted_by == request.user or \

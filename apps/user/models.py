@@ -70,6 +70,7 @@ class User(AbstractUser):
   type_of_roommate = models.TextField(blank=True, null=True)
   detail = models.TextField(blank=True, null=True)
   profile_image = GenericRelation(ImageModel)
+  favorite_properties = models.ManyToManyField("lodging.CommonlyUsedLodgingModel", related_name="favorite_of")
 
   USERNAME_FIELD = 'mobile_number'
   objects = CustomUserManager()

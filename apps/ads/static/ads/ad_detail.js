@@ -110,6 +110,8 @@ function new_button(icon,text){
 
 (function (){
   var data = window.data;
+  new FavoriteToggler($('#favorite'),data);
+  
   var $ref = $('#basic-details');
   var contact_details_id = 'contact-details';
   $booking_button_ref = $('#booking_button');
