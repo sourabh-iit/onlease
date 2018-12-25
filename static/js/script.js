@@ -227,6 +227,7 @@ class NavItems{
       }).done((data)=>{
         toastr.success('You will receive an OTP shortly')
         $('#modalVerifyNumberForm').modal('show');
+        start_timer($('#resend_otp'));
       }).always(()=>{
         remove_loading();
       });
@@ -495,51 +496,42 @@ function show_loading(form=null){
   }
 }
 
-var loadingLocation = false;
-
-function getCurrentLocation(ev,input_id){
-  var $el=$(ev.target);
-  ev.preventDefault();
-  if(loadingLocation){
-    return
-  }
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(function(position){
-      var lat=position.coords.latitude;
-      var lng=position.coords.longitude;
-      $.ajax({
-        url: window.current_location_url,
-        method: 'POST',
-        data: {
-          lat: lat,
-          lng: lng,
-        },
-        beforeSend: function(){
-          $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
-          loadingLocation=true;
-        }
-      }).done((res)=>{
-        $('#property_address').val(res.result[0].formatted_address);
-        $('#property_latlng').val(lat+','+lng);
-        $('#property_latlng').trigger('change');
-        toastr.success('Address added successfully');
-      }).fail((res)=>{
-        if(res.responseJSON && 'errors' in res.responseJSON && '__all__' in res.responseJSON){
-          toastr.error(res.responseJSON.errors['__all__'][0]);
-        }
-        display_form_errors(res,$('#modalPropertyAdForm'));
-      }).always((res)=>{
-        $el.children('#spinner').remove();
-        loadingLocation = false;
-      });
-      // var geocoder = new google.maps.Geocoder;
-      // geocoder.geocode({location: {lat:parseFloat(lat),lng:parseFloat(lng)}},function(res){
-      //   $('#'+input_id).val(res[0].formatted_address);
-      //   $('#'+input_id).trigger('change');
-      // });
-    })
-  } else {
-    alert("Cannot access your location");
+class GetCurrentLocation{
+  constructor($el,$location,$latlng){
+    this.loading=false;
+    $el.click((event)=>{
+      event.preventDefault();
+      if(this.loading) return;
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition((position)=>{
+          var lat=position.coords.latitude;
+          var lng=position.coords.longitude;
+          $.ajax({
+            url: window.current_location_url,
+            method: 'POST',
+            data: {
+              lat: lat,
+              lng: lng,
+            },
+            beforeSend: ()=>{
+              $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
+              this.loading=true;
+            }
+          }).done((res)=>{
+            $location.val(res.result[0].formatted_address).trigger('change');
+            $latlng.val(lat+','+lng);
+            $latlng.trigger('change');
+          }).fail((res)=>{
+            display_form_errors(res,$('#modalPropertyAdForm'));
+          }).always((res)=>{
+            $el.children('#spinner').remove();
+            this.loading = false;
+          });
+        });
+      } else {
+        alert("Cannot access your location");
+      }
+    });
   }
 }
 
@@ -927,7 +919,7 @@ function display_form_errors(data,form){
     }
     if(Object.keys(field_errors).length){
       toastr.error(('Error(s) occurred in form submission.'));
-      show_form_field_errors(form,errors);
+      show_form_field_errors(form,field_errors);
     }
   }
 }
@@ -1768,8 +1760,14 @@ class PropertyAdForm{
     this.address = new PropertyInputText(this.$form,id+'_address',
       'Property Address',null,'mt-0 mb-4',ad.lodging?ad.lodging.address:null,
       'address',150,false,ad);
-    this.$latlng = new PropertyInputText(this.$form,id+'_latlng',null,
+    this.latlng = new PropertyInputText(this.$form,id+'_latlng',null,
       null,null,ad.latlng,'latlng',null,true,ad);
+    this.$current_location = $(`
+      <button type="button" class="btn bg-one btn-primary btn-sm">
+        <i class="fa fa-map-marker mr-1"></i>
+        Use current location</button>`)
+    .appendTo(this.address.$div);
+    new GetCurrentLocation(this.$current_location,this.address.$input,this.latlng.$input);
     this.date = new PropertyDate(this.$form,id+'_available_from','Date of availability','calendar',
       'mb-4 col-12 col-md-6 m-5px mt-0',ad.available_from,'available_from',ad);
     this.total_floors = new Select(this.$form,'total_floors',id+'_total_floors',
@@ -1867,7 +1865,7 @@ class PropertyAdForm{
     this.modal.$modal_footer.append(this.$buttons_cotnainer);
     this.modal.$modal_body.append(this.title.$div)
     .append(this.create_group_heading('General details')).append(this.location.$div)
-    .append(this.$latlng).append(this.address.$div).append(this.date.$div)
+    .append(this.latlng.$input).append(this.address.$div).append(this.date.$div)
     .append(this.total_floors.$div).append(this.floor_no.$div)
     .append(this.create_group_heading('Property details')).append(this.type.$div)
     .append(this.furnishing.$div).append(this.facilities.$div)
@@ -2063,7 +2061,7 @@ class PropertyAdForm{
             'title': this.title.$input.val(),
             'region': this.location.selectize.getValue(),
             'address': this.address.$input.val(),
-            // 'latlng': this.$latlng.val(),
+            'latlng': this.latlng.$input.val(),
             'available_from': this.date.$input.val(),
             'total_floors': this.total_floors.selectize.getValue(),
             'floor_no': this.floor_no.selectize.getValue(),
@@ -2495,6 +2493,57 @@ class Modal{
   remove_on_close(){
     this.$modal.remove();
     this.$modal.on('hidden.bs.modal',()=>{
+    });
+  }
+}
+
+function calcRoute() {
+  if(navigator.geolocation && window.latlng){
+    var directionsService = new google.maps.DirectionsService();
+    var directionsDisplay = new google.maps.DirectionsRenderer();
+    var latlng = window.latlng.split(',');
+    var destination = new google.maps.LatLng(latlng[0],latlng[1]);
+    var map = new google.maps.Map(document.getElementById('map'),{zoom: 7, center: destination});
+    directionsDisplay.setMap(map);
+    navigator.geolocation.getCurrentPosition(function (position) {
+      var lat = position.coords.latitude;
+      var lng = position.coords.longitude;
+      var origin = new google.maps.LatLng(lat,lng);
+      directionsService.route({
+        origin: origin,
+        destination: destination,
+        travelMode: 'DRIVING'
+      }, function (result, status) {
+        if (status=='OK'){
+          directionsDisplay.setDirections(result);
+        } else {
+          console.log("Directions cannot be rendered")
+          console.log(result);
+          alert("Cannot open map")
+        }
+      });
+    }, function () {
+      console.log("Failed to get current location")
+      alert("Cannot open map")
+    });
+  } else {
+    console.log("do not have lat long values or geolocation is not available.")
+    alert('Cannot open map')
+  }
+}
+
+class Map{
+  constructor($el, ad){
+    $el.click(()=>{
+      if(!this.modal){
+        this.modal=new Modal(`address_map_${ad.id}`,'Property Address');
+        $('body').append(this.modal.$modal);
+        this.modal.$modal_body.removeClass('minh-500');
+        this.modal.$modal_dialog.css('max-width','1000px')
+        this.modal.$modal_body.append('<div id="map" class="h-100"></div>');
+        calcRoute();
+      }
+      this.modal.$modal.modal('show');
     });
   }
 }
@@ -3004,7 +3053,16 @@ class Ads{
     this.$ads = $([]);
     if(this.ads.length===0){
       this.$ref.empty();
-      this.$no_property_message = $('<div class="no_property_message btn color-2 btn-sm">No property to show</div>');
+      var empty_message = 'No property to show';
+      switch(this.ad_type){
+        case 1: empty_message='No property posted yet'
+        break;
+        case 2: empty_message='No property booked yet'
+        break;
+        case 4: empty_message='No property added yet'
+        break;
+      }
+      this.$no_property_message = $(`<div class="no_property_message btn color-2 btn-sm">${empty_message}</div>`);
       this.$ref.append(this.$no_property_message);
       return;
     } 
@@ -3090,7 +3148,7 @@ class MyProperties extends Ads{
     super(prefix,modal.$modal_body,ads,ad_type);
     this.user_changed = false;
     this.modal = modal;
-    modal.$modal.modal('show');
+    modal.$modal.modal('show').addClass('text-center');
     this.modal.$modal_dialog.addClass('modal-lg')
     .css('max-width',calc_ads_container_width(3));
     $(document).on('login',()=>{
@@ -3338,7 +3396,7 @@ function delete_image(event,image_id,$form=null,callback=()=>{}){
   });
 }
 
-function resend_otp(){
+function resend_otp(event){
   var form = $('#modalVerifyNumberForm');
   var data = {
     mobile_number: window.mobile_number,
@@ -3354,7 +3412,7 @@ function resend_otp(){
     'data': data,
   }).done((data)=>{
     toastr.success('You will get a new OTP shortly');
-    $(document).trigger('otp_clock_start');
+    start_timer($(event.target));
   }).fail((data)=>{
     display_form_errors(data,form);
   }).always(()=>{
@@ -4075,28 +4133,24 @@ class ProfileAddImage{
   }
 }
 
-(function(){
-  var $resend_otp_btn = $('#resend_otp');
-  var resend_otp_text = 'Re-send OTP';
-  $(document).on('otp_clock_start',()=>{
-    var start_time = new Date();
-    var otp_clock_interval = setInterval(()=>{
-      var time_gap = Math.round((new Date().getTime() - start_time.getTime())/1000);
-      if(time_gap>=60){
-        $resend_otp_btn.text(resend_otp_text);
-        $resend_otp_btn.removeAttr('disabled');
-        clearInterval(otp_clock_interval);
-      } else {
-        var time_text = '1:00';
-        if(time_gap<60){
-          time_text = `0:${60-time_gap}`;
-        }
-        $resend_otp_btn.text(`${resend_otp_text} (${time_text})`);
-        $resend_otp_btn.attr('disabled','disabled');
+function start_timer($el){
+  var start_time = new Date();
+  var otp_clock_interval = setInterval(()=>{
+    $el.find('#timer').remove();
+    var time_gap = Math.round((new Date().getTime() - start_time.getTime())/1000);
+    if(time_gap>=60){
+      $el.removeAttr('disabled');
+      clearInterval(otp_clock_interval);
+    } else {
+      var time_text = '1:00';
+      if(time_gap<60){
+        time_text = `0:${60-time_gap}`;
       }
-    },1000)
-  });
-})();
+      $el.append(`<span id="timer"> (${time_text})</span>`);
+      $el.attr('disabled','disabled');
+    }
+  },1000);
+}
 
 $('document').ready(function(){
   $(document).ajaxError(function ( event, jqxhr, settings, thrownError ) {
@@ -4177,8 +4231,8 @@ $('document').ready(function(){
   set_disable_submit_button();
   set_enter_number_form();
 
-  $('#resend_otp').click(function(){
-    resend_otp();
+  $('#resend_otp').click(function(event){
+    resend_otp(event);
   });
 
   // $('input[name=has_property]').change(function(event){

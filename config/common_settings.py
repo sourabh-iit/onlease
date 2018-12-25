@@ -150,7 +150,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # for custom widgets
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
-GOOGLE_MAPS_API_KEY=os.environ.get('GOOGLE_MAPS_API_KEY')
+GOOGLE_MAPS_API_KEY=os.environ.get('GOOGLE_MAPS_API_KEY',"AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ")
 
 ADMINS_LIST = ['98997612536'] 
 

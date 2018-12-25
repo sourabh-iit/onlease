@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.db.models import Q
 from django.contrib import messages
@@ -45,7 +45,7 @@ def ajax_login_required(view):
 def number_verfication_required(view):
     def wrap(request,*args,**kwargs):
         if not request.user.is_verified:
-            return HttpResponse({'errors':{'__all__':['Mobile number verification is required']}},status=400)
+            return JsonResponse({'errors':{'__all__':['Mobile number verification is required']}},status=400)
         else:
             return view(request,*args,**kwargs)
     wrap.__doc__ = view.__doc__

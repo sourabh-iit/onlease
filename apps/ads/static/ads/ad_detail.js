@@ -1,38 +1,3 @@
-function calcRoute() {
-  if(navigator.geolocation && window.latlng){
-    var directionsService = new google.maps.DirectionsService();
-    var directionsDisplay = new google.maps.DirectionsRenderer();
-    var latlng = window.latlng.split(',');
-    var destination = new google.maps.LatLng(latlng[0],latlng[1]);
-    var map = new google.maps.Map(document.getElementById('map'),{zoom: 7, center: destination});
-    directionsDisplay.setMap(map);
-    navigator.geolocation.getCurrentPosition(function (position) {
-      var lat = position.coords.latitude;
-      var lng = position.coords.longitude;
-      var origin = new google.maps.LatLng(lat,lng);
-      directionsService.route({
-        origin: origin,
-        destination: destination,
-        travelMode: 'DRIVING'
-      }, function (result, status) {
-        if (status=='OK'){
-          directionsDisplay.setDirections(result);
-        } else {
-          console.log("Directions cannot be rendered")
-          console.log(result);
-          alert("Cannot open map")
-        }
-      });
-    }, function () {
-      console.log("Failed to get current location")
-      alert("Cannot open map")
-    });
-  } else {
-    console.log("do not have lat long values or geolocation is not available.")
-    alert('Cannot open map')
-  }
-}
-
 class BookNow{
   constructor($el){
     this.$inner = $el.html();
@@ -178,6 +143,7 @@ function new_button(icon,text){
 
 $('document').ready(function(){
   var data = window.data;
+  new Map($('#map-button'),data);
   var image_carousel = new Carousel('image_carousel',data.images,1);
   var $carousel_container = $('#image_carousel_container').append(image_carousel.$carousel);
   var $buttons_container = $('<div class="row m-0 mb-2"></div>').prependTo($carousel_container);
