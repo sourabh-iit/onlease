@@ -13,6 +13,7 @@ import datetime
 
 from apps.locations.models import Region, District
 from apps.image.models import ImageModel
+from apps.lodging.utils import generate_random
 
 User = get_user_model()
 
@@ -25,6 +26,7 @@ class Lodging(models.Model):
   updated_at = models.DateField(auto_now_add=True, editable=False, blank=True)
   no_times_booked = models.IntegerField(default=0)
   session_key = models.CharField(max_length=50,null=True,blank=True)
+  uid = models.CharField(max_length=20, default=generate_random(8))
 
   def __str__(self):
     return self.address
@@ -177,6 +179,10 @@ class CommonlyUsedLodgingModel(models.Model):
   is_booking = models.BooleanField(default=False)
   last_time_booking = models.DateTimeField(default=datetime.datetime.now())
   virtual_tour_link = models.CharField(max_length=300,blank=True,null=True)
+  last_confirmed = models.DateTimeField(null=True, blank=True)
+  is_confirmed = models.BooleanField(default=True)
+  is_confirmation_processing = models.BooleanField(default=False)
+  room_number = models.PositiveIntegerField(default=1)
 
   def get_per_month_amount(self):
     total = int(self.rent)

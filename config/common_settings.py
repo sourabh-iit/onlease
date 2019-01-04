@@ -169,3 +169,10 @@ COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 COMPRESS_ROOT = os.path.join(BASE_DIR,'static')
+
+TWILIO_SID = os.environ.get('TWILIO_SID')
+TWILIO_TOKEN = os.environ.get('TWILIO_TOKEN')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
+
+INDIANTTS_API_KEY = os.environ.get('INDIANTTS_API_KEY')
+INDIANTTS_USER_ID = os.environ.get('INDIANTTS_USER_ID')

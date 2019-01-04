@@ -22,7 +22,7 @@ class LodgingSerializer(serializers.ModelSerializer):
   class Meta:
     model = Lodging
     fields = ('id','posted_by','address','posted_at','updated_at',
-      'no_times_booked')
+      'no_times_booked','uid')
 
 class CommonLodgingSerializer(serializers.ModelSerializer):
   images = ImageRelatedField(many=True,
@@ -37,7 +37,8 @@ class CommonLodgingSerializer(serializers.ModelSerializer):
       'furnishing','facilities','ground_floor','top_floor','available_from','rent',
       'area','bathrooms','rooms','balconies','halls','advance_rent_of_months','flooring',
       'flooring_other','additional_details','is_booked','images','latlng','charges',
-      'virtual_tour_link','termsandconditions','title','unit')
+      'virtual_tour_link','termsandconditions','title','unit','last_confirmed','is_confirmed',
+      'is_confirmation_processing','room_number')
 
 class MyLodgingSerializer(CommonLodgingSerializer):
   lodging = LodgingSerializer()

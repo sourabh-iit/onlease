@@ -60,14 +60,24 @@ def get_name(user):
             user_name += ' ' + user.last_name
     return user_name
 
-def successfull_transaction_message(owner,customer,lodging,transaction):
-    message = 'Dear '+get_name(customer)+', your transaction id is '+str(transaction.id)+'. Contact number of owner is '+owner.mobile_number+'. You can see further details on our website.'+onlease_last_message
+def get_property_reference(lodging, sublodging):
+    ref = 'with '
+    if sublodging.lodging_type=='R' or sublodging.lodging_type=='P':
+        ref += 'room number '+sublodging.room_number+', '
+    ref += 'floor '+sublodging.floor_no+' and address '+lodging.address
+    return ref
+
+def successfull_transaction_message(owner,customer,lodging, sublodging,transaction):
+    message = 'Dear '+get_name(customer)+', your transaction id for property '+get_property_reference(lodging, sublodging)+\
+    ' is '+str(transaction.id)+'. Contact number of owner is '+owner.mobile_number+'.'+onlease_last_message
     return message
 
-def invalid_transaction_message(owner,customer,lodging,transaction,response):
-    message = 'Dear '+get_name(customer)+', your transaction id is '+str(transaction.id)+'. Your transaction was invalid.'+onlease_last_message
+def invalid_transaction_message(owner,customer,lodging, sublodging,transaction,response):
+    message = 'Dear '+get_name(customer)+', your transaction id for property '+get_property_reference(lodging, sublodging)+\
+    ' is '+str(transaction.id)+'. Your transaction was invalid.'+onlease_last_message
     return message
 
-def lodging_booked_message(owner,customer,lodging,transaction):
+def lodging_booked_message(owner,customer,lodging, sublodging,transaction):
     # TODO User all mobile numbers
-    return 'Dear '+get_name(owner)+', your property has been booked. This is his/her contact number: '+customer.mobile_number+'.'+onlease_last_message
+    return 'Dear '+get_name(owner)+', your property'+get_property_reference(lodging, sublodging)+\
+    ' has been booked. This is his/her contact number: '+customer.mobile_number+'.'+onlease_last_message

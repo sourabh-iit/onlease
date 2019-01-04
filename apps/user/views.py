@@ -288,7 +288,7 @@ def logoutView(request):
 
 def logoutView_ajax(request):
     logout(request)
-    return HttpResponse(status=200)
+    return HttpResponseRedirect(reverse('home:front-page'))
 
 @maintain_cookie
 @not_logged_in

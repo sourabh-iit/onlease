@@ -16,7 +16,8 @@ class ValidateOtpForm(forms.Form):
     mobile_number=forms.CharField(max_length=10,
         validators=[RegexValidator(regex=mobile_number_regex,
         message='Enter valid mobile number',
-        code='invalid_number')])
+        code='invalid_number')],
+        required=False)
     otp = forms.CharField(
         max_length=6,
         required=True,

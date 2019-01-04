@@ -86,11 +86,15 @@ def ad_detail_view(request,lodging_id,lodging_slug):
     if sublodging.is_booking and time_diff.seconds > num_minutes*60:
       sublodging.is_booking=False
       sublodging.save()
+    is_confirmed_recently = False
+    if sublodging.last_confirmed and (sublodging.last_confirmed-datetime.datetime.now()).days<1:
+      is_confirmed_recently = True
     return render(request,'ads/ad_detail.html',{
       'lodging':lodging,
       'sublodging':sublodging,
       'data': json.dumps(CommonLodgingSerializer(sublodging).data),
-      'show_contact_details': show_contact_details
+      'show_contact_details': show_contact_details,
+      'is_confirmed_recently': is_confirmed_recently
     })
   except Lodging.DoesNotExist:
     messages.error(request,'Ad does not exist or has been deleted.')

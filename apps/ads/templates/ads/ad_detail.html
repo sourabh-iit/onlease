@@ -57,6 +57,9 @@
         Phone numbers - {{lodging|phone_numbers}}
       </div>
       <div>
+        Room number - {{sublodging.room_number}}
+      </div>
+      <div>
         Address - {{lodging.address}}
         <div>
           <button class="btn color-4 btn-sm ml-0" id="map-button" type="button">
@@ -193,28 +196,47 @@
     {% endif %}
     <div class="d-none" id="booking_button"></div>
     {% if show_contact_details == False %}
-    <div class="text-center">
-      <button
-      id="book_now" 
-      class="btn color-4"
-      {% if sublodging.is_booked or sublodging.is_booking %}
-      disabled
-      {% endif %}>
-        Book Now
-        in 
-        <span class="h5 text-success">
-          <i class="fa fa-inr" style="font-size: 1.25rem;"></i>{% widthratio sublodging.rent 10 1 %}
-        </span>
-        only
-      </button>
-      {% if sublodging.is_booked or sublodging.is_booking %}
-      <div>
-        <small class="red-text">
-          Already booked or under process of booking
-        </small>
-      </div>
+      {% if sublodging.is_confirmed and is_confirmed_recently and not sublodging.is_confirmation_processing %}
+        <div class="text-center">
+          <button
+          id="book_now" 
+          class="btn color-4"
+          {% if sublodging.is_booked or sublodging.is_booking %}
+            disabled
+          {% endif %}>
+            Book Now
+            in 
+            <span class="h5 text-success">
+              <i class="fa fa-inr" style="font-size: 1.25rem;"></i>{% widthratio sublodging.rent 10 1 %}
+            </span>
+            only
+          </button>
+          {% if sublodging.is_booked or sublodging.is_booking %}
+            <div>
+              <small class="red-text">
+                Already booked or under process of booking
+              </small>
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="text-center">
+          <button id="confirm_vaccancy"
+          class="btn color-4"
+          {% if sublodging.is_confirmation_processing %}
+            disabled
+          {% endif %}>
+            Confirm Vaccancy
+          </button>
+          {% if sublodging.is_confirmation_processing %}
+            <div>
+              <small class="red-text">
+                Confirmation is under processing. Please refresh page after two minutes.
+              </small>
+            </div>
+          {% endif %}
+        </div>
       {% endif %}
-    </div>
     {% endif %}
   </div>
 </div>
@@ -222,7 +244,8 @@
   <script>
     var latlng = '{{sublodging.latlng}}';
     var book_now_url = "{% url 'transactions:lodging-redirect-to-instamojo' lodging.id %}";
-    var show_contact_details = "{{show_contact_details | escapejs}}";
+    var show_contact_details = "{{ show_contact_details | escapejs }}";
+    var is_confirmed_recently = "{{ is_confirmed_recently | escapejs }}";
   </script>
   {% comment %} <iframe width="600" height="450" frameborder="0" style="border:0" 
   src="https://www.google.com/maps/embed/v1/directions?origin=&destination={{sublodging.latlng}}&key=AIzaSyBM8hfl_jO8yNJzRwRAyo3Q0siCBjYgSRQ" 

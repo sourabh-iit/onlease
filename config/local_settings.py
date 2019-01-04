@@ -5,7 +5,11 @@ import os
 
 SECRET_KEY = '_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#'
 
-NG_ROK = 'ab9b8d32'
+NG_ROK = '69d1892d'
+USE_NG_ROK = True
+BASE_URL = 'http://127.0.0.1:8000'
+if USE_NG_ROK:
+    BASE_URL='https://'+NG_ROK+'.ngrok.io'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -49,8 +53,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('GMAIL_EMAIL')
 EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')
 EMAIL_USE_TLS = True
-
-BASE_URL = 'http://192.168.43.197:8000'
 
 LANGUAGE_CODE = 'hi-IN'
 

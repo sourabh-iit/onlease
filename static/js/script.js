@@ -497,9 +497,10 @@ function show_loading(form=null){
 }
 
 class GetCurrentLocation{
-  constructor($el,$location,$latlng){
+  // constructor($el,$location,$latlng){
+  constructor($latlng){
     this.loading=false;
-    $el.click((event)=>{
+    // $el.click((event)=>{
       event.preventDefault();
       if(this.loading) return;
       if(navigator.geolocation){
@@ -514,24 +515,24 @@ class GetCurrentLocation{
               lng: lng,
             },
             beforeSend: ()=>{
-              $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
+              // $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
               this.loading=true;
             }
           }).done((res)=>{
-            $location.val(res.result[0].formatted_address).trigger('change');
+            // $location.val(res.result[0].formatted_address).trigger('change');
             $latlng.val(lat+','+lng);
             $latlng.trigger('change');
           }).fail((res)=>{
             display_form_errors(res,$('#modalPropertyAdForm'));
           }).always((res)=>{
-            $el.children('#spinner').remove();
+            // $el.children('#spinner').remove();
             this.loading = false;
           });
         });
       } else {
         alert("Cannot access your location");
       }
-    });
+    // });
   }
 }
 
@@ -1760,14 +1761,20 @@ class PropertyAdForm{
     this.address = new PropertyInputText(this.$form,id+'_address',
       'Property Address',null,'mt-0 mb-4',ad.lodging?ad.lodging.address:null,
       'address',150,false,ad);
+    this.room_number = new PropertyInputText(this.$form,id+'_romm_number',
+      'Room Number',null,'mt-0 mb-4 col-12 col-md-6',ad.room_number,
+      'room_number',null,false,ad);
+    if(this.is_new_ad || (ad.lodging_type!='R' && ad.lodging_type!='P'))
+      this.room_number.$div.css('display','none');
     this.latlng = new PropertyInputText(this.$form,id+'_latlng',null,
       null,null,ad.latlng,'latlng',null,true,ad);
-    this.$current_location = $(`
-      <button type="button" class="btn bg-one btn-primary btn-sm">
-        <i class="fa fa-map-marker mr-1"></i>
-        Use current location</button>`)
-    .appendTo(this.address.$div);
-    new GetCurrentLocation(this.$current_location,this.address.$input,this.latlng.$input);
+    // this.$current_location = $(`
+    //   <button type="button" class="btn bg-one btn-primary btn-sm">
+    //     <i class="fa fa-map-marker mr-1"></i>
+    //     Use current location</button>`)
+    // .appendTo(this.address.$div);
+    // new GetCurrentLocation(this.$current_location,this.address.$input,this.latlng.$input);
+    new GetCurrentLocation(this.latlng.$input);
     this.date = new PropertyDate(this.$form,id+'_available_from','Date of availability','calendar',
       'mb-4 col-12 col-md-6 m-5px mt-0',ad.available_from,'available_from',ad);
     this.total_floors = new Select(this.$form,'total_floors',id+'_total_floors',
@@ -1779,6 +1786,13 @@ class PropertyAdForm{
     this.type = new Select(this.$form,'lodging_type',id+'_lodging_type','Choose type',
       'Property type','mb-4 col-12 col-md-6 m-5px',false,Type.get_options(),
       ad.lodging_type,false,false,false,ad);
+    this.type.$select.change((ev)=>{
+      if(ev.target.value==='R' || ev.target.value==='P') {
+        this.room_number.$div.css('display','block');
+      } else {
+        this.room_number.$div.css('display','none');
+      }
+    });
     this.furnishing = new Select(this.$form,'furnishing',id+'_furnishing','Choose furnishing',
       'Furnishing','mb-4 col-12 col-md-6 m-5px',false,Furnishing.get_options(),ad.furnishing,
       false,false,false,ad);
@@ -1865,9 +1879,9 @@ class PropertyAdForm{
     this.modal.$modal_footer.append(this.$buttons_cotnainer);
     this.modal.$modal_body.append(this.title.$div)
     .append(this.create_group_heading('General details')).append(this.location.$div)
-    .append(this.latlng.$input).append(this.address.$div).append(this.date.$div)
-    .append(this.total_floors.$div).append(this.floor_no.$div)
-    .append(this.create_group_heading('Property details')).append(this.type.$div)
+    .append(this.type.$div).append(this.room_number.$div).append(this.latlng.$input)
+    .append(this.address.$div).append(this.date.$div).append(this.total_floors.$div)
+    .append(this.floor_no.$div).append(this.create_group_heading('Property details'))
     .append(this.furnishing.$div).append(this.facilities.$div)
     .append(this.bathrooms.$div).append(this.balconies.$div).append(this.rooms.$div)
     .append(this.halls.$div).append(this.area_group.$div).append(this.flooring.$div)
@@ -1932,6 +1946,14 @@ class PropertyAdForm{
         },
         address: {
           required: true,
+        },
+        room_number: {
+          required: {
+            depends: (element) => {
+              return this.type.$select.val()==='P' || this.type.$select.val()==='R'
+            }
+          },
+          digits: true
         },
         available_from: {
           required: true,
@@ -2085,6 +2107,7 @@ class PropertyAdForm{
             'terms_and_conditions': JSON.stringify(this.terms_and_conditions.get_data()),
             'virtual_tour_link': this.virtual_tour_link.$input.val(),
             'is_booked': this.is_new_ad?false:this.is_booked_switch.$input[0].checked,
+            'room_number': this.room_number.$input.val()
           }
           show_loading($form);
           $.ajax({
@@ -2612,9 +2635,9 @@ class AdLinks{
       new VirtualTour(this.virtual_tour_link.$link_container,ad.virtual_tour_link);
       this.$container.append(this.virtual_tour_link.$link_container);
     }
-    this.view_details = new AdLink('Details','fa fa-external-link');
-    this.view_details.add_click_event(redirect_to_ad_detail_view,ad)
-    this.$container.append(this.view_details.$link_container);
+    // this.view_details = new AdLink('Details','fa fa-external-link');
+    // this.view_details.add_click_event(redirect_to_ad_detail_view,ad)
+    // this.$container.append(this.view_details.$link_container);
   }
 }
 
@@ -2790,7 +2813,7 @@ class CarouselControlPrev extends CarouselControl{
 // 1 - ad on details ad page
 // 2 - full screen carousel
 class Carousel{
-  constructor(id,images=[],type=0){
+  constructor(id,ad,images=[],type=0){
     this.type = type;
     this.$carousel = $('<div></div>').attr('id',id)
     .attr('data-pause','true').attr('data-ride',"false")
@@ -2817,7 +2840,7 @@ class Carousel{
     this.$carousel.on('slid.bs.carousel',(event)=>{
       $(event.relatedTarget).addClass('view');
     });
-    set_carousel(this.$carousel,type);
+    set_carousel(this.$carousel,type,ad);
   }
 
   add_indicator(id, i) {
@@ -2901,7 +2924,7 @@ class Ad{
       this.card.$card.append($favorite_button);
       new FavoriteToggler($favorite_button, ad);
     }
-    this.carousel = new Carousel(prefix+'_my_ad_'+ad.id,ad.images);
+    this.carousel = new Carousel(prefix+'_my_ad_'+ad.id,ad,ad.images);
     this.card.add_carousel(this.carousel.$carousel);
     this.ad_details = new AdDetails(ad);
     this.ad_links = new AdLinks(ad);
@@ -3399,7 +3422,7 @@ function delete_image(event,image_id,$form=null,callback=()=>{}){
 function resend_otp(event){
   var form = $('#modalVerifyNumberForm');
   var data = {
-    mobile_number: window.mobile_number,
+    mobile_number: window.user_data.mobile_number,
   }
   var url = API_PREFIX + 'account/request-otp/';
   if(window.add_number)
@@ -3436,10 +3459,8 @@ function get_form(element){
 function trigger_form_event($forms,action,$form){
   var num_forms = $forms.length;
   if(num_forms==1 && action=="add"){
-    console_trace();
     $form.trigger('filled');
   } else if(num_forms==0 && action=='remove'){
-    console_trace();
     $form.trigger('empty');
   }
 }
@@ -3633,7 +3654,7 @@ class FullScreenCarousel{
         this.modal.$modal.modal('show').css({'width':'100%','height':'100%'});
         this.modal.$modal_dialog.css({'margin':'0','max-width':'100%','height':'100%','width':'100%'});
         this.modal.$modal.on('shown.bs.modal',()=>{
-          this.carousel = new Carousel('full_screen_carousel_'+(ad.id),ad.images,2);
+          this.carousel = new Carousel('full_screen_carousel_'+(ad.id),ad,ad.images,2);
           this.carousel.$carousel.css({'height':this.modal.$modal_body.height()});
           this.carousel.$carousel_inner.css({'height':'100%'});
           this.modal.$modal_body.append(this.carousel.$carousel);
@@ -3677,7 +3698,7 @@ class FullScreenCarousel{
   }
 }
 
-function change_src($img,type){
+function change_src($img,type,ad){
   if($img.attr('data-src')){
     var $img_carrier = $('<img>');
     $img_carrier.on('load',()=>{
@@ -3693,21 +3714,24 @@ function change_src($img,type){
       .removeAttr('data-src').removeClass('center-element');
       $img_carrier.remove();
       initialize_panzoom($img);
+      $img.click(()=>{
+        redirect_to_ad_detail_view(ad);
+      });
     });
     $img_carrier.attr('src',$img.attr('data-src'));
   }
 }
 
-function set_image($carousel,type){
+function set_image($carousel,type,ad){
   var $img = $carousel.find('.carousel-item.active img');
-  change_src($img,type);
+  change_src($img,type,ad);
   $img.css({'max-width':'100%','max-height':'700px'});
 }
 
-function set_carousel($carousel,type){
-  set_image($carousel,type);
+function set_carousel($carousel,type,ad){
+  set_image($carousel,type,ad);
   $carousel.on('slid.bs.carousel',(event)=>{
-    set_image($carousel,type);
+    set_image($carousel,type,ad);
   });
 }
 

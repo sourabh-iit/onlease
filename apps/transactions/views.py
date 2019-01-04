@@ -47,16 +47,14 @@ def redirect_to_instamojo_view(request,ad_id):
       return JsonResponse({'profile_complete':False},status=400)
     lodging = Lodging.objects.prefetch_related('sublodging').get(id=ad_id)
     sublodging = lodging.sublodging
+    if not sublodging.last_confirmed or (sublodging.last_confirmed-datetime.datetime.now()).days>1:
+      raise ValidationError('Confirmation for vaccancy is not done recently')
     time_diff = datetime.datetime.now() - sublodging.last_time_booking
     if sublodging.is_booking and time_diff.seconds > 3*60:
       sublodging.is_booking=False
       sublodging.save()
     if sublodging.is_booked or sublodging.is_booking:
-      return JsonResponse({
-        'errors':{
-          '__all__':['This property is already booked or in process of booking.']
-        }
-      },status=400)
+      raise ValidationError('This property is already booked or in process of booking.')
     amount = int(sublodging.rent)//10
     trans_id = generate_random(40)
     while LodgingTransaction.objects.filter(trans_id=trans_id).exists():
@@ -92,8 +90,8 @@ def redirect_to_instamojo_view(request,ad_id):
         email=request.user.email,
         allow_repeated_payments=False,
         redirect_url=base_url+reverse('transactions:lodging-post-redirection'),
-        # webhook=base_url+reverse('transactions:lodging-webhook',
-        #   kwargs={'trans_id':trans_id})  
+        webhook=base_url+reverse('transactions:lodging-webhook',
+          kwargs={'trans_id':trans_id})  
       )
     if response['success']:
       sublodging.is_booking = True
@@ -158,6 +156,7 @@ def on_transaction(trans_id,response,webhook,request):
             lodging,transaction_))
       else:
         messages.error(request,'An invalid amount was paid')
+        # Notify tenant about transaction being invalid
         send_message(request.user.mobile_number,
           invalid_transaction_message(
             lodging.posted_by,request.user,
@@ -176,7 +175,7 @@ def on_transaction(trans_id,response,webhook,request):
   return transaction_success, lodging, sublodging, region, transaction_
 
 
-@ajax_login_required
+@login_required
 def lodging_post_redirection_view(request):
   try:
     payment_id = request.GET.get('payment_id')
@@ -184,6 +183,8 @@ def lodging_post_redirection_view(request):
     response = api.payment_request_payment_status(payment_request_id,payment_id)
     trans_id = response['payment_request']['purpose']
     transaction_success, lodging, sublodging, region, transaction_ = on_transaction(trans_id,response['payment_request']['payment'],False,request)
+    if request.user!=transaction_.user:
+      return HttpResponse('Invalid request')
   except LodgingTransaction.DoesNotExist:
     messages.error(request,'Invalid transaction')
     return HttpResponseRedirect('/')
