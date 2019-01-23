@@ -23,17 +23,6 @@
 body{
     padding-top: 0;
 }
-.business{
-    color: white;
-    font-size: 1.2rem;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    padding: 1rem;
-    max-width: 90%;
-}
 .business-choice.active {
     background: aliceblue;
     color: brown;
@@ -222,5 +211,87 @@ div#roommates {
   }
   .business-choice{
     font-size: 0.8rem;
+  }
+}
+
+.front-page-content-container{
+  margin-top: 60px!important;
+  justify-content: center;
+  position: relative;
+  img {
+    width: 100%;
+  }
+  .content-wrapper {
+    position: absolute;
+    top: 100px;
+    width: 100%;
+    .content{
+      width: 90%;
+      margin: auto;
+      .highlight-text{
+        font-size: 48px;
+        color: white;
+      }
+      .business{
+        color: white;
+        font-size: 1.2rem;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        padding: 1rem;
+      }
+    }
+  }
+}
+
+.offer {
+  padding: 40px 0;
+  .title {
+    text-align: center;
+    padding: 15px;
+    font-size: 24px;
+    font-family: overlock;
+  }
+  .service-container {
+    width: 100%;
+    height: 250px;
+    .sub-container {
+      width: 250px;
+      margin: auto;
+      height: 100%;
+      position: relative;
+      .text {
+        text-align: center;
+        position: absolute;
+        top: 150px;
+        font-size: 18px;
+        font-family: lulo clean;
+        width: 100%;
+      }
+      .icon {
+        position: absolute;
+        font-size: 75px;
+        top: 25px;
+        left: 87.5px;
+      }
+    }
+  }
+  .first {
+    background: black;
+    color: white;
+  }
+  .second {
+    background: #605E5E;
+    color: #4BD1A0;
+  }
+  .third {
+    background: #EDEDED;
+    color: #4BD1A0;
+  }
+  .fourth {
+    background: #4BD1A0;
+    color: white;
   }
 }

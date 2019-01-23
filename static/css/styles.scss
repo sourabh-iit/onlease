@@ -616,63 +616,63 @@ input[id='profile'] {
 
 
 
-
  
 @media (min-height: 520px) {
-.full-screen-img-container{
-  height: 450px;
-}
-}
-@media (min-height: 620px) {
-.full-screen-img-container{
-  height: 450px;
-}
+  .full-screen-img-container{
+    height: 450px;
+  }
 }
 @media (min-height: 620px) {
-.full-screen-img-container{
-  height: 550px;
+  .full-screen-img-container{
+    height: 450px;
+  }
 }
+@media (min-height: 620px) {
+  .full-screen-img-container{
+    height: 550px;
+  }
 }
 @media (min-height: 720px) {
-.full-screen-img-container{
-  height: 650px;
-}
+  .full-screen-img-container{
+    height: 650px;
+  }
 }
 @media (min-height: 820px) {
-.full-screen-img-container{
-  height: 750px;
-}
+  .full-screen-img-container{
+    height: 750px;
+  }
 }
 @media (min-height: 920px) {
-.full-screen-img-container{
-  height: 850px;
-}
+  .full-screen-img-container{
+    height: 850px;
+  }
 }
 @media (min-height: 1020px) {
-.full-screen-img-container{
-  height: 950px;
-}
+  .full-screen-img-container{
+    height: 950px;
+  }
 }
 @media (min-width: 576px) {
-.full_screen.modal .modal-dialog {
-  max-width: 100%;
-  margin: 0;
-}
-.full-width{
-  max-width: 95%;
-}
+  .full_screen.modal .modal-dialog {
+    max-width: 100%;
+    margin: 0;
+  }
+  .full-width{
+    max-width: 95%;
+  }
 }
 @media only screen and (min-width: 768px){
-.dropdown-md{
-  position: relative;
-}
+  .dropdown-md{
+    position: relative;
+  }
 }
 @media (min-width: 992px) {
-.full_screen.modal .modal-lg {
-  max-width: 100%;
-  margin: 0;
+  .full_screen.modal .modal-lg {
+    max-width: 100%;
+    margin: 0;
+  }
+  .full-width{
+    max-width: 800px;
+  }
 }
-.full-width{
-  max-width: 800px;
-}
-}
+

@@ -14,117 +14,96 @@
 <script src="{% static 'home/landing-page.js' %}"></script>
 {% endblock %} 
 {% block content %}
-<div class="container">
-  <div class="row m-0 mb-4" style="margin-top: 100px!important; justify-content: center;">
-    <div class="text-center col-12 mb-3 h4">Search For Property On Rent</div>
-    <div class="business p-0 col-12 col-xl-10">
-      <form novalidate class="m-0 w-100" name="searchForm" action="{% url 'ads:ads-view' %}" method='GET'>
-        <!-- {% comment %}<div class="business-choices">
-          <div class="business-choice active" id="property">Property</div>
-          <div class="business-choice" id="mates">Mates</div>
-        </div> {%endcomment%} -->
-        <!-- {% comment %} {{form.types}} {% endcomment %} -->
+<div style="min-height: 100%">
+<div class="front-page-content-container">
+  <img src="{% static 'images/background.jpg' %}">
+  <div class="content-wrapper">
+    <div class="content">
+      <div class="text-center highlight-text mb-3 h4">Search For Property To Rent</div>
+      <div class="business">
+        <form novalidate class="m-0 w-100" name="searchForm" action="{% url 'ads:ads-view' %}" method='GET'>
+          <!-- {% comment %}<div class="business-choices">
+            <div class="business-choice active" id="property">Property</div>
+            <div class="business-choice" id="mates">Mates</div>
+          </div> {%endcomment%} -->
+          <!-- {% comment %} {{form.types}} {% endcomment %} -->
 
 
-        {{form.business}}
+          {{form.business}}
 
-        <div class="input-group row m-0 d-flex justify-content-center">
-          <!-- {% comment %}
-          <div class="input-group-prepend col-3 p-0">
-            <span class="input-group-text w-100" id="search-filter">
-              Add Filters
-              <i class="fa fa-caret-down caret"></i>
-            </span>
-            <div class="filter-arrow-up hide"></div>
-            <div class="filters hide">
-              <div class="rent-range">
-                <div>Rent Range:</div>
-                <div class="row mt-2">
-                  {{form.min_rent|attr:"class:col-5 form-control"}}
-                  <div class="col-2">-</div>
-                  {{form.max_rent|attr:"class:col-5 form-control"}}
+          <div class="input-group row m-0 d-flex justify-content-center">
+            <!-- {% comment %}
+            <div class="input-group-prepend col-3 p-0">
+              <span class="input-group-text w-100" id="search-filter">
+                Add Filters
+                <i class="fa fa-caret-down caret"></i>
+              </span>
+              <div class="filter-arrow-up hide"></div>
+              <div class="filters hide">
+                <div class="rent-range">
+                  <div>Rent Range:</div>
+                  <div class="row mt-2">
+                    {{form.min_rent|attr:"class:col-5 form-control"}}
+                    <div class="col-2">-</div>
+                    {{form.max_rent|attr:"class:col-5 form-control"}}
+                  </div>
+                  <input type="text" class="span2">
+                  <hr>
                 </div>
-                <input type="text" class="span2">
-                <hr>
-              </div>
-              <div class="property-types">
-                <div>Property Type:</div>
-                <div class="row mt-2">
-                  <i class="fa fa-home prefix-large col-1 p-0 prefix"></i>
-                  {{form.types|attr:"data-placeholder:e.g. flat"}}
+                <div class="property-types">
+                  <div>Property Type:</div>
+                  <div class="row mt-2">
+                    <i class="fa fa-home prefix-large col-1 p-0 prefix"></i>
+                    {{form.types|attr:"data-placeholder:e.g. flat"}}
+                  </div>
                 </div>
               </div>
+            </div> {% endcomment %} -->
+            <div id="location_search_container" class="text-align-left">
+              <select name="regions" 
+                id="id_region" 
+                class="w-100 h-40" 
+                multiple="multiple" 
+                data-placeholder="Search location...">
+              </select>
             </div>
-          </div> {% endcomment %} -->
-          <div id="location_search_container" class="text-align-left">
-            <select name="regions" 
-              id="id_region" 
-              class="w-100 h-40" 
-              multiple="multiple" 
-              data-placeholder="Search location...">
-            </select>
+            <button type="submit" id="search_button" 
+              class="h-40 btn m-0 search">Search</button>
           </div>
-          <button type="submit" id="search_button" 
-            class="h-40 btn m-0 search">Search</button>
-        </div>
-      </form>
-    </div>
-    <div class="col-12 col-xl-10" style="margin-top: 3rem;">
-      <div class="row">
-        <div class="col-12 mb-2">
-          <i>Features We Provide</i>
-        </div>
-        <div class="col-12 pl-2 pr-2 col-md-4">
-          <div class="card">  
-            <div class="card-body">
-              <div class="card-title">Virtual Tour</div>
-              <div class="mb-3">
-                <iframe width="100%" height="300" 
-                  style="width: 100%; height: 340px; border: none; max-width: 100%;" 
-                  frameborder="0" allow="vr,gyroscope,accelerometer,fullscreen" 
-                  scrolling="no" allowfullscreen="true" 
-                  src="https://kuula.co/share/7Yp8w?fs=0&vr=0&autorotate=0.53&hideinst=1&thumbs=1&chromeless=0">
-                </iframe>
-              </div>
-              <div class="card-text">You can tour our property using virtual tour tool provided by us. It will make your experience close to reality.</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="card">
-            <div class="card-body">
-              <div class="card-title">
-                Maps
-              </div>
-              <div class="mb-3">
-                <img height="300" style="height: 340px;"
-                  src="{% static 'images/maps.jpeg' %}">
-              </div>
-              <div class="card-text">
-                Hustle to find address of your booked property is taken care by our maps. Easily find path to property from your current location.
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-12 pl-2 pr-2 col-md-4">
-          <div class="card">
-            <div class="card-body">
-              <div class="card-title">
-                Lowest Price
-              </div>
-              <div class="mb-3">
-                <img height="300" style="height: 340px;"
-                  src="{% static 'images/cost-benefit.jpg' %}">
-              </div>
-              <div class="card-text">
-                We do not disappoint you even here. We have set our commission at much lower price than what you are charged by local brokers.
-              </div>
-            </div>
-          </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>
+</div>
+<div class="offer">
+  <div class="title">WHAT WE OFFER</div>
+  <div class="row container">
+    <div class="col first service-container">
+      <div class="sub-container">
+        <div class="icon"><i class="fa fa-picture-o"></i></div>
+        <div class="text h2">360 DEGREE IMAGES</div>
+      </div>
+    </div>
+    <div class="col second service-container">
+      <div class="sub-container">
+        <div class="icon"><i class="fa fa-volume-control-phone"></i></div>
+        <div class="text h2">REAL TIME VACCANCY CONFIRMATION</div>
+      </div>
+    </div>
+    <div class="col third service-container">
+      <div class="sub-container">
+        <div class="icon"><i class="fa fa-map"></i></div>
+        <div class="text h2">GOOGLE MAPS</div>
+      </div>
+    </div>
+    <div class="col fourth service-container">
+      <div class="sub-container">
+        <div class="icon"><i class="fa fa-money"></i></div>
+        <div class="text h2">HALF BROKERAGE CHARGES</div>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 <script>
   var location_url = "{% url 'locations:regions2' %}";
