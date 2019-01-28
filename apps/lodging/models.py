@@ -182,7 +182,7 @@ class CommonlyUsedLodgingModel(models.Model):
   last_confirmed = models.DateTimeField(null=True, blank=True)
   is_confirmed = models.BooleanField(default=True)
   is_confirmation_processing = models.BooleanField(default=False)
-  room_number = models.PositiveIntegerField(default=1)
+  room_number = models.PositiveIntegerField(default=1, null=True, blank=True)
 
   def get_per_month_amount(self):
     total = int(self.rent)

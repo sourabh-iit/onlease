@@ -155,7 +155,7 @@ class MyProfile{
         <i class="fa fa-envelope prefix grey-text"></i>
         <input type="text" id="profile_email"
           ${this.read_only?'disabled="disabled"':''}
-          value="${this.user_data.email}" 
+          value="${this.user_data.email?this.user_data.email:''}" 
           name="email" class="form-control">
         <label for="profile_email" class="${this.user_data.email?'active':''}">Email address</label>
       </div>`).appendTo(this.modal.$modal_body);
@@ -1197,13 +1197,6 @@ function register_form_validation(){
                 required: true,
                 mobile_number: true
             },
-            email: {
-                email: {
-                    depends: function(element) {
-                        return $(element).val().length>0;
-                    }
-                }
-            },
             password: {
                 required: true,
                 minlength: 8
@@ -1241,7 +1234,6 @@ function register_form_validation(){
             registerFormValidator.form();
             if($(form).valid()){
                 var data = {
-                    email: $('#register_email').val(),
                     mobile_number: $('#register_mobile_number').val(),
                     password: $('#register_password').val(),
                     confirm_password: $('#register_confirm_password').val(),
@@ -1257,9 +1249,10 @@ function register_form_validation(){
                   window.user_data = data.user;
                   $(document).trigger('rerender_nav_items');
                   set_password=false;
-                  toastr.success('Registered successfully')
+                  toastr.success('Registered successfully');
                   $('#modalRegisterForm').modal('hide');
                   $('#modalVerifyNumberForm').modal('show');
+                  start_timer($('#resend_otp'));
                   window.set_password=false;
                   window.add_number=false;
                 }).fail((data)=>{
@@ -2134,7 +2127,7 @@ class PropertyAdForm{
             display_form_errors(data, $form);
           }).always(()=>{
             remove_loading($form);
-          })
+          });
         }
       }
     });

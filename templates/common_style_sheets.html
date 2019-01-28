@@ -19,7 +19,7 @@
   var STATIC_URL = "{% static '' %}";
   var vrview_url = "{% url 'vrview' %}";
   function get_property_ad_edit_url(ad){
-    return "{% url 'lodging_ajax:edit' ad_id='ad_id' %}".replace('ad_id',ad.id);
+    return "{% url 'lodging_ajax:edit' ad_id='0' %}".replace('0',ad.id);
   }
   var validate_tour_link_url = "{% url 'lodging_ajax:validate-tour-link' %}";
   var user_data = JSON.parse("{{ user | serialize_user | escapejs}}");
@@ -33,7 +33,7 @@
     return "{% url 'ads:property-details' lodging_id='13232' %}".replace('13232',lodging_id);
   }
   function get_favorite_property_url(ad, action){
-    return "{% url 'lodging_ajax:action' ad_id='ad_id' action='action' %}".replace('ad_id',ad.id).replace('action',action);
+    return "{% url 'lodging_ajax:action' ad_id='0' action='action' %}".replace('ad_id',ad.id).replace('action',action);
   }
   function get_confirm_vaccancy_url(ad){
     return "{% url 'lodging_ajax:confirm-vaccancy' lodging_id='00' %}".replace('00',ad.id);

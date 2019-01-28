@@ -4,8 +4,8 @@ from . import views
 app_name="lodging_ajax"
 urlpatterns = [
     path('create', views.LodgingView.as_view(), name="create"),
-    path('<ad_id>', views.LodgingView.as_view(), name="edit"),
-    path('<ad_id>/<action>', views.LodgingView.as_view(), name="action"),
+    re_path(r'^(?P<ad_id>[0-9]+)/?$', views.LodgingView.as_view(), name="edit"),
+    path(r'^(?P<ad_id>[0-9]+)/<action>', views.LodgingView.as_view(), name="action"),
     path('tour-link/validate', views.verify_tour_link, name="validate-tour-link"),
     re_path(r'^(?P<lodging_id>[0-9]+)/twilio/confirm_vaccancy/?$', views.confirm_vaccancy, name='confirm-vaccancy'),
     re_path(r'^(?P<lodging_id>[0-9]+)/twilio/voice_response/?$', views.voice_response, name='voice-response'),
