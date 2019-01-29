@@ -295,3 +295,44 @@ div#roommates {
     color: white;
   }
 }
+
+@media only screen and (max-width: 900px){
+  .front-page-content-container{
+    img {
+      display: none;
+    }
+    .content-wrapper {
+      position: unset;
+      .content{
+        .highlight-text{
+          font-size: 24px;
+          color: black;
+          position: relative;
+          top: 50px;
+        }
+        .business{
+          margin-top: 60px;
+        }
+      }
+    }
+  }
+
+  .offer {
+    .title {
+      font-size: 18px;
+    }
+    .service-container {
+      height: 200px;
+      max-width: 400px;
+      .sub-container {
+        width: 200px;
+        .text {
+          top: 120px;
+        }
+        .icon {
+          left: 62.5px;
+        }
+      }
+    }
+  }
+}

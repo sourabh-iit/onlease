@@ -7,3 +7,4 @@ venv
 .vscode
 staticfiles
 db.sqlite3
+static/CACHE/**
