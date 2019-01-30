@@ -507,27 +507,28 @@ class GetCurrentLocation{
         navigator.geolocation.getCurrentPosition((position)=>{
           var lat=position.coords.latitude;
           var lng=position.coords.longitude;
-          $.ajax({
-            url: window.current_location_url,
-            method: 'POST',
-            data: {
-              lat: lat,
-              lng: lng,
-            },
-            beforeSend: ()=>{
-              // $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
-              this.loading=true;
-            }
-          }).done((res)=>{
-            // $location.val(res.result[0].formatted_address).trigger('change');
-            $latlng.val(lat+','+lng);
-            $latlng.trigger('change');
-          }).fail((res)=>{
-            display_form_errors(res,$('#modalPropertyAdForm'));
-          }).always((res)=>{
-            // $el.children('#spinner').remove();
-            this.loading = false;
-          });
+          $latlng.val(lat+','+lng).trigger('change');
+          // $.ajax({
+          //   url: window.current_location_url,
+          //   method: 'POST',
+          //   data: {
+          //     lat: lat,
+          //     lng: lng,
+          //   },
+          //   beforeSend: ()=>{
+          //     // $el.append("<span id='spinner'>&nbsp;<i class='fa fa-spinner fa-spin'></i></span>");
+          //     this.loading=true;
+          //   }
+          // }).done((res)=>{
+          //   // $location.val(res.result[0].formatted_address).trigger('change');
+          //   $latlng.val(lat+','+lng);
+          //   $latlng.trigger('change');
+          // }).fail((res)=>{
+          //   display_form_errors(res,$('#modalPropertyAdForm'));
+          // }).always((res)=>{
+          //   // $el.children('#spinner').remove();
+          //   this.loading = false;
+          // });
         });
       } else {
         alert("Cannot access your location");
