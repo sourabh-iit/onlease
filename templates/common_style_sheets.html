@@ -38,6 +38,9 @@
   function get_confirm_vaccancy_url(ad){
     return "{% url 'lodging_ajax:confirm-vaccancy' lodging_id='00' %}".replace('00',ad.id);
   }
+  function get_delete_term_and_condition_url(id){
+    return "{% url 'user-api:delete-term-and-condition' id='00' %}".replace('00',id);
+  }
   var my_favorite_properties_url = "{% url 'ads:my-favorite-properties' %}"
 </script>
 <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">

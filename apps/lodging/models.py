@@ -156,7 +156,7 @@ class CommonlyUsedLodgingModel(models.Model):
   facilities = models.CharField(max_length=1000,null=True,blank=True)
   ground_floor = models.BooleanField(blank=True,default=False)
   top_floor = models.BooleanField(blank=True,default=False)
-  available_from = models.DateField(default=timezone.now())
+  available_from = models.DateField()
   rent = models.CharField(max_length=10,validators=[RegexValidator('^[1-9][0-9]+$')])
   area = models.CharField(max_length=12)
   unit = models.CharField(max_length=2,choices=MEASURING_UNIT_CHOICES,default=SQUARE_GAJ)
@@ -177,7 +177,7 @@ class CommonlyUsedLodgingModel(models.Model):
   images = GenericRelation(ImageModel)
   latlng = models.CharField(max_length=100, blank=True, null=True)
   is_booking = models.BooleanField(default=False)
-  last_time_booking = models.DateTimeField(default=datetime.datetime.now())
+  last_time_booking = models.DateTimeField(auto_now_add=True)
   virtual_tour_link = models.CharField(max_length=300,blank=True,null=True)
   last_confirmed = models.DateTimeField(null=True, blank=True)
   is_confirmed = models.BooleanField(default=True)
@@ -227,12 +227,3 @@ class Charge(models.Model):
 
   def __str__(self):
     return self.description+': Rs. '+self.amount
-
-
-class TermAndCondition(models.Model):
-  text = models.CharField(max_length=200)
-  lodging = models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,
-    related_name='termsandconditions')
-
-  def __str__(self):
-    return self.text

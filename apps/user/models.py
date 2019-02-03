@@ -66,7 +66,7 @@ class User(AbstractUser):
   is_verified = models.BooleanField(default=False)
   gender = models.CharField(choices=GENDER_CHOICES,max_length=1,blank=True, null=True)
   created_at = models.DateTimeField(auto_now=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now_add=True, null=True)
   type_of_roommate = models.TextField(blank=True, null=True)
   detail = models.TextField(blank=True, null=True)
   profile_image = GenericRelation(ImageModel)
@@ -100,6 +100,7 @@ class MobileNumber(models.Model):
   is_verified = models.BooleanField(default=False)
   time = models.PositiveIntegerField(null=True)
   otp = models.CharField(max_length=10,null=True)
+  created_at = models.DateTimeField(auto_now=True)
 
 
 class ContactModel(models.Model):
@@ -137,3 +138,14 @@ class SharedProperty(models.Model):
 
   def __str__(self):
     return self.address
+
+
+class TermAndCondition(models.Model):
+  text = models.CharField(max_length=200)
+  owner = models.ForeignKey(User,on_delete=models.CASCADE,
+    related_name='termsandconditions', null=True)
+  created_at = models.DateTimeField(auto_now=True)
+  updated_at = models.DateTimeField(auto_now_add=True)
+
+  def __str__(self):
+    return self.text

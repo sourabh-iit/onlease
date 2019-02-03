@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 app_name="user-api"
@@ -13,4 +13,5 @@ urlpatterns = [
     path('change-password/', views.password_change_view_ajax, name="change-password"),
     path('add-number/<str:action>', views.add_mobile_number_ajax, name="add-number"),
     path('save-profile/',views.edit_profile_view, name="save-profile"),
+    re_path(r'^termandcondition/(?P<id>[0-9]+)/?$', views.delete_term_and_condition, name="delete-term-and-condition"),
 ]

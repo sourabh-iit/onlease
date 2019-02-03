@@ -505,8 +505,18 @@ def add_mobile_number_ajax(request,action):
 @require_POST
 @ajax_login_required
 def edit_profile_view(request):
-    form = ProfileForm(request.POST,instance=request.user)
+    form = ProfileForm(request, request.POST)
     if form.is_valid():
         form.save()
         return JsonResponse({'user':UserSerializer(request.user).data},status=200)
     return JsonResponse({'errors':form.errors},status=400)
+
+@require_POST
+@ajax_login_required
+def delete_term_and_condition(request, id):
+    try:
+        term_and_condition = request.user.termsandconditions.get(id=id)
+        term_and_condition.delete()
+        return HttpResponse('deleted')
+    except:
+        JsonResponse({'errors': {'__all__': ['Term and condition with given id not found']}}, statuc=400)      

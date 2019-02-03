@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import LodgingCreateForm, CommonlyUsedLodgingCreateForm, ChargeForm
-from .models import TermAndCondition, Lodging, Charge, CommonlyUsedLodgingModel
+from .models import Lodging, Charge, CommonlyUsedLodgingModel
 from apps.user.utils import ViewException, number_verfication_required
 from apps.image.models import ImageModel
 from apps.user.utils import maintain_cookie
@@ -124,9 +124,6 @@ class LodgingView(View):
             charge_form.save(sublodging)
           else:
             raise ValidationError('Error in other charges')
-        sublodging.termsandconditions.all().delete()
-        for term_and_condition in json.loads(data.get('terms_and_conditions','[]')):
-          TermAndCondition.objects.create(text=term_and_condition,lodging=sublodging)
         sublodging.is_confirmed=True
         sublodging.last_confirmed=datetime.now()
       return None, sublodging

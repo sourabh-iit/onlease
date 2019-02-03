@@ -1,8 +1,10 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.contrib.auth import get_user_model
-from .models import ContactModel
+from .models import ContactModel, TermAndCondition
 from .utils import *
+
+import json
 
 User = get_user_model()
 
@@ -153,10 +155,20 @@ class PasswordChangeForm(forms.Form):
 
 
 class ProfileForm(forms.ModelForm):
+    termsandconditions = forms.CharField(max_length=400)
+    
+    def __init__(self, request, *args,**kwargs):
+        super(ProfileForm,self).__init__(*args,**kwargs)
+        self.user = request.user
+
+    def save(self, commit=True):
+        super(ProfileForm, self).save()
+        terms_and_conditions = json.loads(self.cleaned_data.get('termsandconditions', []))
+        print(terms_and_conditions)
+        for term_and_condition in terms_and_conditions:
+            TermAndCondition.objects.create(text=term_and_condition,owner=self.user)
     
     class Meta:
         model=User
-        fields=('first_name','last_name','email','detail','type_of_roommate','gender')
-    
-    def __init__(self,*args,**kwargs):
-        super(ProfileForm,self).__init__(*args,**kwargs)
+        fields=('first_name','last_name','email','detail','type_of_roommate','gender',
+          'termsandconditions')

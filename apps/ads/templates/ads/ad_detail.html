@@ -171,11 +171,11 @@
         </tbody>
       </table>
     </div>
-    {% if sublodging.termsandconditions.count > 0 %}
+    {% if user.termsandconditions.count > 0 %}
     <div class="card mb-3">
       <div class="card-body">
         <ol>
-          {% for term_and_condition in sublodging.termsandconditions.all %}
+          {% for term_and_condition in user.termsandconditions.all %}
           <li class="card-text fs-3">{{term_and_condition}}</li>
           {% endfor %}
         </ol>

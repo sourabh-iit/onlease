@@ -59,6 +59,10 @@ class MyProfile{
   rerender(){
     this.user_data = window.user_data;
     this.user_changed = true;
+    if(this.modal) {
+      this.modal.$modal_body.empty();
+      this.termsandconditions.$inputs = $([]);
+    }
     this.render();
   }
 
@@ -167,6 +171,8 @@ class MyProfile{
           name="detail" id="profile_detail">${this.user_data.detail?this.user_data.detail:''}</textarea>
         <label for="profile_detail" class="${this.user_data.detail?'active':''}">Your Description</label>
       </div>`).appendTo(this.modal.$modal_body);
+      var $terms_ref = $('<div class="group-heading mb-4">Terms And Condtions</div>').appendTo(this.modal.$modal_body);
+      this.termsandconditions = new TermsAndConditions($terms_ref, this.user_data);
       if(!this.read_only)
         $(`
         <div class="modal-footer d-flex justify-content-center">
@@ -178,7 +184,7 @@ class MyProfile{
       });
       this.user_changed = false;
       if(!this.read_only){
-        profile_form_validation(this.$form);
+        profile_form_validation(this.$form, this.termsandconditions);
       }
     }
     this.modal.$modal.modal('show');
@@ -246,19 +252,19 @@ class NavItems{
       dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" id="verify-number">Verify your number</a>`;
     }
     dropdown += `<a class="dropdown-item waves-effect waves-light text-capitalized" id="myProfile">
-          My Profile</a>
+          <i class="fa fa-address-book-o"></i> My Profile</a>
         <a class="dropdown-item waves-effect waves-light text-capitalized"
           onclick="get_my_ads()">
-          My Properties</a>
+          <i class="fa fa-building-o"></i> My Properties</a>
         <a class="dropdown-item waves-effect waves-light text-capitalized"
           onclick="get_my_favorite_properties()">
-          My Favorites</a>
+          <i class="fa fa-star-o"></i> My Favorites</a>
         <a class="dropdown-item waves-effect waves-light text-capitalized"
           onclick="get_my_booked_ads()">
-          My Bookings</a>
+          <i class="fa fa-check-square-o"></i> My Bookings</a>
         <div class="dropdown-divider"></div>
         <a class="dropdown-item text-capitalized waves-effect waves-light" onclick="logout()">
-          Log out - ${window.user_data.mobile_number}</a>
+          <i class="fa fa-sign-out"></i> Log out - ${window.user_data.mobile_number}</a>
       </div>
     </li>`;
     return dropdown;
@@ -615,7 +621,7 @@ class RemoveChargeFormButton{
     .addClass('cursor-pointer fa fa-times-circle red-text fa-lg')
     .css({position:"absolute",right:5,top:5})
     .click(function(event){
-      $(event.target).trigger('remove');
+      $(event.target).trigger('delete');
     });
   }
 }
@@ -711,7 +717,7 @@ class OtherChargeForm{
     var is_per_month = new ChargeFormCheckbox(this.prefix+'_charge_is_per_month_'+this.form_id,
     'Is per month?','is_per_month',data.is_per_month);
     var remove_button = new RemoveChargeFormButton();
-    remove_button.$icon.on('remove',()=>{
+    remove_button.$icon.on('delete',()=>{
       this.remove_form($container);
       this.form_to_string();
     })
@@ -1821,7 +1827,6 @@ class PropertyAdForm{
       <i class="fa fa-file-image-o"></i> Add image</span>`);
     this.$images_button_container = $(`<div class="col-12"></div>`).append(this.$images_button);
     this.$images_container = $('<div class="form-row mb-4"></div>').append(this.$images_button_container);
-    this.$terms_and_condition_ref = $('<div></div>');
     this.modal.$modal_content.append(this.modal.$modal_footer);
     this.$post = $(`<button class="btn color-2" type="submit"></button>`);
     this.$reset = $(`<button class="red white-text btn" type="reset">Reset</button>`);
@@ -1883,12 +1888,10 @@ class PropertyAdForm{
     .append(this.advance_rent_of_months.$div).append(this.$charge_forms_container)
     .append(this.create_group_heading('Additional details')).append(this.details.$div)
     .append(this.create_group_heading('Images')).append(this.virtual_tour_link.$div)
-    .append(this.$images_container).append(this.create_group_heading("Terms & Conditions"))
-    .append(this.$terms_and_condition_ref).append($('<div class="mb-3 col-12"></div>'));
+    .append(this.$images_container).append($('<div class="mb-3 col-12"></div>'));
     $('body').append(this.$form);
     this.image = new AddImage(this.$form,id,this.$images_button,window.image_upload_url,2000,2000,ad);
     this.charges_form_manager = new OtherChargeForm(this.$form,id,this.$charge_form_creator,ad);
-    this.terms_and_conditions = new TermsAndConditions(this.$form,id,this.$terms_and_condition_ref,ad);
     this.modal.$modal.on('shown.bs.modal',()=>{
       $(window).trigger('form_rendered');
     });
@@ -2098,7 +2101,6 @@ class PropertyAdForm{
             'other_charges': JSON.stringify(this.charges_form_manager.get_data()),
             'additional_details': this.details.$input.val(),
             'images': this.image.$images_elem.val(),
-            'terms_and_conditions': JSON.stringify(this.terms_and_conditions.get_data()),
             'virtual_tour_link': this.virtual_tour_link.$input.val(),
             'is_booked': this.is_new_ad?false:this.is_booked_switch.$input[0].checked,
             'room_number': this.room_number.$input.val()
@@ -2297,7 +2299,7 @@ function change_password_form_validation(){
     });
 }
 
-function profile_form_validation(form){
+function profile_form_validation(form, termsandconditions){
     form.on('show.bs.modal',function(){
         var url = window.image_url;
         var height = 150;
@@ -2333,6 +2335,7 @@ function profile_form_validation(form){
                     first_name: first_name,
                     last_name: last_name,
                     detail: $('#profile_detail').val(),
+                    termsandconditions: JSON.stringify(termsandconditions.get_data())
                     // type_of_roommate: $('#profile_type_of_roommate').val(),
                 }
                 var url = API_PREFIX + 'account/save-profile/';
@@ -2345,6 +2348,7 @@ function profile_form_validation(form){
                 }).done((data)=>{
                   window.user_data = data.user;
                   toastr.success('Profile Saved.');
+                  $(document).trigger('rerender_myprofile');
                 }).fail((data)=>{
                   display_form_errors(data,form);
                 }).always(()=>{
@@ -3460,111 +3464,78 @@ function trigger_form_event($forms,action,$form){
 }
 
 class TermsAndConditions{
-  constructor($form,prefix,$ref,ad){
-    this.ad = ad;
-    this.$form = $form;
+  constructor($ref,user){
+    this.user = user;
     this.$button = $('<div class="btn bg-one m-0 btn-sm"></div>')
     .text('New Term and Condition');
-    this.$container = $('<div class="col-12 p-0"></div>').append(this.$button);
+    this.$container = $('<div class="col-12 p-0 mb-3"></div>').append(this.$button);
     $ref.after(this.$container);
     this.$inputs = $([]);
-    this.localStorage_key = prefix+'_termsAndConditions';
     this.$button.on('click',()=>{
       this.create_input();
     });
-    if(!ad || (ad && Object.keys(ad).length==0)){
-      this.$form.on('reset',()=>{
-        var total = this.$inputs.length;
-        this.reset();
-        if(total>0){
-          trigger_form_event(this.$inputs,'remove',$form);
-        }
-      });
-      $(window).on('form_rendered',()=>{
-        this.string_to_form();
-        $(window).off('form_rendered');
-      });
-      $form.on('delete_local_storage',()=>{
-        localStorage.removeItem(this.localStorage_key);
-      });
-    } else {
-      if(ad.termsandconditions){
-        for(var data of ad.termsandconditions){
-          this.create_input(data.text);
-        }
+    if(user.termsandconditions){
+      for(var data of user.termsandconditions){
+        this.create_input(data);
       }
     }
   }
 
-  create_input(data=''){
+  create_input(termandcondition){
     var input_count = this.$inputs.length+1;
     var $label = $(`<label for="terms_${input_count}"></label>`)
-    .text('Term and Condition '+input_count);
+    .text('Your term and condition');
     var $input = $(`<input id="terms_${input_count}" 
       name="term_and_condition_${input_count}"
       type="text" class="col-12 term_and_condition form-control">`);
-    if(!this.ad || (this.ad && Object.keys(this.ad).length==0)){
-      $input.change(()=>{
-        this.form_to_string();
-      });
-    }
-    if(this.$inputs.length>0){
-      $(this.$inputs[this.$inputs.length-1]).find('.fa.fa-times-circle').remove();
-    }
-    var $div = $('<div class="md-form mb-4 mt-0"></div>').append($input)
-    .append($label);
-    this.add_remove_button($div);
+    var $div = $('<div class="md-form mb-4 mt-0"></div>').append($input).append($label);
     this.$button.before($div);
-    $input.val(data).trigger('change');
-    this.$inputs = this.$inputs.add($div);
-    if(!this.ad || (this.ad && Object.keys(this.ad).length==0)){
-      this.form_to_string();
-      trigger_form_event(this.$inputs,'add',this.$form);
+    if(termandcondition) {
+      $input.val(termandcondition.text).change().attr('disabled','disabled');
     }
+    this.add_remove_button($div, termandcondition);
+    this.$inputs.push($div);
   }
 
-  add_remove_button($div){
+  add_remove_button($div, termandcondition){
     var remove_button = new RemoveChargeFormButton();
-    remove_button.$icon.on('remove',()=>{
-      $div.remove();
-      this.$inputs = this.$inputs.not($div);
-      if(this.$inputs.length>0){
-        this.add_remove_button($(this.$inputs[this.$inputs.length-1]));
+    remove_button.$icon.on('delete',()=>{
+      if(termandcondition){
+        $.confirm({
+          title: 'Delete Term And Condition permanently',
+          text: termandcondition.text,
+          confirm: ()=>{
+            $.ajax({
+              url: window.get_delete_term_and_condition_url(termandcondition.id),
+              type: 'POST'
+            }).done(()=>{
+              this.remove_element($div);
+            }).fail((res)=>{
+              display_global_errors(res);
+            });
+          }
+        });
+      } else {
+        this.remove_element($div);
       }
-      this.form_to_string();
-      trigger_form_event(this.$inputs,'remove',this.$form);
-      // this.$form.trigger('change');
     });
     $div.append(remove_button.$icon);
+  }
+
+  remove_element($div) {
+    $div.remove();
+    this.$inputs.splice($.inArray($div, this.$inputs),1);
+    // TODO remove $div from this.$inputs
   }
 
   get_data(){
     var values = [];
     this.$inputs.each((index,element)=>{
-      values.push($(element).find('input').val());
+      var $input = $(element).find('input');
+      if(!$input.attr('disabled') && $input.val()!="")
+        values.push($input.val());
     });
     return values;
-  }
-
-  reset(){
-    localStorage.removeItem(this.localStorage_key);
-    this.$inputs.remove();
-    this.$inputs = $([]);
-  }
-
-  form_to_string(){
-    localStorage.setItem(this.localStorage_key,JSON.stringify(this.get_data()));
-  }
-
-  string_to_form(){
-    var elems_data = JSON.parse(localStorage.getItem(this.localStorage_key));
-    if(!isArray(elems_data)){
-      this.reset();
-      return;
-    }
-    for(var data of elems_data){
-      this.create_input(data);
-    }
   }
 }
 
