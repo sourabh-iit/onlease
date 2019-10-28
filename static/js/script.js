@@ -84,8 +84,11 @@ class MyProfile{
       this.modal.$modal_dialog.addClass('modal-lg');
     }
     if(this.user_changed){
-      this.$image_container = $('<div class="col-12 mb-4" id="profile-image-container"></div>')
-      .appendTo(this.modal.$modal_body);
+      let $row = $('<div class="row"></div>').appendTo(this.modal.$modal_body);
+      let $left_col = $('<div class="col-12 col-lg-6 b-right"></div>').appendTo($row);
+      let $right_col = $('<div class="col-12 col-lg-6"></div>').appendTo($row);
+      this.$image_container = $('<div class="mb-4" id="profile-image-container"></div>')
+      .appendTo($left_col);
       if(this.user_data.profile_image.length>0){
         this.$image = $(`<img src="${this.user_data.profile_image[0].image_mobile}" alt="profile photo" id="profile-photo">`)
         .appendTo(this.$image_container);
@@ -95,12 +98,13 @@ class MyProfile{
         this.$icon = $('<i class="fa fa-user-circle-o" id="profile-icon"></i>')
         .appendTo(this.$image_container);
       }
+      $left_col.append('<hr>');
       if(!this.read_only){
         this.$upload_button = $('<a id="upload-image" class="btn bg-one btn-md">Upload photo</a>')
         .appendTo(this.$image_container);
         $('<small>Upload a 270x250 image for best result.</small>').appendTo(this.$image_container);
-        $(`<button class="btn bg-one btn-sm" type="button" data-target="#modalChangePasswordForm" 
-        data-toggle="modal">Change Password</button>`).appendTo(this.modal.$modal_body);
+        $(`<button type="button" data-target="#modalChangePasswordForm" 
+        data-toggle="modal">Change Password</button>`).appendTo($left_col);
         new ProfileAddImage(this.$upload_button,window.profile_image_url,1000,1000,this.$image);
       }
       $(`
@@ -111,21 +115,41 @@ class MyProfile{
             ${this.read_only?'disabled="disabled"':''}
             id="profile_name">
           <label for="profile_name" class="${this.get_name()!=""?'active':''}">Full Name</label>
-      </div>`).appendTo(this.modal.$modal_body);
-      var $mobile_number = $('<div class="row container-fluid"></div>').append(`
-        <div class="md-form col-12 col-md-6">
+      </div>`).appendTo($right_col);
+      $(`
+      <div class="md-form mb-4 col-12 col-md-6">
+        <i class="fa fa-envelope prefix grey-text"></i>
+        <input type="text" id="profile_email"
+          ${this.read_only?'disabled="disabled"':''}
+          value="${this.user_data.email?this.user_data.email:''}" 
+          name="email" class="form-control">
+        <label for="profile_email" class="${this.user_data.email?'active':''}">Email address</label>
+      </div>`).appendTo($right_col);
+      $(`
+      <div class="md-form mb-4 col-12 col-md-10">
+        <i class="fa fa-pencil prefix grey-text"></i>
+        <textarea type="text" class="md-textarea form-control" rows="3"
+          ${this.read_only?'disabled="disabled"':''} 
+          name="detail" id="profile_detail">${this.user_data.detail?this.user_data.detail:''}</textarea>
+        <label for="profile_detail" class="${this.user_data.detail?'active':''}">Your Description</label>
+      </div>`).appendTo($right_col);
+      let $add_new_number = $(`
+        <button data-target="#modalEnterNumberForm" data-toggle="modal" id="add_new_number" data-action="add-number">
+          <i class="fa fa-plus"></i>
+        </button>`);
+      let $heading = $(`<div class="col-12"><div class="heading">Verified Mobile Numbers</div></div>`);
+      var $mobile_number = $('<div class="row container-fluid"></div>').append($heading).append(`
+        <div class="md-form col-12 col-md-6 mb-4">
           <i class="fa fa-mobile prefix grey-text active"></i>
           <input type="text" value="${this.user_data.mobile_number}" id="profile_mobile_number" class="form-control" disabled="disabled">
           <label for="profile_mobile_number" class="active">Mobile number</label>
         </div>
-      `).appendTo(this.modal.$modal_body);
+      `).appendTo($right_col);
       var mobile_numbers = this.user_data.mobile_numbers.filter(mobile_number=>mobile_number.is_verified==true);
       if(!this.read_only){
         var $enter_mobile_number = $('#modalEnterNumberForm').find('#enter_mobile_number');
-        this.$add_new_number = $(`<button type="button" class="btn bg-one btn-primary btn-sm data-action="add-number" 
-          data-target="#modalEnterNumberForm" data-toggle="modal" id="add_new_number">Add new number</button>`);
-        $('<div class="col-12 col-md-6 d-flex align-items-center"></div>').append(this.$add_new_number)
-        .appendTo($mobile_number).click(function(event){
+        $heading.children().append($add_new_number);
+        $add_new_number.click(function(event){
           event.preventDefault();
           window.add_number = true;
           window.set_password = false;
@@ -146,7 +170,7 @@ class MyProfile{
                 value="${mobile_numbers[i].value}" class="form-control alternate_mobile_number"
                 disabled>
             </div>
-          </div>`).appendTo(this.modal.$modal_body);
+          </div>`).appendTo($right_col);
           if(!this.read_only)
             $(`<div class="col-12 col-md-6 d-flex align-items-center">
               <button class="btn danger-color btn-sm" type="button"
@@ -154,24 +178,12 @@ class MyProfile{
             </div>`).appendTo($alternate_mobile_number);
         }
       }
-      $(`
-      <div class="md-form mb-4 col-12 col-md-6">
-        <i class="fa fa-envelope prefix grey-text"></i>
-        <input type="text" id="profile_email"
-          ${this.read_only?'disabled="disabled"':''}
-          value="${this.user_data.email?this.user_data.email:''}" 
-          name="email" class="form-control">
-        <label for="profile_email" class="${this.user_data.email?'active':''}">Email address</label>
-      </div>`).appendTo(this.modal.$modal_body);
-      $(`
-      <div class="md-form mb-4 col-12 col-md-10">
-        <i class="fa fa-pencil prefix grey-text"></i>
-        <textarea type="text" class="md-textarea form-control" rows="3"
-          ${this.read_only?'disabled="disabled"':''} 
-          name="detail" id="profile_detail">${this.user_data.detail?this.user_data.detail:''}</textarea>
-        <label for="profile_detail" class="${this.user_data.detail?'active':''}">Your Description</label>
-      </div>`).appendTo(this.modal.$modal_body);
-      var $terms_ref = $('<div class="group-heading mb-4">Terms And Condtions</div>').appendTo(this.modal.$modal_body);
+      var $terms_ref = $(`
+      <div class="row container-fluid">
+        <div class="col-12">
+          <div class="heading mb-4">Terms And Condtions</div>
+        </div>
+      </div>`).appendTo($right_col);
       this.termsandconditions = new TermsAndConditions($terms_ref, this.user_data);
       if(!this.read_only)
         $(`
@@ -291,12 +303,12 @@ class NavItems{
         {% endif %} Mates
         </a>
       </div>{% endcomment %} -->
-      <a class="nav-link text-white color-4 waves-effect waves-light btn btn-sm btn-info" 
-        onclick="open_property_form('propertyAdform','New Property Form')"
+      <a class="nav-link waves-effect waves-light" 
+        onclick="open_property_form('propertyAdform','Rent New Property')"
         id="newProperty" 
         aria-haspopup="true"
         aria-expanded="true">
-        New Ad
+        Rent Property
       </a>
     </li>`;
   
@@ -307,18 +319,19 @@ class NavItems{
     function nav_link(form){
       return $(`<a class="nav-link waves-effect waves-light" data-toggle="modal" data-target="#${form}"></a>`)
     }
-    var $nav_item = $(`<li class="nav-item"></li>`);
+    let nav_items = [];
+    let $rent_property = nav_link('modalLoginRegisterForm').append('Rent Property').addClass('rent-property');
+    let $login_register;
     if($(window).width()<768){
-      $nav_item.append(nav_link('modalLoginForm').append(`<i class="fa fa-sign-in"></i>`).addClass('fs-3-5'))
-      .append(nav_link('modalRegisterForm').append(`<i class="fa fa-user-plus"></i>`).addClass('fs-3-5'));
+      $rent_property.addClass('border');
+      $login_register = nav_link('modalLoginRegisterForm').append(`<i class="fa fa-sign-in"></i>/<i class="fa fa-user-plus"></i>`)
+        .addClass('fs-3-5');
     } else {
-      $nav_item.append(nav_link('modalLoginForm').append(`<i class="fa fa-sign-in">&nbsp;Login</i>`))
-      .append(nav_link('modalRegisterForm').append(`
-        <button class="btn btn-md dark-purple-color">
-          <i class="fa fa-user-plus text-white">&nbsp;Register</i>
-        </button>`));
+      $login_register = nav_link('modalLoginRegisterForm').append(`Login/Register`);
     }
-    return $nav_item;
+    nav_items.push($(`<li class="nav-item"></li>`).append($rent_property));
+    nav_items.push($(`<li class="nav-item"></li>`).append($login_register));
+    return nav_items;
   }
 }
 
@@ -940,67 +953,142 @@ function display_message(form,message){
   $(form).find('.modal-body').prepend(div);
 }
 
-function login_form_validation(){
-    var form = $('#modalLoginForm');
-    var loginFormValidator = form.validate({
-        rules: {
-            username: {
-                number_or_email: true,
-                required: true,
-            },
-            password: {
-                required: true,
-                minlength: 8
-            }
-        },
-        messages: {
-            username: {
-                required: "Please enter your username.",
-                number_or_email: 'Enter a valid mobile number or email address.'
-            },
-            password: {
-                required: "Password is required.",
-                minlength: "Password should be atleast 8 characters long."
-            }
-        },
-        errorElement: 'div',
-        submitHandler: function(form,e){
-            e.preventDefault();
-            loginFormValidator.form();
-            if($(form).valid()){
-                let data = {
-                    username: $('#login_username').val(),
-                    password: $('#login_password').val(),
-                }
-                let url = window['API_PREFIX']+'account/login/';
-                show_loading(form);
-                $.ajax({
-                    'type':'POST',
-                    'dataType':'json',
-                    'url': url,
-                    'data': data,
-                }).done((data)=>{
-                  window.user_data = data;
-                  toastr.success('You are now logged in.');
-                  $(document).trigger('rerender_nav_items');
-                  $(document).trigger('login');
-                  $(form).modal('hide');
-                }).fail((data)=>{
-                  display_form_errors(data,form);
-                }).always((data)=>{
-                  remove_loading(form);
-                });
-            }
+function login_register_form_validation(){
+  var form = $('#loginForm');
+  var loginFormValidator = form.validate({
+    rules: {
+      username: {
+        number_or_email: true,
+        required: true,
+      },
+      password: {
+        required: true,
+        minlength: 8
+      }
+    },
+    messages: {
+      username: {
+        required: "Please enter your username.",
+        number_or_email: 'Enter a valid mobile number or email address.'
+      },
+      password: {
+        required: "Password is required.",
+        minlength: "Password should be atleast 8 characters long."
+      }
+    },
+    errorElement: 'div',
+    submitHandler: function(form,e){
+      e.preventDefault();
+      loginFormValidator.form();
+      if($(form).valid()){
+        let data = {
+          username: $('#login_username').val(),
+          password: $('#login_password').val(),
         }
-    });
-    $('#forgot_password_modal').click((e)=>{
-        e.preventDefault();
-        window.set_password=true;
-        window.add_number=false;
-    });
-    close_and_open_modal('forgot_password_modal','modalLoginForm','modalEnterNumberForm');
-    close_and_open_modal('register_modal','modalLoginForm','modalRegisterForm');
+        let url = window['API_PREFIX']+'account/login/';
+        show_loading(form);
+        $.ajax({
+          'type':'POST',
+          'dataType':'json',
+          'url': url,
+          'data': data,
+        }).done((data)=>{
+          window.user_data = data;
+          toastr.success('You are now logged in.');
+          $(document).trigger('rerender_nav_items');
+          $(document).trigger('login');
+          $('#modalLoginRegisterForm').modal('hide');
+        }).fail((data)=>{
+          display_form_errors(data,form);
+        }).always((data)=>{
+          remove_loading(form);
+        });
+      }
+    }
+  });
+  $('#forgot_password_modal').click((e)=>{
+    e.preventDefault();
+    window.set_password=true;
+    window.add_number=false;
+  });
+  // close_and_open_modal('forgot_password_modal','modalLoginForm','modalEnterNumberForm');
+  // close_and_open_modal('register_modal','modalLoginForm','modalRegisterForm');
+
+  var form = $('#registerForm');
+  var registerFormValidator = form.validate({
+    rules: {
+      mobile_number: {
+        required: true,
+        mobile_number: true
+      },
+      password: {
+        required: true,
+        minlength: 8
+      },
+      confirm_password: {
+        required: {
+          depends: function(element) {
+            return $('#register_password').val().length>0;
+          }
+        },
+        equalTo: {
+          param: '#register_password',
+          depends: function(element) {
+            return $('#register_password').val().length>0;
+          }
+        }
+      }
+    },
+    messages: {
+      mobile_number: {
+        required: 'Mobile number is required.',
+      },
+      password: {
+        required: "Password is required.",
+        minlength: "Password should be atleast 8 characters long."
+      },
+      confirm_password: {
+        required: "Re-enter password",
+        equalTo: "Passwords should match."
+      }
+    },
+    errorElement: 'div',
+    submitHandler: function(form,e){
+      e.preventDefault();
+      registerFormValidator.form();
+      if($(form).valid()){
+        var data = {
+          mobile_number: $('#register_mobile_number').val(),
+          password: $('#register_password').val(),
+          confirm_password: $('#register_confirm_password').val(),
+        }
+        var url = API_PREFIX + 'account/register/';
+        show_loading(form);
+        $.ajax({
+          'type':'POST',
+          'dataType':'json',
+          'url': url,
+          'data': data,
+        }).done((data)=>{
+          window.user_data = data.user;
+          $(document).trigger('rerender_nav_items');
+          set_password=false;
+          toastr.success('Registered successfully');
+          $('#modalLoginRegisterForm').modal('hide');
+          $('#modalVerifyNumberForm').modal('show');
+          start_timer($('#resend_otp'));
+          window.set_password=false;
+          window.add_number=false;
+        }).fail((data)=>{
+          display_form_errors(data,form);
+        }).always(()=>{
+          remove_loading(form);
+        });
+      }
+    }
+  });
 }
+
 function close_and_open_modal(button_id,modal_to_hide_id,modal_to_show_id){
     $('#'+button_id).click((e)=>{
         e.preventDefault();
@@ -1008,6 +1096,7 @@ function close_and_open_modal(button_id,modal_to_hide_id,modal_to_show_id){
         $('#'+modal_to_show_id).modal('show');
     });
 }
+
 function add_tawk_to(){
     // var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     // (function(){
@@ -1194,84 +1283,6 @@ function verify_number_form_validation(){
             }
         }
     });
-}
-
-function register_form_validation(){
-    var form =  $('#modalRegisterForm');
-    var registerFormValidator = form.validate({
-        rules: {
-            mobile_number: {
-                required: true,
-                mobile_number: true
-            },
-            password: {
-                required: true,
-                minlength: 8
-            },
-            confirm_password: {
-                required: {
-                    depends: function(element) {
-                        return $('#register_password').val().length>0;
-                    }
-                },
-                equalTo: {
-                    param: '#register_password',
-                    depends: function(element) {
-                        return $('#register_password').val().length>0;
-                    }
-                }
-            }
-        },
-        messages: {
-            mobile_number: {
-                required: 'Mobile number is required.',
-            },
-            password: {
-                required: "Password is required.",
-                minlength: "Password should be atleast 8 characters long."
-            },
-            confirm_password: {
-                required: "Re-enter password",
-                equalTo: "Passwords should match."
-            }
-        },
-        errorElement: 'div',
-        submitHandler: function(form,e){
-            e.preventDefault();
-            registerFormValidator.form();
-            if($(form).valid()){
-                var data = {
-                    mobile_number: $('#register_mobile_number').val(),
-                    password: $('#register_password').val(),
-                    confirm_password: $('#register_confirm_password').val(),
-                }
-                var url = API_PREFIX + 'account/register/';
-                show_loading(form);
-                $.ajax({
-                    'type':'POST',
-                    'dataType':'json',
-                    'url': url,
-                    'data': data,
-                }).done((data)=>{
-                  window.user_data = data.user;
-                  $(document).trigger('rerender_nav_items');
-                  set_password=false;
-                  toastr.success('Registered successfully');
-                  $('#modalRegisterForm').modal('hide');
-                  $('#modalVerifyNumberForm').modal('show');
-                  start_timer($('#resend_otp'));
-                  window.set_password=false;
-                  window.add_number=false;
-                }).fail((data)=>{
-                  display_form_errors(data,form);
-                }).always(()=>{
-                  remove_loading(form);
-                });
-            }
-        }
-    });
-
-    close_and_open_modal('login_modal','modalRegisterForm','modalLoginForm');
 }
 
 function roomie_ad_form_validation(){
@@ -1813,25 +1824,21 @@ class PropertyAdForm{
     this.advance_rent_of_months = new PropertyInputText(this.$form,id+'_advance_rent_of_months',
       'Advance rent of months',null,'col-12 col-md-6 m-5px mt-0',ad.advance_rent_of_months,
       'advance_rent_of_months',null,false,ad);
-    this.$charge_form_creator = $(`<button type="button" class="btn btn-primary btn-sm bg-one m-0 mt-3"></button>`)
-    .html(`<i class="fa fa-money"></i> Add more charges`).click(()=>{
+    this.$charge_form_creator = $(`<button type="button"><i class="fa fa-plus"></i></button>`).click(()=>{
       this.charges_form_manager.add_form();
     });
     this.$charges_input = $(`<input type="hidden" name="other_charges">`);
-    this.$charge_forms_container = $(`<div class="col-12 mb-4 mt-0 p-0"></div>`).append(this.$charge_form_creator)
-      .append(this.$charges_input);
+    this.$charge_forms_container = $(`<div class="col-12 mb-4 mt-0 p-0"></div>`).append(this.$charges_input);
     this.details = new MdFormTextArea(this.$form,id+'_additional_details','additional_details',
       'e.g. It has three rooms, two bathrooms, one kitchen. It is fully furnished.','Additional Details',
       'm-5px',null,3,ad.additional_details,ad);
-    this.$images_button = $(`<span class='btn btn-sm btn-default text-white ml-0 bg-one'>
-      <i class="fa fa-file-image-o"></i> Add image</span>`);
-    this.$images_button_container = $(`<div class="col-12"></div>`).append(this.$images_button);
-    this.$images_container = $('<div class="form-row mb-4"></div>').append(this.$images_button_container);
+    this.$images_button = $(`<button type="button"><i class="fa fa-plus"></i></button>`);
+    this.$images_container = $('<div class="form-row mb-4"></div>');
     this.modal.$modal_content.append(this.modal.$modal_footer);
     this.$post = $(`<button class="btn color-2" type="submit"></button>`);
     this.$reset = $(`<button class="red white-text btn" type="reset">Reset</button>`);
     this.$delete = $(`<button class="red white-text btn" type="button">Delete</button>`);
-    this.virtual_tour_link = new PropertyInputText(this.$form,id+'_virtual_tour_link','Virtual tour link','video',
+    this.virtual_tour_link = new PropertyInputText(this.$form,id+'_virtual_tour_link','Virtual tour link','street-view',
       'mt-0 mb-4',ad.virtual_tour_link,'virtual_tour_link',null,false,ad);
     this.$buttons_cotnainer = $(`<div class="text-center col-12 mt-4"></div>`)
       .append(this.$post)
@@ -1884,14 +1891,14 @@ class PropertyAdForm{
     .append(this.furnishing.$div).append(this.facilities.$div)
     .append(this.bathrooms.$div).append(this.balconies.$div).append(this.rooms.$div)
     .append(this.halls.$div).append(this.area_group.$div).append(this.flooring.$div)
-    .append(this.create_group_heading('Rent details')).append(this.rent.$div)
+    .append(this.create_group_heading('Rent details', this.$charge_form_creator)).append(this.rent.$div)
     .append(this.advance_rent_of_months.$div).append(this.$charge_forms_container)
     .append(this.create_group_heading('Additional details')).append(this.details.$div)
-    .append(this.create_group_heading('Images')).append(this.virtual_tour_link.$div)
-    .append(this.$images_container).append($('<div class="mb-3 col-12"></div>'));
+    .append(this.create_group_heading('Images',this.$images_button)).append(this.$images_container)
+    .append(this.virtual_tour_link.$div).append($('<div class="mb-3 col-12"></div>'));
     $('body').append(this.$form);
-    this.image = new AddImage(this.$form,id,this.$images_button,window.image_upload_url,2000,2000,ad);
-    this.charges_form_manager = new OtherChargeForm(this.$form,id,this.$charge_form_creator,ad);
+    this.image = new AddImage(this.$form,id,this.$images_button,this.$images_container,window.image_upload_url,2000,2000,ad);
+    this.charges_form_manager = new OtherChargeForm(this.$form,id,this.$charges_input,ad);
     this.modal.$modal.on('shown.bs.modal',()=>{
       $(window).trigger('form_rendered');
     });
@@ -1921,8 +1928,8 @@ class PropertyAdForm{
     }
   }
 
-  create_group_heading(heading){
-    return $(`<div class="group-heading mb-4">${heading}</div>`)
+  create_group_heading(heading, $button=''){
+    return $(`<div class="group-heading mb-4">${heading}</div>`).append($button);
   }
   
   initialize_validation(){
@@ -2154,6 +2161,7 @@ class PropertFormsManager {
 }
 
 function open_property_form(id,title,ad={}){
+  $('.modal').modal('hide');
   if(!window.property_forms_manger){
     window.property_forms_manger = new PropertFormsManager();
   }
@@ -2906,6 +2914,8 @@ class FavoriteToggler{
           $ref.removeClass('active');
         }
         $(window).trigger('update_ad', ad);
+      }).fail((res)=>{
+        display_form_errors(res);
       });
     });
     if(user_data.favorite_properties && user_data.favorite_properties.indexOf(ad.id)>-1)
@@ -3075,15 +3085,22 @@ class Ads{
     if(this.ads.length===0){
       this.$ref.empty();
       var empty_message = 'No property to show';
+      var button = '';
       switch(this.ad_type){
         case 1: empty_message='No property posted yet'
+        button = `<button onclick="open_property_form('propertyAdform','Rent New Property')" class="btn mt-2 btn-default">Rent Property</button>`;
         break;
         case 2: empty_message='No property booked yet'
         break;
         case 4: empty_message='No property added yet'
         break;
       }
-      this.$no_property_message = $(`<div class="no_property_message btn color-2 btn-sm">${empty_message}</div>`);
+      this.$no_property_message = $(`
+        <div class="no_property_message">
+          <i class="fa fa-building mb-2"></i>
+          ${empty_message}
+          ${button}
+        </div>`);
       this.$ref.append(this.$no_property_message);
       return;
     } 
@@ -3466,9 +3483,9 @@ function trigger_form_event($forms,action,$form){
 class TermsAndConditions{
   constructor($ref,user){
     this.user = user;
-    this.$button = $('<div class="btn bg-one m-0 btn-sm"></div>')
-    .text('New Term and Condition');
-    this.$container = $('<div class="col-12 p-0 mb-3"></div>').append(this.$button);
+    this.$button = $('<button><i class="fa fa-plus"></i></button>');
+    $ref.children().children().append(this.$button);
+    this.$container = $('<div class="row container-fluid"><div class="col-12"></div></div>');
     $ref.after(this.$container);
     this.$inputs = $([]);
     this.$button.on('click',()=>{
@@ -3487,9 +3504,9 @@ class TermsAndConditions{
     .text('Your term and condition');
     var $input = $(`<input id="terms_${input_count}" 
       name="term_and_condition_${input_count}"
-      type="text" class="col-12 term_and_condition form-control">`);
+      type="text" class="term_and_condition form-control">`);
     var $div = $('<div class="md-form mb-4 mt-0"></div>').append($input).append($label);
-    this.$button.before($div);
+    this.$container.children().append($div);
     if(termandcondition) {
       $input.val(termandcondition.text).change().attr('disabled','disabled');
     }
@@ -3724,8 +3741,6 @@ function initialize_other_select(){
 
 function set_validations(){
   custom_validators();
-  register_form_validation();
-  login_form_validation();
   verify_number_form_validation();
   enter_number_form_validation();
   set_password_form_validation();
@@ -3972,11 +3987,12 @@ class ImageTagModal extends Modal{
 }
 
 class AddImage{
-  constructor($form,prefix,$el_ref,url,max_height,max_width,ad){
+  constructor($form,prefix,$el,$ref,url,max_height,max_width,ad){
     this.is_new_ad = !ad || (ad && Object.keys(ad).length==0);
     this.$form = $form;
     this.prefix = prefix;
-    this.$ref = $el_ref;
+    this.$ref = $ref;
+    this.$el = $el;
     this.$input = $('<input>').attr('type','file')
     .css('display','none');
     this.$images_container = $('<div></div>')
@@ -3984,11 +4000,12 @@ class AddImage{
     this.$images_elem = $('<select></select>')
     .attr('name','images').css('display','none')
     .attr('hidden','true').attr('multiple','multiple');
-    this.$ref.after(this.$input).click(()=>{
+    this.$ref.append(this.$input).append(this.$images_elem);
+    this.$el.click(()=>{
       this.$input.click();
-    }).after(this.$images_elem);
+    });
     this.localStorage_key = this.prefix+'_images';
-    this.$ref.before(this.$images_container);
+    this.$ref.append(this.$images_container);
     this.url = url;
     this.$input.change(()=>{
       load_image_file(this.$ref,this.$input[0],url,max_height,max_width);
@@ -4238,4 +4255,40 @@ $('document').ready(function(){
   toastr.options.closeButton = true;
   toastr.options.progressBar = true;
   add_tawk_to();
+
+  (function(){
+    $('#modalLoginRegisterForm').on('show.bs.modal', (e) => {
+      let isLogin = $(e.relatedTarget).data('is-login');
+      let $el = $(e.currentTarget);
+      let $loginToggle = $el.find('.loginToggle');
+      let $registerToggle = $el.find('.registerToggle');
+      let active_class='heading-active';
+      function show_register_form(){
+        $el.find('.login-part').css('display','none');
+        $el.find('.register-part').css('display','flex');
+        $el.find('.register-part.modal-body').css('display','block');
+        $loginToggle.removeClass(active_class);
+        $registerToggle.addClass(active_class);
+      }
+      function show_login_form(){
+        $el.find('.register-part').css('display','none');
+        $el.find('.login-part').css('display','flex');
+        $el.find('.login-part.modal-body').css('display','block');
+        $registerToggle.removeClass(active_class);
+        $loginToggle.addClass(active_class);
+      }
+      if(!isLogin){
+        show_register_form();
+      } else {
+        show_login_form();
+      }
+      $loginToggle.click(()=>{
+        show_login_form();
+      });
+      $registerToggle.click(()=>{
+        show_register_form();
+      });
+      login_register_form_validation();
+    });
+  })();
 });

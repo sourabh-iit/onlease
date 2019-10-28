@@ -164,7 +164,6 @@ class ProfileForm(forms.ModelForm):
     def save(self, commit=True):
         super(ProfileForm, self).save()
         terms_and_conditions = json.loads(self.cleaned_data.get('termsandconditions', []))
-        print(terms_and_conditions)
         for term_and_condition in terms_and_conditions:
             TermAndCondition.objects.create(text=term_and_condition,owner=self.user)
     

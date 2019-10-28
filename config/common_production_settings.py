@@ -32,11 +32,15 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ALLOW_CREDENTIALS = True
 
+# CORS_ORIGIN_WHITELIST = (
+#     'www.staging.onlease.in',
+#     'staging.onlease.in',
+#     'www.onlease.in',
+#     'onlease.in',
+# )
+
 CORS_ORIGIN_WHITELIST = (
-    'www.staging.onlease.in',
-    'staging.onlease.in',
-    'www.onlease.in',
-    'onlease.in',
+    'https://onlease.herokuapp.com/',
 )
 
 COMPRESS_OFFLINE = True

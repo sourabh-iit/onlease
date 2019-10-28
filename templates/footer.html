@@ -16,14 +16,15 @@
             </li> {% endcomment %}
             <li>
               <a
+              data-is-login="true"
               data-toggle="modal"
-              data-target="#modalLoginForm"
-              >Log in</a>
+              data-target="#modalLoginRegisterForm"
+              >Login</a>
             </li>
             <li>
               <a
               data-toggle="modal"
-              data-target="#modalRegisterForm"
+              data-target="#modalLoginRegisterForm"
               >Register</a>
             </li>
             <li>
@@ -31,9 +32,9 @@
               {% if user.is_authenticated %}
               onclick="open_property_form('propertyAdform','New Property Form')"
               {% else %}
-              data-target="#modalLoginForm"
+              data-target="#modalLoginRegisterForm"
               {% endif %}
-              >Add new property</a>
+              >Rent Property</a>
             </li>
             <li>
               <a href="{% url 'privacy-policy' %}"

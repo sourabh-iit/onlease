@@ -41,13 +41,13 @@ class LodgingView(View):
       try:
           prop = CommonlyUsedLodgingModel.objects.get(id=ad_id)
       except CommonlyUsedLodgingModel.DoesNotExist:
-          return JsonResponse({'errors':{'__all__':['Property does not exist']}})
+          return JsonResponse({'errors':{'__all__':['Property does not exist']}},status=404)
       if action=='add_to_favorites':
           request.user.favorite_properties.add(prop)
       elif action=='remove_from_favorites':
           request.user.favorite_properties.remove(prop)
       else:
-          return JsonResponse({'errors':{'__all__':['Unrecognized action']}})
+          return JsonResponse({'errors':{'__all__':['Unrecognized action']}},status=400)
       return JsonResponse(UserSerializer(request.user).data)
     form = self.form_class(data)
     sub_form = self.sub_form_class(request,data)

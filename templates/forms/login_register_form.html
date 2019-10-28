@@ -1,0 +1,77 @@
+
+<div class="modal fade" id="modalLoginRegisterForm" tabindex="-1" 
+  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+  data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <form id="loginForm" class="login-part modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">
+          <a class="loginToggle">Login</a> | 
+          <a class="registerToggle">Register</a>
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <i class="fa fa-user prefix grey-text"></i>
+          <input type="text" id="login_username" name="username" class="form-control">
+          <label data-error="wrong" for="login_username">Mobile number or email address</label>
+        </div>
+
+        <div class="md-form mb-4">
+          <i class="fa fa-lock prefix grey-text"></i>
+          <input type="password" id="login_password" name="password" class="form-control">
+          <label data-error="wrong" for="login_password">Your password</label>
+        </div>
+      </div>
+
+      <div class="modal-footer flex-direction-column">
+        <div class="cursor-pointer w-100 mb-3 text-align-right fw-600">
+          <span id="forgot_password_modal">Forgot Password?</span>
+        </div>
+        <button class="btn color-2" id="loginSubmit" type="submit">Login</button>
+      </div>
+    </form>
+
+    <form id="registerForm" class="register-part modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">
+          <a class="loginToggle">Login</a> | 
+          <a class="registerToggle">Register</a>
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body mx-3">
+        <div class="md-form mb-4">
+          <i class="fa fa-mobile prefix grey-text"></i>
+          <input type="text" id="register_mobile_number" name="mobile_number" class="form-control">
+          <label for="register_mobile_number">Mobile number</label>
+        </div>
+
+        <div class="md-form mb-4">
+          <i class="fa fa-lock prefix grey-text"></i>
+          <input type="password" id="register_password" name="password" class="form-control">
+          <label for="register_password">Your password</label>
+        </div>
+
+        <div class="md-form mb-4">
+          <i class="fa fa-lock prefix grey-text"></i>
+          <input type="password" id="register_confirm_password" name="confirm_password" class="form-control">
+          <label for="register_confirm_password">Confirm password</label>
+        </div>
+      </div>
+
+      <div class="modal-footer flex-direction-column register-part">
+        <button class="btn color-2" id="registerSubmit" type="submit">
+          <i class="fa fa-user-plus"></i> Register
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

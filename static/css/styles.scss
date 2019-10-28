@@ -58,8 +58,15 @@
   padding: 0.5rem 0.2rem;
 }
 .no_property_message{
-  margin: 4rem auto;
+  margin: 1rem auto;
   opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  i {
+    font-size: 5rem;
+  }
 }
 .messages-container{
   position: fixed;
@@ -346,18 +353,30 @@ span[id$="add_image"]{
 padding: 0.4rem 1rem!important;
 }
 #modalPropertyAdForm .md-form{
-margin-top: 0!important;
+  margin-top: 0!important;
 }
+
 .group-heading {
-display: block;
-font-size: 1.2rem;
-font-weight: 600;
-width: 100%;
-margin-bottom: 1rem;
-padding: 0.25rem 0.5rem;
-background: ghostwhite;
-border-left: 6px solid #6d6464;
-color: #6d6464;
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 600;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0.5rem;
+  background: ghostwhite;
+  border-left: 6px solid #6d6464;
+  color: #6d6464;
+  display: flex;
+  justify-content: space-between;
+}
+.heading {
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  background: ghostwhite;
+  border-left: 6px solid #6d6464;
+  color: #6d6464;
+  display: flex;
+  justify-content: space-between;
 }
 .m-5px{
 padding: 5px;
@@ -613,8 +632,26 @@ input[id='profile'] {
   display: flex;
   background: #c9d2d8;
 }
-
-
+.rent-property{
+  &.border {
+    border: 1px solid black;
+  }
+}
+.nav-item a{
+  font-weight: 400!important;
+  text-transform: none!important;
+  padding-right: 10px!important;
+  padding-left: 10px!important;
+}
+#modalLoginRegisterForm{
+  .heading-active {
+    border-bottom: 2px solid;
+    padding-bottom: 4px;
+  }
+}
+.b-right{
+  border-right: none;
+}
 
  
 @media (min-height: 520px) {
@@ -673,6 +710,9 @@ input[id='profile'] {
   }
   .full-width{
     max-width: 800px;
+  }
+  .b-right{
+    border-right: 1px solid #e9ecef;
   }
 }
 

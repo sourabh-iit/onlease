@@ -102,9 +102,6 @@ class CommonlyUsedLodgingCreateForm(AdCommonFieldsMixinForm,LodgingCommonFieldsM
       raise ValidationError("Invalid date")
     return is_booked
 
-  # def clean_facilities(self):
-  #   return self.request.POST.getlist('facilities')
-
 
 CommonlyUsedLodgingCreateForm.base_fields.update(AdCommonFieldsForm.base_fields)
 CommonlyUsedLodgingCreateForm.base_fields.update(LodgingCommonFieldsForm.base_fields)
