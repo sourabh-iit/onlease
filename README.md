@@ -2,7 +2,7 @@
 # Onlease
 https://onlease.herokuapp.com/
 
-**Tech stack used**: Django, Angular, Sass, Django rest framework, Celery, Postgresql
+**Tech stack used**: Django, Angular, Sass, Bootstrap, Django rest framework, Celery, Postgresql
 
 ### Features implemented:
 - User registration and login.
