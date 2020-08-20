@@ -1,7 +1,7 @@
 from .common_production_settings import *
 import os
 
-ALLOWED_HOSTS = ['onlease.in','www.onlease.in','103.242.116.203']
+ALLOWED_HOSTS = ['onlease.in','www.onlease.in','103.242.116.203', 'onlease.herokuapp.com']
 
 DATABASES = {
     'default': {
@@ -33,18 +33,19 @@ LOGGING = {
             'filename': 'onlease.log',
             'formatter': 'verbose'
         },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        }
     },
     'loggers': {
         'django': {
-            'handlers':['file'],
+            'handlers':['file', 'console'],
             'propagate': True,
-            'level':'DEBUG',
-        },
-        'MYAPP': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-        },
+            'level':'INFO',
+        }
     }
 }
 
-BASE_URL = 'http://onlease.in'
+BASE_URL = 'https://onlease.herokuapp.com'
