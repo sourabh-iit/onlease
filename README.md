@@ -7,7 +7,7 @@ https://onlease.herokuapp.com/
 ### Features implemented:
 - User registration and login.
 - Session based user authentication.
-- After creating, one can post new room ad.
+- Form to create new posting.
 - User can view ads in a particular area without logging in.
 - To book a room, user needs to create account.
 - Msg91 integration for messageing.
