@@ -40,10 +40,14 @@ LOGGING = {
         }
     },
     'loggers': {
-        'django': {
+        'onlease': {
             'handlers':['file', 'console'],
+            'level':'INFO'
+        },
+        'onlease': {
+            'handlers':['console'],
             'propagate': True,
-            'level':'INFO',
+            'level':'DEBUG'
         }
     }
 }

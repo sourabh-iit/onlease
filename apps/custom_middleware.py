@@ -1,9 +1,17 @@
-# class ModifyingResponseMiddleware:
-#   def __init__(self, get_response):
-#     self.get_response = get_response
+import logging
+from django.conf import settings
 
-#   def __call__(self, request):
-#     response = self.get_response(request)
-#     import pdb; pdb.set_trace()
-#     return response
+if settigs.DEBUG == True:
+    logger = logging.getLogger('debug')
+else:
+    logger = logging.getLogger('onlease')
     
+class LogErrorMiddleware:
+  def __init__(self, get_response):
+    self.get_response = get_response
+
+  def __call__(self, request):
+    response = self.get_response(request)
+    if ressponse.status_code > = 400:
+        logger.error(response.content)
+    return response
