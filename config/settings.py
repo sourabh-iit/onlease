@@ -40,7 +40,7 @@ LOGGING = {
         }
     },
     'loggers': {
-        'onlease': {
+        'testlogger': {
             'handlers':['console'],
             'propagate': True,
             'level':'DEBUG'
