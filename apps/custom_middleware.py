@@ -9,5 +9,6 @@ class LogErrorMiddleware:
     self.get_response = get_response
 
   def process_exception(request, exception):
+    print("HERE exception")
     logger.error("exception")
     return self.get_response(request)
