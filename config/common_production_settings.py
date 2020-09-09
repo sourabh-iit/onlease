@@ -4,7 +4,7 @@ import os
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # INSTAMOJO_API_KEY = os.environ.get('INSTAMOJO_API_KEY')
 # INSTAMOJO_AUTH_KEY = os.environ.get('INSTAMOJO_AUTH_KEY')
