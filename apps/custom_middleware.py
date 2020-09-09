@@ -10,6 +10,6 @@ class LogErrorMiddleware:
 
   def __call__(self, request):
     response = self.get_response(request)
-    if response.status_code >= 400:
-        logger.error(response.content)
+    # if response.status_code >= 400:
+    logger.error(response.content)
     return response
