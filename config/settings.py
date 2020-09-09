@@ -41,10 +41,6 @@ LOGGING = {
     },
     'loggers': {
         'onlease': {
-            'handlers':['file', 'console'],
-            'level':'INFO'
-        },
-        'onlease': {
             'handlers':['console'],
             'propagate': True,
             'level':'DEBUG'

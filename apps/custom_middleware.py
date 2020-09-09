@@ -1,11 +1,9 @@
 import logging
 from django.conf import settings
 
-if settings.DEBUG == True:
-    logger = logging.getLogger('debug')
-else:
-    logger = logging.getLogger('onlease')
-    
+logger = logging.getLogger(__name__)
+
+
 class LogErrorMiddleware:
   def __init__(self, get_response):
     self.get_response = get_response
