@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.common.BrokenLinkEmailsMiddleware',
-    'apps.custom_middleware.LogErrorMiddleware'
+    'apps.custom_middleware.LogErrorMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
