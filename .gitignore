@@ -5,7 +5,11 @@ media/**
 venv/
 env/
 *.log
-.vscode
 staticfiles
 db.sqlite3
 static/CACHE/**
+.vscode/
+XDG_CACHE_HOME/
+c
+c.pub
+dump.rdb
