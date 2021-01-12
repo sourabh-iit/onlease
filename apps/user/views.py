@@ -1,522 +1,207 @@
-from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.urls import reverse, reverse_lazy
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.db.models import Q
-from django.db import IntegrityError
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail, BadHeaderError
-from django.contrib.auth.views import PasswordChangeView
-from django.contrib.auth.password_validation import validate_password
-from django.contrib import messages
-from django.views.decorators.http import require_POST
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.decorators.csrf import ensure_csrf_cookie
-from django.core import serializers
-from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
+
+from .models import User, MobileNumber
+from apps.transactions.utils import send_otp
+from .serializers import UserSerializer
 
 import time
 
-from .forms import ValidateOtpForm, RegisterForm, LoginForm,\
-      ResetPasswordForm, ContactForm, MobileNumberForm, PasswordChangeForm,\
-      ProfileForm
-from .utils import ViewException, maintain_cookie, not_logged_in
-from .models import User, MobileNumber
-from apps.transactions.utils import send_otp, generate_otp
-from .serializers import UserSerializer
-from .utils import ajax_login_required
+# TODO: remove csrf ignorance
+# TODO: Add validation
+# TODO: indexing
 
-cookie_message = 'Cookies are not enabled. We use cookies for better user experience.'
-    
+def verify_otp(request, user, session, otp):
+    if time.time()-session.get('time', 0) > 60*3:
+        raise ValidationError('OTP has expired')
+    if session.get('otp') != otp:
+        raise ValidationError('Invalid OTP entered')
+    session.flush()
+    login(request, user)
 
-@maintain_cookie
-def request_otp(request):
-    if request.method=='POST':
-        try:
-            form=MobileNumberForm(request.POST)
-            if form.is_valid():
-                # save mobile number in sesison and redirect to verify number view 
-                # with reset variable in get
-                request.session['mobile_number']=form.cleaned_data['mobile_number']
-                url=reverse('user:verify-number')
-                return HttpResponseRedirect(url)
-        except ViewException as e:
-            messages.error(request,e)
-    else:
-        form=MobileNumberForm()
-    return render(request,'user/request_otp.html',{'form':form})
+def set_password(password, confirm_password, user):
+    if password != confirm_password:
+        raise ValidationError('Passwords do not match')
+    user.set_password(password)
+    user.save()
 
-def request_otp_ajax(request):
-    if request.method=='POST':
-        try:
-            form=MobileNumberForm(request.POST)
-            if form.is_valid(): 
-                # with reset variable in get
-                user = request.user
-                mobile_number = form.cleaned_data.get('mobile_number')
-                if user.is_authenticated:
-                    mobile_number = request.user.mobile_number
-                send_otp(request.session,mobile_number,request.user,generate_otp(4))
-                return JsonResponse({'mobile_number':mobile_number})
-        except (ViewException, ValidationError) as e:
-            form.add_error(None,e)
-    return JsonResponse({'errors':form.errors},status=400)
+class UserActionView(APIView):
+    permission_classes = [IsAuthenticated]
 
-@maintain_cookie
-def verfiy_number(request):
-    if request.method=='POST':
-        form = ValidateOtpForm(request.POST)
-        try:
-            if form.is_valid():
-                # no testcase for expiration till now
-                # expiry time of an otp
-                if time.time()-request.session['time']>60*3:
-                    messages.error(request,'OTP has expired')
-                # maximum number of attempts allowed on an otp
-                if request.session['attempts']>=3:
-                    messages.error(request,'Too many invalid attempts')
-                if form.cleaned_data['otp'] != request.session.get('otp'):
-                    request.session['attempts']+=1
-                    # warning for number of invalid attempts
-                    raise ViewException('Invalid OTP entered')
-                # set user as verified. This is if request is for mobile verification
-                if request.user.is_authenticated:
-                    request.user.is_verified=True
-                    request.user.save()
-                    del request.session['time']
-                else:
-                    # set verfied as true and time of verification to prevent misuse
-                    request.session['verified']=True
-                    request.session['time']=time.time()
-                # delete not required session keys
-                del request.session['otp']
-                del request.session['attempts']
-                # send message of successful verification
-                messages.success(request, 'OTP has been verfied successfully')
-                # if it is for password reset, then redirect to reset_password_view
-                if request.session.get('mobile_number'):
-                    return HttpResponseRedirect(reverse('user:reset-password'))
-                return HttpResponseRedirect(reverse('dashboard:home'))
-        except ViewException as e:
-            messages.error(request, e)
-    else:
-        form = ValidateOtpForm()
-        if request.user.is_authenticated:
-            # if user is authenticated, get mobile number from database
-            mobile_number=request.user.mobile_number
-        elif not request.session.get('mobile_number'):
-            # if user is not authenticated and mobile number is not in session
-            # redirect to required url
-            messages.error(request,'Enter mobile number')
-            return HttpResponseRedirect(reverse('user:request-otp'))
-        else:
-            # if user is not authenticated and mobile number is present is session
-            mobile_number=request.session['mobile_number']
-        # set required values in session
-        request.session['otp'] = generate_otp(6)
-        request.session['time'] = time.time()
-        request.session['attempts'] = 0
-        send_otp(request,mobile_number)
-    return render(request,'user/validate_otp.html',{'form':form})
-
-def verfiy_number_ajax(request):
-    if request.method=='POST':
-        form = ValidateOtpForm(request.POST)
-        try:
-            if form.is_valid():
-                # expiry time of an otp
-                if time.time()-request.session.get('time')>60*3:
-                    raise ViewException('OTP has expired')
-                if form.cleaned_data.get('otp') != request.session.get('otp'):
-                    raise ViewException('Invalid OTP entered')
-                # set user as verified
-                request.user.is_verified=True
-                request.user.save()
-                # delete not required session keys
-                request.session.flush()
-                login(request,request.user)
-                return JsonResponse(UserSerializer(request.user).data)
-        except ViewException as e:
-            form.add_error(None, e)
-        return JsonResponse({'errors':form.errors},status=400)
-
-@maintain_cookie
-@not_logged_in
-def register_view(request):
-    if request.method=='POST':
-        form = RegisterForm(request.POST,request=request)
-        try:
-            if form.is_valid():
-                mobile_number = form.cleaned_data['mobile_number']
-                email = form.cleaned_data['email']
-                # check that none of mobile number and email already exists
-                if email!=None:
-                    if User.objects.filter(Q(mobile_number=mobile_number)|Q(email=email)).exists():
-                        raise ViewException('User with this mobile number or email address already exists')
-                elif User.objects.filter(mobile_number=mobile_number).exists():
-                    raise ViewException('User with this mobile number or email address already exists')
-                # create instance of user model without password
-                user = User(
-                    mobile_number = mobile_number,
-                    first_name = form.cleaned_data['first_name'],
-                    last_name = form.cleaned_data['last_name'],
-                    email = form.cleaned_data['email'],
-                    )
-                password = form.cleaned_data['password']
-                # validate password using django' inbuilt validators also
-                validate_password(password,user)
-                # set password and save user instance
-                user.set_password(password)
-                user.save()
-                # login user and set session
-                login(request,user)
-                messages.success(request,'You are registered successfully')
-                return HttpResponseRedirect(reverse('user:verify-number'))
-        except ViewException as e:
-            messages.error(request, e)
-        except ValidationError as e:
-            messages.error(request, e)
-    else:
-        form = RegisterForm(request=request)
-    return render(request,'user/register.html',{'form':form})
-
-@not_logged_in
-@require_POST
-def register_view_ajax(request):
-    if request.method=='POST':
-        form = RegisterForm(request.POST,request=request)
-        try:
-            if form.is_valid():
-                mobile_number = form.cleaned_data['mobile_number']
-                email = form.cleaned_data['email']
-                # check that none of mobile number and email already exists
-                if email!=None:
-                    if User.objects.filter(Q(mobile_number=mobile_number)|Q(email=email)).exists():
-                        raise ViewException('User with this mobile number or email address already exists')
-                elif User.objects.filter(mobile_number=mobile_number).exists():
-                    raise ViewException('User with this mobile number or email address already exists')
-                # create instance of user model without password
-                user = User(
-                    mobile_number = mobile_number,
-                    first_name = form.cleaned_data.get('first_name'),
-                    last_name = form.cleaned_data.get('last_name'),
-                    email = form.cleaned_data.get('email')
-                    )
-                password = form.cleaned_data['password']
-                # validate password using django' inbuilt validators also
-                # validate_password(password,user)
-                # set password and save user instance
-                user.set_password(password)
-                send_otp(request.session,mobile_number,request.user,generate_otp(4))
-                user.save()
-                # login user and set session
-                login(request,user)
-                return JsonResponse({'user':UserSerializer(request.user).data})
-        except (ViewException, ValidationError) as e:
-            form.add_error(None, e)
-        return JsonResponse({'errors':form.errors},status=400)
-
-# @maintain_cookie
-@not_logged_in
-def loginView(request):
-    if request.method=='POST':
-        form = LoginForm(request.POST)
-        try:
-            if form.is_valid():
-                username = form.cleaned_data.get('username')
-                password = form.cleaned_data.get('password')
-                # authenticate user using django's inbuilt authenticate function
-                user = authenticate(request,username=username,password=password)
-                if not user:
-                    raise ViewException('Invalid mobile number/email and password combination')
-                # checks on user
-                if user.status==User.BLOCKED:
-                    raise ViewException('You are blocked. Contact admin for further action')
-                if not user.is_active:
-                    raise ViewException('Account is not active. Contact admin for further information')
-                # log user in
-                login(request,user)
-                messages.success(request,"Logged in successfully")
-                # redirect to required view
-                if form.cleaned_data.get('next_'):
-                    return HttpResponseRedirect(form.cleaned_data['next_'])
-                return HttpResponseRedirect('/')
-        except ViewException as e:
-            messages.error(request, e)
-    else:
-        # set next varialbe data in form next_ field if it is available
-        if request.GET.get('next'):
-            form = LoginForm(initial={'next_': request.GET['next']})
-        else:
-            form = LoginForm()
-    return render(request,'user/login.html',{'form':form})
-
-@ensure_csrf_cookie
-@not_logged_in
-def loginView_ajax(request):
-    if request.method=='POST':
-        form = LoginForm(request.POST)
-        try:
-            if form.is_valid():
-                username = form.cleaned_data.get('username')
-                password = form.cleaned_data.get('password')
-                # authenticate user using django's inbuilt authenticate function
-                user = authenticate(username=username,password=password)
-                if not user:
-                    raise ViewException('Invalid mobile number/email and password combination')
-                # checks on user
-                if user.status==User.BLOCKED:
-                    raise ViewException('You are blocked. Contact admin for further action')
-                if not user.is_active:
-                    raise ViewException('Account is not active. Contact admin for further information')
-                # log user in
-                login(request,user)
-                if request.user.mobile_number in settings.ADMINS_LIST:
-                    request['admin'] = request.user.mobile_number
-                # redirect to required view
-                return JsonResponse(UserSerializer(user).data)
-        except ViewException as e:
-            form.add_error(None,e);
-        return JsonResponse({'errors':form.errors},safe=False,status=400)
-
-def logoutView(request):
-    logout(request)
-    messages.success(request, 'Logged out successfully')
-    return HttpResponseRedirect(reverse('user:login'))
-
-def logoutView_ajax(request):
-    logout(request)
-    return HttpResponseRedirect(reverse('home:front-page'))
-
-@maintain_cookie
-@not_logged_in
-def reset_password_view(request):
-    if request.method=='POST':
-        try:
-            form = ResetPasswordForm(request.POST)
-            # mobile number is saved in session by previous views
-            mobile_number = request.session['mobile_number']
-            # if mobile number is verified, verified is set in session key
-            if not request.session.get('verified') or time.time()-request.session['time']>3*60:
-                # send mobile number is required message
-                messages.error(request,'Mobile number verification is required')
-                # redirect to enter mobile number view
-                return HttpResponseRedirect(reverse('user:request-otp'))
-            if form.is_valid():
-                user = User.objects.get(mobile_number=mobile_number)
-                password = form.cleaned_data['password']
-                # validate password using django's inbuilt password validators
-                validate_password(password,user)
-                user.set_password(password)
-                user.save()
-                # clear session
-                request.session.flush()
-                # log user in
-                messages.success(request, 'Password has been reset successfully')
-                return HttpResponseRedirect(reverse('user:login'))
-        except (KeyError):
-            messages.error(request,'Cannot process request. Invalid request')
-        except User.DoesNotExist:
-            messages.error(request,'User with this mobile number '+mobile_number+' does not exist')
-        except ValidationError as e:
-            form.add_error('password',e)
-    else:
-        form = ResetPasswordForm()
-    return render(request,'user/reset_password.html',{'form':form})
-
-@not_logged_in
-def reset_password_view_ajax(request):
-    if request.method=='POST':
-        try:
-            form = ResetPasswordForm(request.POST)
-            if form.is_valid():
-                if not request.session.get('time') or time.time()-request.session.get('time')>3*60:
-                    raise ViewException('OTP has expired')
-                if request.session.get('otp')!=form.cleaned_data.get('otp'):
-                    raise ViewException('OTP is invalid or Mobile number not registered')
-                user = User.objects.get(mobile_number=form.cleaned_data['mobile_number'])
-                password = form.cleaned_data['password']
-                # validate password using django's inbuilt password validators
-                user.set_password(password)
-                user.save()
-                # clear session
-                request.session.flush()
-                return JsonResponse({'success': True},status=200)
-        except (KeyError):
-            form.add_error(None,'Invalid request. Form data is missing')
-        except User.DoesNotExist:
-            form.add_error(None,'OTP is invalid or Mobile number not registered')
-        except (ValidationError, ViewException) as e:
-            form.add_error(None,e)
-        return JsonResponse({'errors':form.errors},status=400)
-
-class PasswordChangeView2(PasswordChangeView):
-    success_url=reverse_lazy('dashboard:home')
-    template_name = 'user/change_password.html'
-
-@ajax_login_required
-def password_change_view_ajax(request):
-    if(request.method=='POST'):
-        form = PasswordChangeForm(request.POST)
-        if form.is_valid():
-            try:
-                current_password=request.POST['current_password']
-                password=request.POST['password']
-                if not request.user.check_password(current_password):
-                    raise ViewException('Current password is not correct')
-                request.user.set_password(password)
-                request.user.save()
-                login(request,request.user)
-                return JsonResponse({'success': True})
-            except ViewException as e:
-                form.add_error(None,e)
-        return JsonResponse({'errors':form.errors},status=400)
-
-def contact_view(request):
-    if request.method=='POST':
-        form = ContactForm(request.user,request.POST)
-        if form.is_valid():
-            form.save()
-            try:
-                mails = send_mail(
-                    subject=form.cleaned_data['subject']+' '+form.cleaned_data['name'],
-                    message=form.cleaned_data['message'],
-                    from_email=form.cleaned_data['email'],
-                    recipient_list=settings.RECIPIENTS,
-                )
-            except BadHeaderError:
-                messages.error(request,'Invalid header found.')
-            if mails>0:
-                messages.success(request, "Your message has been saved with us. We will contact you soon")
-            else:
-                messages.error(request,"Unable to send message. Please try again later")
-    else:
+    def post(self, request, action=None):
         user = request.user
-        initial = {}
-        if user.is_authenticated:
-            initial = {'name': '{} {}'.format(user.first_name,user.last_name),
-                'email': user.email, 'mobile_number': user.mobile_number}
-        form = ContactForm(request.user,initial=initial)
-    return render(request,'user/contact.html',{'form':form})
-        
-
-def contact_view_ajax(request):
-    if request.method=='POST':
-        form = ContactForm(request.user,request.POST)
-        if form.is_valid():
-            form.save()
+        session = request.session
+        data = request.data
+        if action == 'verify-otp':
+            mobile_number = session.get('mobile_number')
+            verify_otp(request, user, session, data.get('otp'))
+            if not user.is_verified:
+                user.is_verified = True
+                user.save()
+            if mobile_number != user.mobile_number:
+                MobileNumber.objects.create(
+                    value=mobile_number,
+                    user=user,
+                    is_verified=True
+                )
+            return Response(UserSerializer(user).data)
+        if action == 'request-otp':
+            mobile_number = data.get('mobile_number')
+            users_count = User.objects.filter(mobile_number=mobile_number, is_verified=True).count()
+            numbers_count = MobileNumber.objects.filter(value=mobile_number, is_verified=True).count()
+            if users_count > 0 or numbers_count > 0:
+                raise ValidationError('This mobile number is already linked with another account')
+            if user.mobile_numbers.filter(is_verified=True).count() >= 3:
+                raise ValidationError('You cannot add more than 3 numbers')
+            send_otp(session, mobile_number)
+            return Response('success')
+        if action == 'change-password':
             try:
-                try:
-                    mails = send_mail(
-                        subject=form.cleaned_data['subject']+' '+form.cleaned_data['name'],
-                        message=form.cleaned_data['message'],
-                        from_email=form.cleaned_data['email'],
-                        recipient_list=settings.RECIPIENTS,
-                    )
-                except BadHeaderError:
-                    raise ViewException('Invalid header found.')
-                if mails>0:
-                    return HttpResponse(status=200)
-                else:
-                    raise ViewException("Unknown error occurred. Please try again later")
-            except ViewException as e:
-                form.add_error(None,e)
-        return JsonResponse({'errors':form.errors},status=400)
+                password = data['new_password']
+                confirm_password = data['confirm_password']
+                current_password = data['current_password']
+                if not user.check_password(current_password):
+                    raise ValidationError('Current password is not correct')
+                set_password(user, password, confirm_password, user)
+                login(request, user)
+                return Response('success')
+            except KeyError:
+                raise ValidationError("Insufficient data provided")
+        if action == 'save-profile':
+            for field in ['first_name', 'last_name', 'email', 'gender']:
+                if field in data:
+                    setattr(user, field, data.get(field))
+            user.save()
+            return Response(UserSerializer(user).data, status=200)
 
-def clear_session_data(request, *args):
-    for arg in args:
-        if request.session.get(arg):
-            del request.session[arg]
+        raise ValidationError("Invalid action")
+    
+    def delete(self, request, number):
+        user = request.user
+        try:
+            mobile_number = user.mobile_numbers.get(value=number)
+            mobile_number.delete()
+        except ObjectDoesNotExist:
+            raise ValidationError("Mobile number does not exist")
+        return Response('success')
 
-@require_POST
-@ajax_login_required
-def add_mobile_number_ajax(request,action):
-    if request.method=='POST':
-        if action=="add-number":
-            form = MobileNumberForm(request.POST)
-            if form.is_valid():
-                try:
-                    mobile_number = form.cleaned_data.get('mobile_number')
-                    if User.objects.filter(mobile_number=mobile_number).count()>0 or \
-                      MobileNumber.objects.filter(value=mobile_number,is_verified=True).count()>0:
-                        raise ViewException('This mobile number is already linked with another account')
-                    if request.user.mobile_numbers.filter(is_verified=True).count()>=3:
-                        raise ViewException('You cannot add more than 3 numbers')
-                    otp = generate_otp(4)
-                    try:
-                        alternate_mobile_number = MobileNumber.objects.get(value=mobile_number)
-                    except:
-                        alternate_mobile_number = MobileNumber.objects.create(
-                          value=mobile_number,
-                          user=request.user
-                        )
-                    alternate_mobile_number.otp=otp
-                    alternate_mobile_number.time=time.time()
-                    send_otp(request.session,mobile_number,request.user,otp)
-                    alternate_mobile_number.save()
-                    return JsonResponse({'mobile_number': mobile_number},status=200)
-                except (ViewException, ValidationError) as e:
-                    form.add_error(None,e)
-                return JsonResponse({'errors':form.errors},status=400)
-        elif action=="verify-number":
-            form = ValidateOtpForm(request.POST)
+class PasswordResetView(APIView):
+    def post(self, request, action=None):
+        data = request.data
+        session = request.session
+        if action == 'request':
             try:
-                if request.user.mobile_numbers.filter(is_verified=True).count()>=3:
-                    raise ViewException('You cannot add more than 3 numbers')
-                if form.is_valid():
-                    mobile_number = form.cleaned_data.get('mobile_number')
-                    alternate_mobile_number = get_object_or_404(MobileNumber, value=mobile_number)
-                    if alternate_mobile_number.user != request.user:
-                        raise ValidationError('User did not match')
-                    # check expiry of otp
-                    if time.time()-alternate_mobile_number.time>60*3:
-                        raise ViewException('OTP has expired')
-                    if form.cleaned_data['otp'] != alternate_mobile_number.otp:
-                        # increase invalid attempts
-                        raise ViewException('Invalid OTP entered')
-                    alternate_mobile_number.is_verified = True
-                    alternate_mobile_number.save()
-                    # if user not verfied then set as verified. This is user's first mobile number verified
-                    if (not request.user.is_verified):
-                        request.user.is_verified = True
-                        request.user.save()
-                    # clear session variables not required anymore
-                    clear_session_data(request,'otp','time')
-                    return JsonResponse(UserSerializer(request.user).data)
-            except ViewException as e:
-                form.add_error(None, e)
-            return JsonResponse({'errors':form.errors},status=400)
-        elif action=='delete-number':
-            form = MobileNumberForm(request.POST)
-            if form.is_valid():
-                mobile_number = form.cleaned_data['mobile_number']
+                mobile_number = data['mobile_number']
+                users_count = User.objects.filter(mobile_number=mobile_number).count()
+                numbers_count = MobileNumber.objects.filter(value=mobile_number).count()
+                if users_count == 0 and numbers_count == 0:
+                    raise ValidationError('Invalid mobile number')
+                send_otp(session, mobile_number)
+                return Response("success")
+            except KeyError:
+                raise ValidationError("Insufficient data provided")
+        if action == 'verify':
+            try:
+                mobile_number = session.get('mobile_number')
+                if not mobile_number:
+                    raise ValidationError('Invalid attempt')
+                otp = data['otp']
                 try:
-                    alternate_mobile_number = request.user.mobile_numbers.get(value=mobile_number)
-                    alternate_mobile_number.is_verified=False
-                    alternate_mobile_number.save()
-                    return JsonResponse(UserSerializer(request.user).data)
-                except ObjectDoesNotExist:
-                    return JsonResponse({'errors':{'__all__':['Mobile number not found']}})
-            return JsonResponse({'errors':form.errors},status=400)
-    return JsonResponse({'errors':{'__all__':['invalid action.']}},status=400)
+                    user = User.objects.get(mobile_number=mobile_number)
+                except User.DoesNotExist:
+                    user = MobileNumber.objects.get(value=mobile_number).user
+                except MobileNumber.DoesNotExist:
+                    raise ValidationError('Invalid attempt')
+                verify_otp(request, user, session, otp)
+                password = data['password']
+                confirm_password = data['confirm_password']
+                set_password(password, confirm_password, user)
+                return Response("success")
+            except KeyError as e:
+                raise ValidationError("Insufficient data provided")
+        raise ValidationError("Invalid action")
 
-@require_POST
-@ajax_login_required
-def edit_profile_view(request):
-    form = ProfileForm(request, request.POST)
-    if form.is_valid():
-        form.save()
-        return JsonResponse({'user':UserSerializer(request.user).data},status=200)
-    return JsonResponse({'errors':form.errors},status=400)
+class UserContactView(APIView):
+    def post(self, request):
+        data = request.data
+        email = data.get('email', '')
+        subject = data.get('subject', '')
+        name = data.get('name', '')
+        message = data.get('message', '')
+        if len(email) == 0 or len(subject) == 0 or len(name) == 0 or len(message) == 0:
+            raise ValidationError('Incomplete data')
+        try:
+            mails = send_mail(
+                subject=f"{subject} from {name}",
+                message=message,
+                from_email=email,
+                recipient_list=settings.CONTACT_RECIPIENTS
+            )
+        except BadHeaderError:
+            raise ValidationError('Invalid header found.')
+        if mails > 0:
+            return Response("ok")
+        else:
+            raise ValidationError("Unknown error occurred. Please try again later")
 
-@require_POST
-@ajax_login_required
-def delete_term_and_condition(request, id):
-    try:
-        term_and_condition = request.user.termsandconditions.get(id=id)
-        term_and_condition.delete()
-        return HttpResponse('deleted')
-    except:
-        JsonResponse({'errors': {'__all__': ['Term and condition with given id not found']}}, statuc=400)      
+class RegisterView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            password = data['password']
+            confirm_password = data['confirm_password']
+            mobile_number = data['mobile_number']
+            email = data['email']
+            first_name = data['first_name']
+            last_name = data.get('last_name')
+            if len(password) < 8 or len(email) == 0 or len(first_name) == 0:
+                raise ValidationError("Password should be atleast 8 characters long")
+            if password and confirm_password and password != confirm_password:
+                raise ValidationError('Password and confirm password should match')
+            if User.objects.filter(Q(mobile_number=mobile_number) | Q(email=email)).exists():
+                raise ValidationError('User with this mobile number or email address already exists')
+            user = User(
+                mobile_number = mobile_number,
+                first_name = first_name,
+                last_name = last_name,
+                email = email
+            )
+            user.set_password(password)
+            send_otp(request.session, mobile_number)
+            user.save()
+            login(request, user)
+            return Response(UserSerializer(request.user).data)
+        except KeyError:
+            raise ValidationError("Insufficient data provided")
+
+
+class LoginView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            username = data['username']
+            password = data['password']
+            user = authenticate(username=username,password=password)
+            if not user:
+                raise ValidationError('Invalid mobile number/email and password combination')
+            if user.status==User.BLOCKED:
+                raise ValidationError('You are blocked. Contact admin for further action')
+            if not user.is_active:
+                raise ValidationError('Account is not active. Contact admin for further information')
+            login(request, user)
+            return Response(UserSerializer(user).data)
+        except KeyError:
+            raise ValidationError('Insufficient data provided')
+
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response("success")

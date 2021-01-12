@@ -1,8 +1,4 @@
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.urls import reverse
-from django.db.models import Q
-from django.contrib import messages
-from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
 
 class ViewException(Exception):
     pass
@@ -17,53 +13,12 @@ otp_regex = '^[0-9]{4,6}$'
 username_regex = "("+mobile_number_regex+")|"+"("+email_regex+")"
 cookie_message = "Cookies are not enabled in browser"
 
-def not_logged_in(view):
-    def wrap(request,*args,**kwargs):
-        if request.user.is_authenticated:
-            if not request.is_ajax():
-              messages.info(request,'User already logged in.')
-              return HttpResponseRedirect('/')
-            else:
-              return HttpResponse('User already logged in.',status=400)
-        else:
-            return view(request,*args,**kwargs)
-    wrap.__doc__ = view.__doc__
-    wrap.__name__ = view.__name__
-    return wrap
-
-def ajax_login_required(view):
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            if not request.is_ajax():
-                return HttpResponseRedirect('/')
-            raise PermissionDenied
-        return view(request, *args, **kwargs)
-    wrap.__doc__ = view.__doc__
-    wrap.__name__ = view.__name__
-    return wrap
-
 def number_verfication_required(view):
     def wrap(request,*args,**kwargs):
         if not request.user.is_verified:
             return JsonResponse({'errors':{'__all__':['Mobile number verification is required']}},status=400)
         else:
             return view(request,*args,**kwargs)
-    wrap.__doc__ = view.__doc__
-    wrap.__name__ = view.__name__
-    return wrap
-
-def maintain_cookie(view):
-    def wrap(request,*args,**kwargs):
-        if request.method=='POST':
-            if not request.session.test_cookie_worked():
-                raise ViewException(cookie_message)
-        elif request.method=='GET':
-            try:
-                request.session.delete_test_cookie()
-            except KeyError:
-                pass
-            request.session.set_test_cookie()
-        return view(request,*args,**kwargs)
     wrap.__doc__ = view.__doc__
     wrap.__name__ = view.__name__
     return wrap
