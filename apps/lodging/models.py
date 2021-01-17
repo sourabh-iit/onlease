@@ -1,50 +1,28 @@
 from django.db import models
-from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
-from django.contrib.contenttypes.models import ContentType
-from django.core.validators import RegexValidator, validate_slug, DecimalValidator
+from django.core.validators import RegexValidator, validate_slug
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
-from django.utils import timezone
 
-import os
-from datetime import date
-import datetime
-
-from apps.locations.models import Region, District
-from apps.image.models import ImageModel
-from apps.lodging.utils import generate_random
+from apps.locations.models import Region
 
 User = get_user_model()
 
+def lodging_image_upload_path(instance, filename):
+  return f'lodgings/images/{filename}'
+
+def lodging_thumbnail_upload_path(instance, filename):
+      return f'lodgings/thumbnails/{filename}'
+
+def lodging_mobile_image_upload_path(instance, filename):
+      return f'lodgings/mobile_images/{filename}'
+
 class Lodging(models.Model):
   '''Lodging'''
-  posted_by = models.ForeignKey(User,on_delete=models.CASCADE,related_name="lodgings",null=True,blank=True)
-  purchased_by = models.ManyToManyField(User,related_name="customers")
-  address = models.CharField(max_length=200, help_text='Valid length is under 200 characters.')
-  posted_at = models.DateField(auto_now=True, editable=False, blank=True)
-  updated_at = models.DateField(auto_now_add=True, editable=False, blank=True)
-  no_times_booked = models.IntegerField(default=0)
-  session_key = models.CharField(max_length=50,null=True,blank=True)
-  uid = models.CharField(max_length=20, default=generate_random(8))
-
-  def __str__(self):
-    return self.address
-
-  class Meta:
-    ordering = ('posted_at',)
-
-
-class CommonlyUsedLodgingModel(models.Model):
-  '''
-  Lodging can be saved as temporary if not fully completed. Session id is used to create
-  temporary lodging if user is not logged in else user id is used.
-  '''
-  FLAT = "F"
-  HOUSE = "H"
-  PAYING_GUEST = "P"
-  ROOM = "R"
-  OTHER = 'O'
+  FLAT = "0"
+  HOUSE = "1"
+  PAYING_GUEST = "2"
+  ROOM = "3"
+  OTHER = '4'
   RESIDENTIAL_CHOICES = (
     (FLAT, "Flat"),
     (HOUSE, "House/Apartment"),
@@ -52,6 +30,7 @@ class CommonlyUsedLodgingModel(models.Model):
     (ROOM, "Rooms"),
     (OTHER,'Other')
   )
+  LODGINGS_IN_HINDI = ["फ़्लैट", "घर/अपार्टमेंट", "PG", "कमरा", "अन्य"]
   # OFFICE_SPACE = 'OS'
   # BANQUET_PARTY_LAWN = 'BP'
   # SHOP = 'S'
@@ -75,33 +54,33 @@ class CommonlyUsedLodgingModel(models.Model):
   #     (FACTORY,'Factory'),
   #     (OTHER,'Other'),
   # )
-  FURNISHED = 'F'
-  SEMI_FURNISHED = 'S'
-  UN_FURNISHED = 'U'
+  FURNISHED = '0'
+  SEMI_FURNISHED = '1'
+  UN_FURNISHED = '2'
   FURNISHING_CHOICES = (
     (FURNISHED,'Furnished'),
     (SEMI_FURNISHED,'Semi Furnished'),
     (UN_FURNISHED,'Unfurnished'),
   )
-  KITCHEN = 'K'
-  PARKING = 'P'
-  AIR_CONDITIONER = 'A'
+  KITCHEN = '0'
+  PARKING = '1'
+  AIR_CONDITIONER = '2'
   FACILITIES_AVAILABLE_CHOICES = (
     (KITCHEN,'Kitchen'),
     (PARKING,'Parking'),
     (AIR_CONDITIONER,'Air conditioner'),
   )
-  MARBLE = 'M'
-  VITRIFIED_TILE = 'VT'
-  VINYL = 'V'
-  HARDWOOD = 'H'
-  GRANITE = 'G'
-  BAMBOO = 'B'
-  CONCRETE = 'C'
-  LAMINATE = 'L'
-  LINOLEUM = 'LI'
-  TERRAZZO = 'T'
-  BRICK = 'BR'
+  MARBLE = '0'
+  VITRIFIED_TILE = '1'
+  VINYL = '2'
+  HARDWOOD = '3'
+  GRANITE = '4'
+  BAMBOO = '5'
+  CONCRETE = '6'
+  LAMINATE = '7'
+  LINOLEUM = '8'
+  TERRAZZO = '9'
+  BRICK = '10'
   FLOORING_CHOICES = (
     (MARBLE, 'Marble'),
     (VITRIFIED_TILE,'Vitrified Tile'),
@@ -116,16 +95,16 @@ class CommonlyUsedLodgingModel(models.Model):
     (BRICK, 'Brick'),
     (OTHER, 'Other')
   )
-  SQUARE_GAJ = '1'
-  SQUARE_FEET = '2'
-  SQUARE_YARDS = '3'
-  SQUARE_METER = '4'
-  ACRE = '5'
-  MARLA = '6'
-  KANAL = '7'
-  ARES = '8'
-  BISWA = '9'
-  HECTARES = '10'
+  SQUARE_GAJ = '0'
+  SQUARE_FEET = '1'
+  SQUARE_YARDS = '2'
+  SQUARE_METER = '3'
+  ACRE = '4'
+  MARLA = '5'
+  KANAL = '6'
+  ARES = '7'
+  BISWA = '8'
+  HECTARES = '9'
   MEASURING_UNIT_CHOICES = (
     (SQUARE_GAJ,'Sq. Gaj'),
     (SQUARE_FEET,'Sq. Feet'),
@@ -138,51 +117,42 @@ class CommonlyUsedLodgingModel(models.Model):
     (BISWA,'Biswa'),
     (HECTARES,'Hectares'),
   )
-  # COMMERCIAL = 'C'
-  # RESIDENTIAL = 'R'
-  # LODGING_CHOICES = (
-  #     (COMMERCIAL,'Commercial'),
-  #     (RESIDENTIAL,'Residential'),
-  # )
-  region = models.ForeignKey(Region,related_name="lodgings",on_delete=models.CASCADE)
-  lodging = models.OneToOneField(Lodging,on_delete=models.CASCADE,related_name='sublodging')
-  lodging_type = models.CharField(max_length=2,choices=RESIDENTIAL_CHOICES,
-              verbose_name="type",default=ROOM)
-  # type_choice = models.CharField(max_length=2,choices=LODGING_CHOICES,default=COMMERCIAL)
-  lodging_type_other = models.CharField(max_length=100,null=True,blank=True)
+  posted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lodgings")
+  address = models.CharField(max_length=200, help_text='Valid length is under 200 characters.')
+  posted_at = models.DateField(auto_now=True, blank=True)
+  updated_at = models.DateField(auto_now_add=True, blank=True)
+  no_times_booked = models.IntegerField(default=0)
+  # session_key = models.CharField(max_length=50,null=True,blank=True)
+  region = models.ForeignKey(Region, related_name="lodgings", on_delete=models.CASCADE)
+  lodging_type = models.CharField(max_length=2, choices=RESIDENTIAL_CHOICES, verbose_name="type")
+  lodging_type_other = models.CharField(max_length=100, default="")
   total_floors = models.PositiveIntegerField(default=1)
   floor_no = models.IntegerField(default=1)
-  furnishing = models.CharField(max_length=2,choices=FURNISHING_CHOICES,default=UN_FURNISHED)
-  facilities = models.CharField(max_length=1000,null=True,blank=True)
-  ground_floor = models.BooleanField(blank=True,default=False)
-  top_floor = models.BooleanField(blank=True,default=False)
-  available_from = models.DateField()
-  rent = models.CharField(max_length=10,validators=[RegexValidator('^[1-9][0-9]+$')])
+  furnishing = models.CharField(max_length=2, choices=FURNISHING_CHOICES)
+  facilities = models.CharField(max_length=1000, default="")
+  ground_floor = models.BooleanField(blank=True, default=False)
+  top_floor = models.BooleanField(blank=True, default=False)
+  available_from = models.DateField(null=True)
+  rent = models.CharField(max_length=10, validators=[RegexValidator('^[1-9][0-9]+$')])
   area = models.CharField(max_length=12)
-  unit = models.CharField(max_length=2,choices=MEASURING_UNIT_CHOICES,default=SQUARE_GAJ)
+  unit = models.CharField(max_length=2, choices=MEASURING_UNIT_CHOICES)
   bathrooms = models.IntegerField(default=1)
   rooms = models.IntegerField(default=1)
   balconies = models.IntegerField(default=0)
   halls = models.IntegerField(default=0)
   advance_rent_of_months = models.PositiveIntegerField(default=1)
-  flooring = models.CharField(max_length=2,choices=FLOORING_CHOICES,null=True,blank=True)
-  flooring_other = models.CharField(max_length=100,blank=True, null=True)
-  additional_details = models.TextField(max_length=2000,
-      help_text='Valid length is under 500 characters.',
-      default="")
-  title = models.CharField(max_length=70, validators=[RegexValidator('^[-a-zA-Z0-9_ ]+\Z')],
-        help_text="Max length is 70 characters. Only characters, digits, hyphen and underscore are allowed.")
-  slug = models.SlugField(max_length=70,editable=False,validators=[validate_slug])
+  flooring = models.CharField(max_length=2, choices=FLOORING_CHOICES)
+  flooring_other = models.CharField(max_length=100, default="")
+  additional_details = models.TextField(max_length=2000, default="")
+  title = models.CharField(max_length=70, validators=[RegexValidator('^[-a-zA-Z0-9_ ]+\Z')])
+  slug = models.SlugField(max_length=70, editable=False, validators=[validate_slug])
   is_booked = models.BooleanField(default=False)
-  images = GenericRelation(ImageModel)
-  latlng = models.CharField(max_length=100, blank=True, null=True)
-  is_booking = models.BooleanField(default=False)
-  last_time_booking = models.DateTimeField(auto_now_add=True)
-  virtual_tour_link = models.CharField(max_length=300,blank=True,null=True)
-  last_confirmed = models.DateTimeField(null=True, blank=True)
-  is_confirmed = models.BooleanField(default=True)
-  is_confirmation_processing = models.BooleanField(default=False)
-  room_number = models.PositiveIntegerField(default=1, null=True, blank=True)
+  latlng = models.CharField(max_length=100, default="")
+  virtual_tour_link = models.CharField(max_length=300, default="")
+  last_confirmed = models.DateTimeField()
+  is_confirming = models.BooleanField(default=False)
+  reference = models.CharField(default="", max_length=10)
+  agreement = models.ForeignKey('user.Agreement', related_name='lodgings', null=True, blank=True, on_delete=models.SET_NULL)
 
   def get_per_month_amount(self):
     total = int(self.rent)
@@ -204,26 +174,64 @@ class CommonlyUsedLodgingModel(models.Model):
     if self.title:
       self.slug = slugify(self.title)
     if self.floor_no:
-      if self.floor_no==self.total_floors:
-        self.top_floor=True
-      elif self.floor_no==1:
-        self.ground_floor=True
-    if not self.advance_rent_of_months==0:
+      if self.floor_no == 1:
+        self.ground_floor = True
+      elif self.floor_no == self.total_floors:
+        self.top_floor = True
+    if self.advance_rent_of_months == 0:
       self.advance_rent_of_months = 1
-    if self.is_booking:
-      self.last_time_booking=datetime.datetime.now()
-    super(CommonlyUsedLodgingModel, self).save(*args, **kwargs)
+    super(Lodging, self).save(*args, **kwargs)
+
+  def __str__(self):
+    return f"Address: {self.address}, posted by: {self.posted_by.full_name}"
 
   class Meta:
-    ordering = ('-available_from',)
-    # TODO indexing
+    ordering = ('-available_from', 'posted_at',)
 
 
 class Charge(models.Model):
   amount=models.CharField(max_length=20, validators=[RegexValidator('^[0-9]+$')])
   description=models.CharField(max_length=50)
   is_per_month=models.BooleanField(default=False)
-  lodging=models.ForeignKey(CommonlyUsedLodgingModel,on_delete=models.CASCADE,related_name='charges')
+  lodging=models.ForeignKey(Lodging, on_delete=models.CASCADE, related_name='charges')
 
   def __str__(self):
     return self.description+': Rs. '+self.amount
+
+class LodgingImage(models.Model):
+  BEDROOM = '0'
+  HALL = "1"
+  BALCONY = '2'
+  LIVING_ROOM = '3'
+  ENTRANCE = "4"
+  KITCHEN = "5"
+  BATHROOM = "6"
+  BUILDING = "7"
+  FLOOR = "8"
+  OUTSIDE = '9'
+  OTHER = '10'
+  DINING_ROOM = '11'
+  LODGING_TAG_CHOICES = (
+    (BEDROOM,'Bedroom'),
+    (HALL, 'Hall'),
+    (BALCONY, 'Balcony'),
+    (LIVING_ROOM,'Living Room'),
+    (ENTRANCE,'Entrance'),
+    (KITCHEN, 'Kitchen'),
+    (BATHROOM, 'Bathroom'),
+    (BUILDING, 'Building'),
+    (FLOOR, 'Floor'),
+    (OUTSIDE, 'Outside View'),
+    (OTHER, 'Other'),
+    (DINING_ROOM, 'Dining Room')
+  )
+  lodging = models.ForeignKey(Lodging, on_delete=models.CASCADE, related_name="images", null=True)
+  image = models.ImageField(upload_to=lodging_image_upload_path)
+  image_thumbnail = models.ImageField(upload_to=lodging_thumbnail_upload_path)
+  image_mobile = models.ImageField(upload_to=lodging_mobile_image_upload_path)
+  created_at = models.DateTimeField(auto_now=True)
+  tag = models.CharField(choices=LODGING_TAG_CHOICES, max_length=2, null=True)
+  tag_other = models.CharField(max_length=100, blank=True, null=True)
+
+  def __str__(self):
+    return self.image_thumbnail.url

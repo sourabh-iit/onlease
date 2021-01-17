@@ -1,5 +1,4 @@
 from django import template
-from apps.lodging.models import CommonlyUsedLodgingModel
 from apps.transactions.models import LodgingTransaction
 import datetime
 

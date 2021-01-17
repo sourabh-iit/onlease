@@ -1,15 +1,15 @@
 from django import forms
 
-from apps.locations.models import Region, District
-from apps.roommate.models import RoomieAd
+from apps.locations.models import Region
+# from apps.roommate.models import RoomieAd
 
 
-class CommonQueryForm(forms.Form):
-    region = forms.ChoiceField()
-    types = forms.MultipleChoiceField(
-        choices=RoomieAd.TYPE_CHOICES[1:],required=False)
-    min_rent = forms.CharField(initial=0,widget = forms.TextInput(attrs={'readonly':True}))
-    max_rent = forms.CharField(initial=1000000,widget = forms.TextInput(attrs={'readonly':True}))
+# class CommonQueryForm(forms.Form):
+#     region = forms.ChoiceField()
+#     types = forms.MultipleChoiceField(
+#         choices=RoomieAd.TYPE_CHOICES[1:],required=False)
+#     min_rent = forms.CharField(initial=0,widget = forms.TextInput(attrs={'readonly':True}))
+#     max_rent = forms.CharField(initial=1000000,widget = forms.TextInput(attrs={'readonly':True}))
 
 
 class CommonQueryFormMixin(object):

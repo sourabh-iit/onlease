@@ -1,12 +1,6 @@
-from PIL import Image
-import io
-from django.core.files.uploadedfile import InMemoryUploadedFile
 import string
 import random
 import re
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from django.core.exceptions import PermissionDenied
 
 def generate_random(size):
     # generate random number of given size
@@ -43,12 +37,3 @@ def translate_number_to_hindi_chars(num_str, separate=False):
     else:
       hin_str += i
   return hin_str
-
-def get_room_reference(lodging, sublodging):
-  if sublodging.lodging_type=='R':
-    text = "कमरा जिसकी संख्या "+translate_number_to_hindi_chars(str(sublodging.room_number))+" है व "
-  else:
-    text = "घर जिसकी "
-  text+="मंज़िल "+translate_number_to_hindi_chars(str(sublodging.floor_no))+' है और पता '+\
-        translate_number_to_hindi_chars(lodging.address,True)+' है '
-  return text

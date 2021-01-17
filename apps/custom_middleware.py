@@ -1,15 +1,53 @@
 import logging
+import json
+import traceback
+
+from rest_framework.views import exception_handler
+from rest_framework.response import Response
+
 from django.conf import settings
 
-logger = logging.getLogger('testlogger')
+from sentry_sdk import capture_exception
 
+logger = logging.getLogger('onlease-logger')
 
-class LogErrorMiddleware:
+class DisableCSRF:
   def __init__(self, get_response):
     self.get_response = get_response
 
   def __call__(self, request):
+    setattr(request, '_dont_enforce_csrf_checks', True)
     response = self.get_response(request)
-    if response.status_code >= 400:
-      logger.error(response.reason_phrase)
+    return response
+
+def get_client_ip(request):
+  x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+  if x_forwarded_for:
+    ip = x_forwarded_for.split(',')[-1].strip()
+  else:
+    ip = request.META.get('REMOTE_ADDR')
+  return ip
+
+class LogData:
+  def __init__(self, get_response):
+    self.get_response = get_response
+
+  def __call__(self, request):
+    url = request.get_raw_uri()
+    try:
+      body = json.loads(request.body)
+    except:
+      body = {}
+    response = self.get_response(request)
+    logger.info(f"{url} {response.status_code} {request.method} {body} {get_client_ip(request)}")
+    return response
+
+def custom_exception_handler(exc, context):
+    response = exception_handler(exc, context)
+    if settings.DEBUG:
+        print(traceback.format_exc())
+    if response is None:
+        if not settings.DEBUG:
+            capture_exception(exc)
+        response = Response(['Unknow error occurred'], status=500)
     return response

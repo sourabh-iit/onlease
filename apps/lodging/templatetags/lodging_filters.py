@@ -1,6 +1,6 @@
 from django import template
 
-from apps.lodging.models import CommonlyUsedLodgingModel
+from apps.lodging.models import Lodging
 from apps.locations.models import Region
 from apps.image.models import ImageModel
 from apps.user.serializers import UserSerializer
@@ -24,17 +24,17 @@ def full_form(value, arg):
   model_value=""
   choices=[]
   if arg == "type":
-    if value.lodging_type == CommonlyUsedLodgingModel.OTHER:
+    if value.lodging_type == Lodging.OTHER:
       return value.lodging_type_other
-    choices=CommonlyUsedLodgingModel.RESIDENTIAL_CHOICES
+    choices=Lodging.RESIDENTIAL_CHOICES
     model_value=value.lodging_type
   elif arg=="flooring":
-    if value.flooring==CommonlyUsedLodgingModel.OTHER:
+    if value.flooring==Lodging.OTHER:
       return value.flooring_other
-    choices=CommonlyUsedLodgingModel.FLOORING_CHOICES
+    choices=Lodging.FLOORING_CHOICES
     model_value=value.flooring
   elif arg=="furnishing":
-    choices=CommonlyUsedLodgingModel.FURNISHING_CHOICES 
+    choices=Lodging.FURNISHING_CHOICES 
     model_value=value.furnishing
   elif arg=='facilities':
     facilities = ast.literal_eval(value.facilities)
@@ -42,7 +42,7 @@ def full_form(value, arg):
       return [{'value': 'None available', 'icon': 'check-trash'}]
     else:
       l = []
-      for tup in CommonlyUsedLodgingModel.FACILITIES_AVAILABLE_CHOICES:
+      for tup in Lodging.FACILITIES_AVAILABLE_CHOICES:
         if tup[0] in facilities:
           l.append({
             'value': tup[1],

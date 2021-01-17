@@ -4159,6 +4159,7 @@ function start_timer($el){
 }
 
 $('document').ready(function(){
+  // global listener to display errors
   $(document).ajaxError(function ( event, jqxhr, settings, thrownError ) {
     if(jqxhr.status==0){
       toastr.error('Error in connecting to server. Check your internet connection.')

@@ -19,23 +19,17 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.views.generic import TemplateView
 
-# handler404 = 'apps.views.handler404'
+handler500 = 'mysite.views.my_custom_error_view'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/', include('apps.user.urls')),
     path('api/account/', include('apps.user.api_urls')),
-    path('api/roomie/', include('apps.roommate.urls')),
     path('lodging/', include('apps.lodging.urls')),
-    path('api/lodging/', include('apps.lodging.ajax_urls')),
-    # path('dashboard/', include('apps.dashboard.urls')),
-    path('ads/', include('apps.ads.urls')),
-    path('', include('apps.home.urls')),
+    path('api/lodging/', include('apps.lodging.api_urls')),
     path('transactions/', include('apps.transactions.urls')),
     path('api/locations/', include('apps.locations.urls')),
-    # path('legal/', include('apps.legal.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('api/',include('apps.image.urls')),
     path('vrview/',TemplateView.as_view(template_name="vrview-master/index.html"),
                    name='vrview'),
     path('privacy-policy/',TemplateView.as_view(template_name='privacy-policy.html'), name="privacy-policy")

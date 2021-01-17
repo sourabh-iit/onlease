@@ -1,7 +1,6 @@
 from django.forms import fields
 from rest_framework import serializers
 from .models import User, MobileNumber, Agreement, AgreementPoint
-from apps.image.serializers import ImageRelatedField
 
 class MobileNumberSerializer(serializers.ModelSerializer):
   class Meta:
@@ -23,7 +22,7 @@ class AgreementSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
   mobile_numbers = MobileNumberSerializer(many=True)
-  profile_image = ImageRelatedField(many=True,queryset=User.objects.all())
+  # profile_image = ImageRelatedField(many=True,queryset=User.objects.all())
   agreements = AgreementSerializer(many=True)
 
   class Meta:
@@ -37,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
       'gender',
       'created_at',
       'updated_at',
-      'profile_image',
+      # 'profile_image',
       'mobile_numbers',
       'favorite_properties',
       'agreements'

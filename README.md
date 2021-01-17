@@ -10,7 +10,7 @@ https://onlease.herokuapp.com/
 - Form to create new posting.
 - User can view ads in a particular area without logging in.
 - To book a room, user needs to create account.
-- Msg91 integration for messageing.
+- Msg91 integration for messaging.
 - Twilio integration for IVR.
 - Instamojo payment integration.
 

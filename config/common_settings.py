@@ -31,15 +31,9 @@ INSTALLED_APPS = [
     # external library to add class in django template tags
     'widget_tweaks',
     'apps.user',
-    'apps.lodging',
-    # 'apps.dashboard',
-    'apps.ads',
-    'apps.home',
-    'apps.image',
+    'apps.lodging.apps.LodgingConfig',
     'apps.transactions',
-    'apps.locations',
-    # 'apps.legal',
-    'apps.roommate',
+    'apps.locations'
 ]
 
 MIDDLEWARE = [
@@ -48,12 +42,13 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.common.BrokenLinkEmailsMiddleware',
-    'apps.custom_middleware.LogErrorMiddleware',
+    'apps.custom_middleware.LogData',
+    'apps.custom_middleware.DisableCSRF'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -68,8 +63,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'apps.context_processors.settings_variable',
+                'django.contrib.messages.context_processors.messages'
             ],
         },
         # 'libraries': {
@@ -131,7 +125,7 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
-AUTHENTICATION_BACKENDS = ('apps.auth_backend.EmailOrMobileNumberAuthenticate',)
+AUTHENTICATION_BACKENDS = ('apps.utils.EmailOrMobileNumberAuthenticate',)
 
 AUTH_USER_MODEL = 'user.User'
 
@@ -155,7 +149,8 @@ GOOGLE_MAPS_API_KEY=os.environ.get('GOOGLE_MAPS_API_KEY',"AIzaSyBM8hfl_jO8yNJzRw
 ADMINS_LIST = ['98997612536'] 
 
 REST_FRAMEWORK = {
-  'DATE_FORMAT' : '%d-%m-%Y'
+  'DATE_FORMAT' : '%d-%m-%Y',
+  'EXCEPTION_HANDLER': 'apps.custom_middleware.custom_exception_handler'
 }
 
 # django sass processor settings
@@ -170,6 +165,6 @@ COMPRESS_PRECOMPILERS = (
 )
 COMPRESS_ROOT = os.path.join(BASE_DIR,'static')
 
-TWILIO_SID = os.environ.get('TWILIO_SID')
-TWILIO_TOKEN = os.environ.get('TWILIO_TOKEN')
-TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
+TWILIO_SID = os.environ.get('TWILIO_SID', 'AC82679457750551a703ff2a562026e36a')
+TWILIO_TOKEN = os.environ.get('TWILIO_TOKEN', 'e527ee45fb600ba5c6bc43fed02ae5df')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '+13025080478')

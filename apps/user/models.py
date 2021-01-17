@@ -4,7 +4,6 @@ from django.core.validators import RegexValidator, MinLengthValidator
 from django.contrib.contenttypes.fields import GenericRelation
 
 from .utils import *
-from apps.image.models import ImageModel
 
 
 class CustomUserManager(BaseUserManager):
@@ -59,12 +58,12 @@ class User(AbstractUser):
   gender = models.CharField(choices=GENDER_CHOICES,max_length=1,blank=True, null=True)
   created_at = models.DateTimeField(auto_now=True)
   updated_at = models.DateTimeField(auto_now_add=True, null=True)
-  profile_image = GenericRelation(ImageModel)
   favorite_properties = models.ManyToManyField("lodging.Lodging", related_name="favorite_of")
 
   USERNAME_FIELD = 'mobile_number'
   objects = CustomUserManager()
 
+  @property
   def full_name(self):
     if self.first_name and self.last_name:
       return self.first_name+" "+self.last_name
