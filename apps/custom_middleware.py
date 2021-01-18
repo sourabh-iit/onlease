@@ -45,7 +45,7 @@ class LogData:
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
     if settings.DEBUG:
-        print(traceback.format_exc())
+        logger.error(traceback.format_exc())
     if response is None:
         if not settings.DEBUG:
             capture_exception(exc)
