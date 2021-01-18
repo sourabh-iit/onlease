@@ -5,6 +5,12 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 from .utils import *
 
+def profile_image_upload_path(instance, filename):
+  return f'profile/images/{filename}'
+
+def profile_thumbnail_upload_path(instance, filename):
+      return f'profile/thumbnails/{filename}'
+
 
 class CustomUserManager(BaseUserManager):
   def create_user(self,mobile_number,password):
@@ -141,3 +147,12 @@ class AgreementPoint(models.Model):
 
   def __str__(self):
         return self.text
+
+class ProfileImage(models.Model):
+  user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="image")
+  file = models.ImageField(upload_to=profile_image_upload_path)
+  thumbnail = models.ImageField(upload_to=profile_thumbnail_upload_path)
+  created_at = models.DateTimeField(auto_now=True)
+
+  def __str__(self):
+    return self.file.name

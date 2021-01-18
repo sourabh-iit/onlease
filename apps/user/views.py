@@ -3,15 +3,18 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail, BadHeaderError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db import transaction
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 
-from .models import User, MobileNumber
+from .models import ProfileImage, User, MobileNumber
 from apps.transactions.utils import send_otp
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ImageSerializer
+from apps.utils import generate_random, create_thumbnail, thumbnail_size
 
 import time
 
@@ -205,3 +208,46 @@ class LogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response("success")
+
+
+class ImageHandler(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        # dataUrlPattern = re.compile('data:image/(png|jpg|jpeg|gif);base64,(.*)$')
+        # image_data = data['image']
+        # image_data = dataUrlPattern.match(image_data).group(2)
+        # image_data = image_data.encode()
+        # image_data = base64.b64decode(image_data)
+        # file = InMemoryUploadedFile(io.BytesIO(image_data), 'image', image_name+'.jpeg', None, None, None)
+        data = request.data
+        user = request.user
+        if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
+            raise ValidationError('invalid image')
+        file = data['image']
+        if file.size > 8*1024*1024:
+            raise ValidationError("Image size should not be larger than 8mb")
+        if file.content_type not in ['image/png', 'image/jpg', 'image/jpeg']:
+            raise ValidationError("invalid image")
+        image_extension = file.name.split('.')[-1]
+        rand_str = generate_random(8)
+        image_name = '_'.join(file.name.split())
+        img_type = file.content_type.split('/')[-1]
+        file.name = f"{image_name}_{rand_str}.{image_extension}"
+        thumb_file = create_thumbnail(file, thumbnail_size, f"{image_name}_thumbnail_{rand_str}.{image_extension}", img_type)
+        with transaction.atomic():
+            try:
+                user.image.delete()
+            except:
+                pass
+            im = ProfileImage.objects.create(file=file, thumbnail=thumb_file, user=request.user)
+        return Response(ImageSerializer(im).data)
+
+    def delete(self, request, image_id):
+        user = request.user
+        if not hasattr(user, "image"):
+            raise ValidationError("No image")
+        if user.image.id != int(image_id):
+            raise ValidationError("Not authorized")
+        user.image.delete()
+        return Response('success')
