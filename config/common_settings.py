@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     "compressor",
     # external library to add class in django template tags
     'widget_tweaks',
-    'apps.user',
+    'apps.user.apps.UserConfig',
     'apps.lodging.apps.LodgingConfig',
     'apps.transactions',
     'apps.locations'
