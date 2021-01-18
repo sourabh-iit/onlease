@@ -345,9 +345,11 @@ class ImageListHandler(APIView):
     if file.content_type not in ['image/png', 'image/jpg', 'image/jpeg']:
       raise ValidationError("invalid image")
     image_extension = file.name.split('.')[-1]
-    image_name = f"{'_'.join(file.name.split())}_{generate_random(8)}"
+    rand_str = generate_random(8)
+    image_name = '_'.join('_'.join(file.name.split('.')[0:-1]).split())
     img_type = file.content_type.split('/')[-1]
-    image_mobile = create_thumbnail(file, mobile_image_size, f"{image_name}.mobile.{image_extension}", img_type)
-    thumb_file = create_thumbnail(file, thumbnail_size, f"{image_name}.thumbnail.{image_extension}", img_type)
+    file.name = f"{image_name}_{rand_str}.{image_extension}"
+    image_mobile = create_thumbnail(file, mobile_image_size, f"{image_name}_mobile_{rand_str}.{image_extension}", img_type)
+    thumb_file = create_thumbnail(file, thumbnail_size, f"{image_name}_thumbnail_{rand_str}.{image_extension}", img_type)
     im = LodgingImage.objects.create(image=file, image_thumbnail=thumb_file, image_mobile=image_mobile, tag=data['tag'])
     return Response(ImageSerializer(im).data)

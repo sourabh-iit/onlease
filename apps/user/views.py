@@ -231,7 +231,7 @@ class ImageHandler(APIView):
             raise ValidationError("invalid image")
         image_extension = file.name.split('.')[-1]
         rand_str = generate_random(8)
-        image_name = '_'.join(file.name.split())
+        image_name = '_'.join('_'.join(file.name.split('.')[0:-1]).split())
         img_type = file.content_type.split('/')[-1]
         file.name = f"{image_name}_{rand_str}.{image_extension}"
         thumb_file = create_thumbnail(file, thumbnail_size, f"{image_name}_thumbnail_{rand_str}.{image_extension}", img_type)
