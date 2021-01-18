@@ -23,10 +23,6 @@ from urllib.parse import urlparse
 from datetime import datetime, timedelta
 from threading import Timer
 import logging
-import re
-import base64
-import io
-import os
 
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Gather
@@ -323,6 +319,7 @@ class ImageActionHandler(APIView):
       except LodgingImage.DoesNotExist:
         raise ValidationError("invalid image id")
     raise ValidationError("invalid action")
+
 class ImageListHandler(APIView):
   permission_classes = (IsAuthenticated,)
   
