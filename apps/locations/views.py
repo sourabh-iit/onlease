@@ -1,5 +1,5 @@
 from apps.locations.serializers import RegionSerializer
-from .models import State, Region
+from .models import Region
 
 import googlemaps
 

@@ -149,7 +149,7 @@ class Lodging(models.Model):
   is_booked = models.BooleanField(default=False)
   latlng = models.CharField(max_length=100, default="")
   virtual_tour_link = models.CharField(max_length=300, default="")
-  last_confirmed = models.FloatField()
+  last_confirmed = models.DateTimeField(auto_now=True)
   is_confirming = models.BooleanField(default=False)
   reference = models.CharField(default="", max_length=10)
   agreement = models.ForeignKey('user.Agreement', related_name='lodgings', null=True, blank=True, on_delete=models.SET_NULL)

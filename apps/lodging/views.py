@@ -21,7 +21,7 @@ from apps.utils import *
 
 import requests
 from urllib.parse import urlparse
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from threading import Timer
 import logging
 from time import time
@@ -128,7 +128,7 @@ class LodgingView(APIView):
 
   def save_lodging(self, data, user, lodging):
     with transaction.atomic():
-      data['last_confirmed'] = time()
+      data['last_confirmed'] = datetime.now()
       serializer = LodgingSerializer(lodging, data=data, context={'user': user})
       serializer.is_valid(raise_exception=True)
       lodging = serializer.save()
@@ -199,7 +199,7 @@ class TwilioHandler(APIView):
         now = datetime.now()
         if now.hour < 8 or now.hour > 22:
           raise ValidationError('Can only request between 8:00 A.M. and 10:00 P.M')
-        if lodging.last_confirmed and lodging.last_confirmed - time() < 24*60*60:
+        if datetime.now() - timedelta(hours=24) < lodging.last_confirmed:
           raise ValidationError('It was confirmed recently')
         if lodging_id in customer_numbers:
           if user.mobile_number not in customer_numbers[lodging_id]:
@@ -230,7 +230,7 @@ class TwilioHandler(APIView):
           del timer[lodging_id]
         lodging.is_confirming = False
         lodging.save()
-        if lodging.last_confirmed - time() < 24*60*60 and not lodging.is_booked:
+        if datetime.now() - timedelta(hours=24) < lodging.last_confirmed and not lodging.is_booked:
           for mobile_number in customer_numbers.get(lodging_id, []):
             link = settings.BASE_URL + reverse("lodging_apis:lodging", args=[lodging_id])
             lodging_type = Lodging.RESIDENTIAL_CHOICES[ord(lodging.lodging_type)-ord('0')][1]
@@ -244,12 +244,12 @@ class TwilioHandler(APIView):
           choice = data['Digits']
           if choice=='1':
             resp.say('आपने चयन किया है कि आपका कमरा खाली है! धन्यवाद!', language="hi-IN")
-            lodging.last_confirmed = time()
+            lodging.last_confirmed = datetime.now()
             lodging.is_booked = False
             lodging.save()
           elif choice=='2':
             resp.say('आपने चयन किया है कि आपका कमरा खाली नहीं है! धन्यवाद!', language="hi-IN")
-            lodging.last_confirmed = time()
+            lodging.last_confirmed = datetime.now()
             lodging.is_booked = True
             lodging.available_from = None
             lodging.save()
