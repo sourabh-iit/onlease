@@ -1,52 +1,46 @@
-from django.http import JsonResponse
-from django.db.models import Q
-from django.views.decorators.http import require_POST
+from apps.locations.serializers import RegionSerializer
+from .models import State, Region
+
 import googlemaps
-from googlemaps.exceptions import ApiError, TransportError, HTTPError, Timeout
-from django.conf import settings
 
-from .models import State, Region, District
+from django.db.models import Count
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
-def regions_view(request):
-  data = request.GET
-  business = "MATES"
-  try:
-    key = data['q']
-    business = data['business']
-    regions = Region.objects.prefetch_related('state','district','lodgings').filter(
-      Q(name__icontains=key)|Q(district__name__icontains=key)|Q(state__name__icontains=key))[:20]
-  except KeyError:
-    regions = []
-  serialized_data = []
-  for region in regions:
-    ads=-1
-    if business.lower()=='property':
-      ads=region.lodgings.filter(is_booked=False).count()
-    serialized_data.append({
-      'id':region.id,
-      'region':region.name,
-      'state': region.state.name,
-      'district': region.district.name,
-      'ads': ads
-    })
-  return JsonResponse({'results':serialized_data})
+import time
 
-@require_POST
-def current_location_view(request):
-  data = request.POST
-  if not (data.get('lat') and data.get('lng')):
-    return JsonResponse({'errors':{'__all__':['Latitude and Longitude values are missing.']}},status=400)
-  gmaps_exception=googlemaps.exceptions
-  try:
-    gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
-    reverse_geocode_result = gmaps.reverse_geocode((data['lat'], data['lng']))
-  except ApiError as e:
-    return JsonResponse({'errors': {'__all__': [e.message]}},status=400)
-  except Timeout:
-    return JsonResponse({'errors': {'__all__': ['Connection timed out. Try again later']}},status=400)
-  except TransportError:
-    return JsonResponse({'errors': {'__all__': ['Something went wrong while trying to execute the request.']}},status=400)
-  except HTTPError:
-    return JsonResponse({'errors': {'__all__': ['An unexpected HTTP error occurred.']}},status=400)
-  return JsonResponse({'result': reverse_geocode_result})
+regions_cache = {
+  "data": [],
+  "time": time.time() - 60*5
+}
+
+class RegionListHandler(APIView):
+
+  def get(self, request):
+    if time.time() - regions_cache["time"] > 60:
+      regions = Region.objects.annotate(num_lodgings=Count('lodgings')).filter(num_lodgings__gt=0)
+      data = RegionSerializer(regions, many=True).data
+      regions_cache["data"] = data
+      regions_cache["time"] = time.time()
+    else:
+      data = regions_cache["data"]
+    return Response(data)
+
+# def current_location_view(request):
+#   data = request.POST
+#   if not (data.get('lat') and data.get('lng')):
+#     return JsonResponse({'errors':{'__all__':['Latitude and Longitude values are missing.']}},status=400)
+#   gmaps_exception=googlemaps.exceptions
+#   try:
+#     gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
+#     reverse_geocode_result = gmaps.reverse_geocode((data['lat'], data['lng']))
+#   except ApiError as e:
+#     return JsonResponse({'errors': {'__all__': [e.message]}},status=400)
+#   except Timeout:
+#     return JsonResponse({'errors': {'__all__': ['Connection timed out. Try again later']}},status=400)
+#   except TransportError:
+#     return JsonResponse({'errors': {'__all__': ['Something went wrong while trying to execute the request.']}},status=400)
+#   except HTTPError:
+#     return JsonResponse({'errors': {'__all__': ['An unexpected HTTP error occurred.']}},status=400)
+#   return JsonResponse({'result': reverse_geocode_result})
