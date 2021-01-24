@@ -1,170 +1,210 @@
-from django.shortcuts import render
 from django.conf import settings
 from apps.lodging.models import Lodging
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.views.decorators.http import require_POST
-from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.views.decorators.csrf import csrf_exempt
 
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError, PermissionDenied
+
+import math
 import hmac
 import hashlib
 import time
-from requests.exceptions import ConnectionError
-from json.decoder import JSONDecodeError
+from threading import Timer
+import logging
 
 from instamojo_wrapper import Instamojo
 
+from sentry_sdk import capture_message
+
+from .serializers import TransactionSerializer
 from .models import LodgingTransaction
 from apps.lodging.models import Lodging
 from .utils import *
 from apps.lodging.utils import generate_random
+from apps.utils import send_message
 
 api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
         auth_token=settings.INSTAMOJO_AUTH_KEY,
         endpoint=settings.INSTAMOJO_ENDPOINT)
 
 commission_percent = 10
+timer_jobs = {}
 
-# TODO: Cron job to call owner of every booked property to ask if is vaccant
+logger = logging.getLogger('onlease-logger')
 
-@require_POST
-def redirect_to_instamojo_view(request, ad_id):
-  if settings.DEBUG:
-    base_url = 'http://'+request.META['HTTP_HOST']
-  else:
-    base_url = settings.BASE_URL
-  try:
-    if request.POST.get('agreement', 'false') == 'false':
-      raise ValidationError('Acceptance of agreement is required')
-    if not (request.user.first_name and request.user.email):
-        raise ValidationError('Profile not complete')
-    lodging = Lodging.objects.get(id=ad_id)
-    if not lodging.last_confirmed or lodging.last_confirmed-time.time() > 24*60*60:
-      raise ValidationError('Confirmation for vaccancy is not done')
-    time_diff = time.time() - lodging.last_time_booking
-    if lodging.is_booking and time_diff > 3*60:
+class RefundHandler(APIView):
+  def post(self, request, trans_id):
+    data = request.data
+    if 'reason' not in data or len(data['reason']) == 0:
+      raise ValidationError("reason is required")
+    try:
+      trans = LodgingTransaction.objects.get(id=trans_id)
+    except LodgingTransaction.DoesNotExist:
+      raise ValidationError("invalid trans_id")
+    trans.reason = data['reason']
+    trans.save()
+    refund_amount(trans.payment_id, "TAN", data['reason'])
+    return Response('success')
+
+class TransactionHandler(APIView):
+  permission_classes = (IsAuthenticated, )
+
+  @staticmethod
+  def on_transaction_complete(lodging_id):
+    try:
+      lodging = Lodging.objects.get(id=lodging_id)
       lodging.is_booking = False
       lodging.save()
-    else:
-      raise ValidationError("Property is in process of booking")
-    if lodging.is_booked:
-      raise ValidationError('This property is already booked.')
-    amount = (int(lodging.rent)*commission_percent)//100
+    except Lodging.DoesNotExist:
+      pass
+    finally:
+      del timer_jobs[lodging_id]
+
+  @staticmethod
+  def generate_random_transaction_id():
     trans_id = generate_random(40)
     while LodgingTransaction.objects.filter(trans_id=trans_id).exists():
       trans_id = generate_random(40)
-    trans = LodgingTransaction.objects.create(
-      amount = amount,
-      user = request.user,
-      lodging = lodging,
-      trans_id = trans_id
-    )
-    response = api.payment_request_create(
-      amount=amount,
-      purpose=trans_id,
-      buyer_name=request.user.full_name(),
-      send_sms=True,
-      phone=request.user.mobile_number,
-      send_email=True,
-      email=request.user.email,
-      allow_repeated_payments=False,
-      redirect_url=base_url+reverse('transactions:lodging-post-redirection'),
-      webhook=base_url+reverse('transactions:lodging-webhook',
-        kwargs={'trans_id':trans_id})
-    )
-    if response['success']:
-      lodging.is_booking = True
-      lodging.last_time_booking = time.time()
-      lodging.save()
-      # TODO: add task after delay of 3 minutes to set is_booking false
-      trans.payment_request_id = response['payment_request']['id']
-      trans.save()
-      return JsonResponse({
-        'url': response['payment_request']['longurl']+'?embed=form',
-        'status': 200
-      })
-    return JsonResponse({
-      'errors': {**response['message']}
-    }, status=400)
-  except Lodging.DoesNotExist:
-    return JsonResponse({
-      'errors':{'__all__':['Lodging with id '+ad_id+' does not exist.']}
-    }, status=400)
-  except ValidationError as e:
-    return JsonResponse({'errors':{'__all__':e.messages}}, status="400")
-  except ConnectionError as e:
-    return JsonResponse({
-      'errors':{'__all__':['Connection could not be made. Please try again later.']}
-    },status=400)
-  except JSONDecodeError as e:
-    return JsonResponse({
-      'errors':{'__all__':['Payment gateway server is not responding. Contact us about this issue exists.']}
-    },status=400)
+    return trans_id
 
+  def get(self, request, trans_id):
+    try:
+      trans = LodgingTransaction.objects.get(id=trans_id)
+    except LodgingTransaction.DoesNotExist:
+      raise ValidationError("Transaction does not exist")
+    if trans.user != request.user:
+      raise PermissionDenied()
+    return Response(TransactionSerializer(trans).data)
 
-def on_transaction(trans_id, response, webhook, request):
-  trans = LodgingTransaction.objects.get(trans_id=trans_id)
-  transaction_success = response['status']=='Credit' and float(response['amount'])==float(trans.amount)
-  lodging = trans.lodging
-  region = lodging.region
-  if not trans.payment_id:
-    trans.payment_id=response['payment_id']
-    lodging.is_booked=False
-    lodging.is_booking=False
-    if response['status']=='Credit':
-      if float(response['amount'])==float(trans.amount):
-        transaction_success = True
-        trans.amount_paid=float(response['amount'])
-        trans.payment_gateway_fees=response['fees']
-        trans.status=LodgingTransaction.SUCCESS
-        lodging.is_booked=True
-        # Notify owner about property being booked and tenant contact numbers
-        msg = lodging_booked_message(lodging.posted_by,request.user,lodging,trans)
-        send_message(lodging.posted_by.mobile_number, msg)
-        # Notify user about transaction id and owner contact numbers
-        msg = successfull_transaction_message(lodging.posted_by, request.user, lodging, trans)
-        send_message(request.user.mobile_number, msg)
+  def post(self, request, lodging_id, gateway, action):
+    data = request.data
+    if action == 'create':
+      if settings.DEBUG:
+        base_url = 'http://'+request.META['HTTP_HOST']
       else:
-        # Notify tenant about transaction being invalid
-        msg = invalid_transaction_message(lodging.posted_by, request.user, lodging, trans, response)
-        send_message(request.user.mobile_number, msg)
-    else:
-      trans.status = LodgingTransaction.FAIL
-      msg = failed_transaction_message(lodging.posted_by, request.user, lodging, trans)
-      send_message(request.user.mobile_number, msg)
+        base_url = settings.BASE_URL
+      try:
+        lodging = Lodging.objects.get(id=lodging_id)
+        if not lodging.last_confirmed or lodging.last_confirmed - time.time() > 24*60*60:
+          raise ValidationError('Latest confirmation for vaccancy is not done')
+        if lodging.is_booking:
+          raise ValidationError('Someone is booking this currently. Try again after 3 minutes.')
+        if lodging.is_booked:
+          raise ValidationError('It is already booked.')
+        trans_id = TransactionHandler.generate_random_transaction_id()
+        trans = LodgingTransaction.objects.create(
+          user = request.user,
+          lodging = lodging,
+          trans_id = trans_id,
+          gateway = gateway
+        )
+        if int(gateway) == 1:
+          response = api.payment_request_create(
+            amount=math.ceil((lodging.rent*commission_percent)/100),
+            purpose=trans_id,
+            buyer_name=request.user.full_name(),
+            allow_repeated_payments=False,
+            redirect_url=base_url+reverse('transactions:lodging-post-redirection'),
+            webhook=base_url+reverse('transactions-api:lodging-actions', args=[lodging.id, gateway, "webhook"])
+          )
+        else:
+          raise ValidationError("invalid gateway")
+        if response['success']:
+          lodging.is_booking = True
+          lodging.save()
+          timer_jobs[lodging_id] = Timer(3*60, TransactionHandler.on_transaction_complete, args=[lodging_id])
+          timer_jobs[lodging_id].start()
+          trans.payment_request_id = response['payment_request']['id']
+          trans.save()
+          return Response({
+            'url': response['payment_request']['longurl']+'?embed=form',
+            'status': 200
+          })
+        else:
+          raise ValidationError(json.dumps({"message": response["message"], "code": response["code"]}))
+      except Lodging.DoesNotExist:
+        raise ValidationError('Lodging with id '+lodging_id+' does not exist.')
+    elif action == 'webhook':
+      if lodging_id in timer_jobs:
+        timer_jobs[lodging_id].cancel()
+        del timer_jobs[lodging_id]
+      trans_id = data.get('purpose')
+      mac_provided = data.get('mac')
+      message = "|".join(v for k, v in sorted(data.items(), key=lambda x: x[0].lower()))
+      mac_calculated = hmac.new(settings.INSTAMOJO_SALT, message.encode('utf-8'), hashlib.sha1).hexdigest
+      if mac_provided == mac_calculated:
+        try:
+          trans = LodgingTransaction.objects.get(trans_id=trans_id)
+        except LodgingTransaction.DoesNotExist:
+          raise ValidationError("transaction does not exist")
+        on_transaction(trans, data, request.user, trans.lodging)
+      return Response('ok')
+    raise ValidationError("invalid action")
+
+
+def on_transaction(trans, response, user, lodging):
+  if not trans.payment_id:
+    trans.payment_id = response['payment_id']
+    trans.status = LodgingTransaction.FAIL
+    refund = False
+    transaction_success = False
+    owner = None
+    if response['status'] == 'Credit':
+      amount_paid = int(float(response['amount']))
+      if amount_paid == math.ceil((lodging.rent*commission_percent)/100):
+        trans.amount = amount_paid
+        trans.payment_gateway_fees = response['fees']
+        trans.status = LodgingTransaction.SUCCESS
+        lodging.is_booked = True
+        owner = lodging.posted_by
+        transaction_success = True
+      else:
+        trans.status = LodgingTransaction.REFUNDED
+        trans.reason = "partial payment done"
+        refund = True
     with transaction.atomic():
       trans.save()
       lodging.save()
-  return transaction_success, lodging, region, trans
+      if refund:
+        refund_amount(trans.payment_id, "PTH", trans.reason)
+      if transaction_success:
+        msg = lodging_booked_message(owner, user)
+        send_message(msg, owner.mobile_number)
+        msg = successfull_transaction_message(user, trans, lodging)
+        send_message(msg, user.mobile_number)
+
+def refund_amount(payment_id, type, body, attempt=1):
+  logger.info(f"Refunding for payment id: {payment_id}, attempt: {attempt}")
+  if attempt < 4:
+    response = api.refund_create(
+      payment_id=payment_id,
+      type=type,
+      body=body)
+    if 'success' not in response or not response['success']:
+      t = Timer(20**attempt, refund_amount, [payment_id, type, body, attempt+1])
+      t.start()
+  else:
+    capture_message(f"Unable to refund for payment_id: {payment_id}", level='error')
 
 
 @login_required
 def lodging_post_redirection_view(request):
+  data = request.query_params
+  trans_id = -1
   try:
-    payment_id = request.GET.get('payment_id')
-    payment_request_id = request.GET.get('payment_request_id')
-    response = api.payment_request_payment_status(payment_request_id,payment_id)
-    trans_id = response['payment_request']['purpose']
-    transaction_success, lodging, region, trans = on_transaction(trans_id,response['payment_request']['payment'],False,request)
-    if request.user != trans.user:
-      return HttpResponse('Invalid request')
+    payment_id = data.get('payment_id')
+    payment_request_id = data.get('payment_request_id')
+    response = api.payment_request_payment_status(payment_request_id, payment_id)
+    if response['success'] == True:
+      trans_id = response['payment_request']['purpose']
+      trans = LodgingTransaction.objects.get(id=trans_id)
+      if trans.user == request.user:
+        on_transaction(trans, response['payment_request']['payment'], request.user, trans.lodging)
   except LodgingTransaction.DoesNotExist:
-    messages.error(request,'Invalid transaction')
-    return HttpResponseRedirect('/')
-  return render(request,'transactions/success.html',{'region':region,
-    'lodging':lodging,'transaction':trans, 'success': transaction_success})
-
-@csrf_exempt
-def lodging_webhook_view(request,trans_id):
-  if request.method=='POST':
-    purpose = request.POST.get('purpose')
-    mac_provided = request.POST.get('mac')
-    message = "|".join(v for k, v in sorted(request.POST.items(), key=lambda x: x[0].lower()))
-    mac_calculated = hmac.new(settings.INSTAMOJO_SALT, message.encode('utf-8'), hashlib.sha1).hexdigest
-    if mac_provided == mac_calculated:
-      on_transaction(purpose,request.POST,True,request)
-  return HttpResponse('ok',status=200)
+    pass
+  return HttpResponseRedirect(f"/transactions/{trans_id}")

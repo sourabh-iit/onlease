@@ -7,27 +7,15 @@ import time
 
 from rest_framework.exceptions import ValidationError
 
-onlease_last_message = ' www.onlease.in'
+from django.urls import reverse
+
+onlease_last_message = 'www.onlease.in'
 
 def generate_otp(length):
     if settings.DEBUG:
         return '0000'
     rng = random.SystemRandom()
     return ''.join([str(rng.randint(0,9)) for _ in range(length)])
-
-def send_message(mobile_number,message):
-    if settings.DEBUG==True:
-        return
-    params={
-        'mobiles': mobile_number,
-        'authkey': os.environ.get('MSG91_AUTH_KEY'),
-        'message': message,
-        'sender': 'ONLNTF',
-        'country': '91',
-        'route': '4'
-    }
-    url = 'http://api.msg91.com/api/sendhttp.php'
-    response = requests.get(url,params=params)
 
 def send_otp(session, mobile_number):
     if 'time' in session and time.time() - session['time'] < 60:
@@ -60,24 +48,14 @@ def get_name(user):
             user_name += ' ' + user.last_name
     return user_name
 
-def get_property_reference(lodging, sublodging):
-    ref = 'with '
-    if sublodging.lodging_type=='R' or sublodging.lodging_type=='P':
-        ref += 'room number '+sublodging.room_number+', '
-    ref += 'floor '+sublodging.floor_no+' and address '+lodging.address
-    return ref
+def get_lodging_link(lodging):
+    # TODO: write view for viewing lodging
+    return settings.BASE_URL + reverse("lodging:lodging-view", [lodging.id])
 
-def successfull_transaction_message(owner,customer,lodging, sublodging,transaction):
-    message = 'Dear '+get_name(customer)+', your transaction id for property '+get_property_reference(lodging, sublodging)+\
-    ' is '+str(transaction.id)+'. Contact number of owner is '+owner.mobile_number+'.'+onlease_last_message
-    return message
+def successfull_transaction_message(customer, transaction, lodging):
+    return f"Dear {get_name(customer)}, your transaction was successful. Your transaction id is {transaction.trans_id}. " +\
+            f"Click on {get_lodging_link(lodging)} to see contact details. " + onlease_last_message
 
-def invalid_transaction_message(owner,customer,lodging, sublodging,transaction,response):
-    message = 'Dear '+get_name(customer)+', your transaction id for property '+get_property_reference(lodging, sublodging)+\
-    ' is '+str(transaction.id)+'. Your transaction was invalid.'+onlease_last_message
-    return message
-
-def lodging_booked_message(owner,customer,lodging, sublodging,transaction):
-    # TODO User all mobile numbers
-    return 'Dear '+get_name(owner)+', your property'+get_property_reference(lodging, sublodging)+\
-    ' has been booked. This is his/her contact number: '+customer.mobile_number+'.'+onlease_last_message
+def lodging_booked_message(owner, customer):
+    return f"Dear {get_name(owner)}, your lodging has been booked by {get_name(customer)}. Call on this" +\
+            f" number {customer.mobile_number} to contact him/her. " + onlease_last_message

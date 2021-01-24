@@ -7,34 +7,34 @@ from apps.lodging.utils import generate_random
 User = get_user_model()
 
 class LodgingTransaction(models.Model):
-    SUCCESS = 'S'
-    PENDING = 'P'
-    CANCEL = 'C'
-    FAIL = 'F'
-    REFUNDED = 'R'
+    SUCCESS = '0'
+    PENDING = '1'
+    CANCEL = '2'
+    FAIL = '3'
+    REFUNDED = '4'
     STATUS_CHOICES = (
         (SUCCESS, "Success"),
         (PENDING, "Pending"),
-        (CANCEL, "Cancel"),
-        (FAIL, "Fail"),
+        (CANCEL, "Cancelled"),
+        (FAIL, "Failed"),
         (REFUNDED, "Refunded"),
     )
+    INSTAMOJO = '0'
+    GATEWAY_CHOICES = (
+        (INSTAMOJO, "Instamojo"),
+    )
     status = models.CharField(max_length=1, default=PENDING, choices=STATUS_CHOICES)
-    amount = models.PositiveIntegerField(validators=[RegexValidator('^[1-9][0-9]{1,10}$')])
-    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="lodgingtransaction")
-    lodging = models.ForeignKey(Lodging,on_delete=models.CASCADE)
-    payment_request_id = models.CharField(max_length=40,null=True)
-    payment_id = models.CharField(max_length=40,null=True)
+    amount = models.PositiveIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, related_name="lodgingtransactions", null=True)
+    lodging = models.ForeignKey(Lodging, related_name="transactions", on_delete=models.SET_NULL, null=True)
+    payment_request_id = models.CharField(max_length=40, default="")
+    payment_id = models.CharField(max_length=40, default="")
+    payment_gateway = models.CharField(max_length=1, choices=GATEWAY_CHOICES, default=INSTAMOJO)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    sms_status = models.CharField(max_length=1,choices=STATUS_CHOICES,
-        default=PENDING)
-    email_status = models.CharField(max_length=1,choices=STATUS_CHOICES,
-        default=PENDING)
-    payment_gateway_fees = models.CharField(max_length=12,default=0)
-    amount_paid = models.CharField(max_length=10,default=0)
-    reason = models.TextField(null=True)
-    trans_id = models.CharField(max_length=100, default=generate_random(42), editable=False, unique =True)
+    payment_gateway_fees = models.PositiveIntegerField(default=0)
+    reason = models.CharField(max_length=300, default="")
+    trans_id = models.CharField(max_length=60, editable=False, primary_key=True)
 
     class Meta:
         ordering=['updated_at']
