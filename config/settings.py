@@ -149,3 +149,7 @@ STATICFILES_DIRS = [
 sentry_sdk.init(
     dsn="https://40bbdb6dcac042be9b1a1f33aaee81fc@o498214.ingest.sentry.io/5575493"
 )
+
+MESSAGE_GATEWAY = 'twilio'
+TEXTLOCAL_APIKEY = os.environ.get("TEXTLOCAL_APIKEY", "")
+MSG91_AUTH_KEY = os.environ.get("MSG91_AUTH_KEY", "")

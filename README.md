@@ -4,7 +4,7 @@ https://onlease.herokuapp.com/
 
 **Tech stack used**: Django, Angular, Sass, Bootstrap, Django rest framework, Celery, Postgresql
 
-Steps to start
+**Steps to start**
 
 - clone repo using *git clone https://github.com/sourabh-iit/onlease.git*
 - install postgres

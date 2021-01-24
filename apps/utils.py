@@ -1,14 +1,22 @@
+import json
 import random
 import string
 import io
 import os
 from PIL import Image
+import requests
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from apps.user.models import User
 from django.db.models import Q
+from django.conf import settings
 
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+
+from twilio.rest import Client
+
+from apps.user.models import User
+
+from sentry_sdk import capture_message
 
 def generate_random(size):
     # generate random number of given size
@@ -59,3 +67,33 @@ mobile_image_size = (1000,1000)
 image_size = (2000,2000)
 profile_thumbnail_size = (50,50)
 profile_moble_image_size = (270,250)
+
+def send_message(body, to):
+    if settings.MESSAGE_GATEWAY == 'twilio':
+        client = Client(settings.TWILIO_SID, settings.TWILIO_TOKEN)
+        response = client.messages.create(body=body, from_=settings.TWILIO_PHONE_NUMBER, to='+91'+to)
+        if response['error_message'] != None:
+            capture_message(json.dumps({'message': response['error_message'], 'code': response['error_code']}), level='error')
+    # elif settings.MESSAGE_GATEWAY == 'msg91':
+    #     params={
+    #         'mobiles': to,
+    #         'authkey': settings.MSG91_AUTH_KEY,
+    #         'message': body,
+    #         'sender': 'ONLEAS',
+    #         'country': '91',
+    #         'route': '4'
+    #     }
+    #     url = 'http://api.msg91.com/api/sendhttp.php'
+    #     response = requests.get(url,params=params)
+    elif settings.MESSAGE_GATEWAY == 'textlocal':
+        url = "https://api.textlocal.in/send/"
+        data = {
+            'apikey': settings.TEXTLOCAL_APIKEY,
+            'numbers': to,
+            'message': body,
+            'sender': 'ONLEAS',
+            'test': settings.DEBUG
+        }
+        response = requests.post(url, data)
+        if response["status"] == "failure":
+            capture_message(json.dumps({response['errors']}), level='error')
