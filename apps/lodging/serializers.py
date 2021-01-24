@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.utils import serializer_helpers
 
 from .models import Lodging, Charge, LodgingImage
 from apps.locations.serializers import RegionSerializer

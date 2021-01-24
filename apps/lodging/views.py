@@ -1,6 +1,7 @@
 
 from django.db import transaction
 from django.conf import settings
+from django.db.models.lookups import Regex
 from django.db.models.query_utils import Q
 from django.http.response import HttpResponse
 from django.urls import reverse
@@ -23,11 +24,13 @@ from urllib.parse import urlparse
 from datetime import datetime, timedelta
 from threading import Timer
 import logging
+from time import time
 
-from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
+
+# TODO: Cron job to call owner of every booked property to ask if is vaccant
 
 num_lodgings_per_page = 20
 
@@ -125,7 +128,7 @@ class LodgingView(APIView):
 
   def save_lodging(self, data, user, lodging):
     with transaction.atomic():
-      data['last_confirmed'] = datetime.now()
+      data['last_confirmed'] = time()
       serializer = LodgingSerializer(lodging, data=data, context={'user': user})
       serializer.is_valid(raise_exception=True)
       lodging = serializer.save()
@@ -196,7 +199,7 @@ class TwilioHandler(APIView):
         now = datetime.now()
         if now.hour < 8 or now.hour > 22:
           raise ValidationError('Can only request between 8:00 A.M. and 10:00 P.M')
-        if lodging.last_confirmed and (datetime.now()-lodging.last_confirmed).days < 1:
+        if lodging.last_confirmed and lodging.last_confirmed - time() < 24*60*60:
           raise ValidationError('It was confirmed recently')
         if lodging_id in customer_numbers:
           if user.mobile_number not in customer_numbers[lodging_id]:
@@ -227,13 +230,12 @@ class TwilioHandler(APIView):
           del timer[lodging_id]
         lodging.is_confirming = False
         lodging.save()
-        if (datetime.now()-lodging.last_confirmed).days < 1 and not lodging.is_booked:
+        if lodging.last_confirmed - time() < 24*60*60 and not lodging.is_booked:
           for mobile_number in customer_numbers.get(lodging_id, []):
             link = settings.BASE_URL + reverse("lodging_apis:lodging", args=[lodging_id])
             lodging_type = Lodging.RESIDENTIAL_CHOICES[ord(lodging.lodging_type)-ord('0')][1]
             body = f"The {lodging_type} you enquired about recently is empty. Book now {link}. Hurry up! \n www.onlease.in"
-            client = Client(settings.TWILIO_SID, settings.TWILIO_TOKEN)
-            client.messages.create(body=body, from_=settings.TWILIO_PHONE_NUMBER, to='+91'+mobile_number)
+            send_message(body, settings.TWILIO_PHONE_NUMBER, mobile_number)
         del customer_numbers[lodging_id]
         return Response('success')
       if action == 'gather-response':
@@ -242,12 +244,12 @@ class TwilioHandler(APIView):
           choice = data['Digits']
           if choice=='1':
             resp.say('आपने चयन किया है कि आपका कमरा खाली है! धन्यवाद!', language="hi-IN")
-            lodging.last_confirmed = datetime.now()
+            lodging.last_confirmed = time()
             lodging.is_booked = False
             lodging.save()
           elif choice=='2':
             resp.say('आपने चयन किया है कि आपका कमरा खाली नहीं है! धन्यवाद!', language="hi-IN")
-            lodging.last_confirmed = datetime.now()
+            lodging.last_confirmed = time()
             lodging.is_booked = True
             lodging.available_from = None
             lodging.save()
