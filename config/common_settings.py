@@ -56,8 +56,14 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates'),os.path.join(BASE_DIR,'vrview-master'),BASE_DIR,],
-        'APP_DIRS': True,
+        'DIRS': [
+            os.path.join(BASE_DIR,'templates'),
+            os.path.join(BASE_DIR,'vrview-master'),
+            BASE_DIR,
+            os.path.join(BASE_DIR,'vrview-master'),
+            os.path.join(BASE_DIR,'static/angular'),
+        ],
+        'APP_DIRS': False,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',

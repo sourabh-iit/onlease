@@ -18,8 +18,8 @@ def generate_otp(length):
     return ''.join([str(rng.randint(0,9)) for _ in range(length)])
 
 def send_otp(session, mobile_number):
-    if 'time' in session and time.time() - session['time'] < 60:
-        raise ValidationError('Request to send OTP can be made only after 1 minute')
+    if 'time' in session and time.time() - session['time'] < 2:
+        raise ValidationError('Request to send OTP can be made only after 2 minutes')
     otp = generate_otp(4)
     session['otp'] = otp
     session['mobile_number'] = mobile_number

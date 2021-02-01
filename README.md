@@ -31,8 +31,6 @@ https://onlease.herokuapp.com/
 
 
 ### TODOs:
-Transactions setup
 Lodging vaccancy setup
-User profile image
 Angular setup
 Frontend design planning

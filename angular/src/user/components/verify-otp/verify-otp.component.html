@@ -1,0 +1,14 @@
+<form class="verify-otp-form" (ngSubmit)="verifyOtp.emit(otp)">
+  <h2>Verify OTP</h2>
+  <mat-form-field class="w-100">
+    <mat-label>Enter OTP</mat-label>
+    <input matInput name="otp" required [(ngModel)]="otp">
+  </mat-form-field>
+  <div>
+    <button type="submit" mat-raised-button color="accent" [disabled]="otp.length == 0">Verify</button>
+    <button type="button" (click)="resendOtp.emit()" mat-raised-button color="primary"
+      [disabled]="time_remaining > 0">Resend OTP</button>
+    <h4 class="badge bg-info" *ngIf="time_remaining > 0">
+      {{time_remaining | toMinutesAndSeconds}}</h4>
+  </div>
+</form>

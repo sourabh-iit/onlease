@@ -47,21 +47,13 @@ class User(AbstractUser):
   )
   mobile_number = models.CharField(max_length=16, primary_key=True, db_index=True,
       validators=[RegexValidator(mobile_number_regex)])
-  password = models.CharField(max_length=100, null=False, blank=False,
-      help_text="Password should be atleast of 8 charaters. It should"+
-      " consists of atleast one digit, one small alphabet and one capital alphabet.",
-      validators=[MinLengthValidator(8,message="Password must be atleast 8 characters long.")])
-  email = models.EmailField(null=True,blank=True,
-      validators=[RegexValidator(email_regex)])
-  first_name = models.CharField(max_length=30, null=True, blank=True,
-      validators=[RegexValidator('^[a-zA-Z]{3,}$')])
-  last_name = models.CharField(max_length=30, null=True, blank=True,
-      validators=[RegexValidator('^[a-zA-Z]{3,}$')])
-  is_allowed = models.BooleanField(default=False,help_text="Profile is not completed yet.")
-  status = models.CharField(max_length=1,choices=STATUS_CHOICES,
-      default=REGULAR)
-  is_verified = models.BooleanField(default=False)
-  gender = models.CharField(choices=GENDER_CHOICES,max_length=1,blank=True, null=True)
+  password = models.CharField(max_length=100, null=False, blank=False, validators=[MinLengthValidator(8)])
+  email = models.EmailField(null=True,blank=True, validators=[RegexValidator(email_regex)])
+  first_name = models.CharField(max_length=30, null=True, blank=True, validators=[RegexValidator('^[a-zA-Z]{3,}$')])
+  last_name = models.CharField(max_length=30, null=True, blank=True, validators=[RegexValidator('^[a-zA-Z]{3,}$')])
+  is_allowed = models.BooleanField(default=False, help_text="Profile is not completed yet.")
+  status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=REGULAR)
+  gender = models.CharField(choices=GENDER_CHOICES, max_length=1, default="")
   created_at = models.DateTimeField(auto_now=True)
   updated_at = models.DateTimeField(auto_now_add=True, null=True)
   favorite_properties = models.ManyToManyField("lodging.Lodging", related_name="favorite_of")
@@ -92,7 +84,6 @@ class MobileNumber(models.Model):
       RegexValidator(mobile_number_regex,
           message="Enter a valid mobile number.")])
   user = models.ForeignKey(User, related_name='mobile_numbers', on_delete=models.CASCADE)
-  is_verified = models.BooleanField(default=False)
   created_at = models.DateTimeField(auto_now=True)
 
 

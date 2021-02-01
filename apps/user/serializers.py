@@ -5,7 +5,7 @@ from .models import ProfileImage, User, MobileNumber, Agreement, AgreementPoint
 class MobileNumberSerializer(serializers.ModelSerializer):
   class Meta:
     model = MobileNumber
-    fields = ('id','value','is_verified')
+    fields = ('id','value')
 
 
 class AgreementPointSerializer(serializers.ModelSerializer):
@@ -42,7 +42,6 @@ class UserSerializer(serializers.ModelSerializer):
       'email',
       'first_name',
       'last_name',
-      'is_verified',
       'gender',
       'created_at',
       'updated_at',

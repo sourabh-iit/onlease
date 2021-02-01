@@ -1,0 +1,16 @@
+home -> header(login/register or user actions, logo), locations search filter, ads
+profile -> header(^), profile form
+login -> header(logo), login form, forget password, register
+register -> header(logo), register form
+post ad, edit ad -> header(user actions, logo), post ad form
+
+
+components -> lodging component (card display of lodging), home component(search filter, header and lodgings), post/edit lodging component, login component, 
+            register component, page not found component, profile component, image upload component, my lodgings component, favorites component,
+            Lodging view component, transaction success component, my bookings component
+
+modules -> home, login/register, profile, 
+
+shared module -> lodging component, header, footer
+
+urls -> home, login, register, post/edit lodging, profile, lodging view, my lodgings, my favorites, my bookings, transaction status
