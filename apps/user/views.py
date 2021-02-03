@@ -23,11 +23,13 @@ import time
 # TODO: indexing
 
 def delete_otp_fields(session):
-    for field in ['otp', 'mobile_number', 'time']:
+    for field in ['otp', 'mobile_number', 'time', 'attempts']:
         if field in session:
             del session[field]
 
 def verify_otp(session, otp):
+    if session['attempts'] >= 3:
+        raise ValidationError('Too many invalid attempts. Click on resend OTP button to receive new OTP.')
     if time.time()-session.get('time', 0) > 60*3:
         raise ValidationError('OTP has expired')
     if session.get('otp') != otp:

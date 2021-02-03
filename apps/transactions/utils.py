@@ -24,6 +24,7 @@ def send_otp(session, mobile_number):
     session['otp'] = otp
     session['mobile_number'] = mobile_number
     session['time'] = time.time()
+    session['attempts'] = 0
     if settings.DEBUG==True:
         return
     url = 'http://control.msg91.com/api/sendotp.php'
