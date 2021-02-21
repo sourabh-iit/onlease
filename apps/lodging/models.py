@@ -5,6 +5,8 @@ from django.utils.text import slugify
 
 from apps.locations.models import Region
 
+import json
+
 User = get_user_model()
 
 def lodging_image_upload_path(instance, filename):
@@ -63,12 +65,28 @@ class Lodging(models.Model):
     (UN_FURNISHED,'Unfurnished'),
   )
   KITCHEN = '0'
-  PARKING = '1'
-  AIR_CONDITIONER = '2'
+  CAR_PARKING = '1'
+  BIKE_PARKING = '2'
+  AIR_CONDITIONER = '3'
+  REFRIGERATOR = '4'
+  WATER_COOLER = '5'
+  AIR_COOLER = '6'
+  GYM = '7'
+  WATER_HEATER = '8'
+  WIFI = '9'
+  TV = '10'
   FACILITIES_AVAILABLE_CHOICES = (
-    (KITCHEN,'Kitchen'),
-    (PARKING,'Parking'),
-    (AIR_CONDITIONER,'Air conditioner'),
+    (KITCHEN, 'Kitchen'),
+    (CAR_PARKING, 'Car Parking'),
+    (BIKE_PARKING, 'Bike Parking'),
+    (AIR_CONDITIONER, 'Air conditioner'),
+    (REFRIGERATOR, 'Refrigerator'),
+    (WATER_COOLER, 'Water cooler'),
+    (AIR_COOLER, 'Air cooler'),
+    (GYM, 'Gym'),
+    (WATER_HEATER, 'Water heater'),
+    (WIFI, 'Wifi'),
+    (TV, 'Tv'),
   )
   MARBLE = '0'
   VITRIFIED_TILE = '1'
@@ -129,7 +147,7 @@ class Lodging(models.Model):
   total_floors = models.PositiveIntegerField(default=1)
   floor_no = models.IntegerField(default=1)
   furnishing = models.CharField(max_length=2, choices=FURNISHING_CHOICES)
-  facilities = models.CharField(max_length=1000, default="")
+  facilities = models.CharField(max_length=1000, default="[]")
   ground_floor = models.BooleanField(blank=True, default=False)
   top_floor = models.BooleanField(blank=True, default=False)
   available_from = models.DateField(null=True)
@@ -144,8 +162,6 @@ class Lodging(models.Model):
   flooring = models.CharField(max_length=2, choices=FLOORING_CHOICES)
   flooring_other = models.CharField(max_length=100, default="")
   additional_details = models.TextField(max_length=2000, default="")
-  title = models.CharField(max_length=70, validators=[RegexValidator('^[-a-zA-Z0-9_ ]+\Z')])
-  slug = models.SlugField(max_length=70, editable=False, validators=[validate_slug])
   is_booked = models.BooleanField(default=False)
   latlng = models.CharField(max_length=100, default="")
   virtual_tour_link = models.CharField(max_length=300, default="")
@@ -153,6 +169,8 @@ class Lodging(models.Model):
   is_confirming = models.BooleanField(default=False)
   reference = models.CharField(default="", max_length=10)
   agreement = models.ForeignKey('user.Agreement', related_name='lodgings', null=True, blank=True, on_delete=models.SET_NULL)
+  isHidden = models.BooleanField(default=False)
+  bookedBy = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='bookings')
 
   def get_per_month_amount(self):
     total = int(self.rent)
@@ -171,8 +189,8 @@ class Lodging(models.Model):
     return int(self.rent)//8
 
   def save(self, *args, **kwargs):
-    if self.title:
-      self.slug = slugify(self.title)
+    if isinstance(self.facilities, list):
+      self.facilities = json.dumps(self.facilities)
     if self.floor_no:
       if self.floor_no == 1:
         self.ground_floor = True
@@ -222,16 +240,16 @@ class LodgingImage(models.Model):
     (BUILDING, 'Building'),
     (FLOOR, 'Floor'),
     (OUTSIDE, 'Outside View'),
-    (OTHER, 'Other'),
-    (DINING_ROOM, 'Dining Room')
+    (DINING_ROOM, 'Dining Room'),
+    (OTHER, 'Other')
   )
   lodging = models.ForeignKey(Lodging, on_delete=models.CASCADE, related_name="images", null=True)
   image = models.ImageField(upload_to=lodging_image_upload_path)
   image_thumbnail = models.ImageField(upload_to=lodging_thumbnail_upload_path)
   image_mobile = models.ImageField(upload_to=lodging_mobile_image_upload_path)
   created_at = models.DateTimeField(auto_now=True)
-  tag = models.CharField(choices=LODGING_TAG_CHOICES, max_length=2, null=True)
-  tag_other = models.CharField(max_length=100, blank=True, null=True)
+  tag = models.CharField(choices=LODGING_TAG_CHOICES, max_length=2, default=BEDROOM)
+  tag_other = models.CharField(max_length=100, default="")
 
   def __str__(self):
     return self.image_thumbnail.url

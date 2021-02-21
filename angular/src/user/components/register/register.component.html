@@ -1,20 +1,8 @@
-<form class="register-form" (ngSubmit)="register()" [formGroup]="registerForm">
+<form class="register-form" (ngSubmit)="register()" *ngIf="!otpSent" [formGroup]="registerForm">
   <h2>Register</h2>
   <mat-error *ngIf="registerForm.errors?.password_mismatch">
     Password and confirm password do not match
   </mat-error>
-  <mat-form-field class="w-100">
-    <mat-label>First name</mat-label>
-    <input matInput formControlName="first_name" value="first_name">
-  </mat-form-field>
-  <mat-form-field class="w-100">
-    <mat-label>Last name</mat-label>
-    <input matInput formControlName="last_name" value="last_name">
-  </mat-form-field>
-  <mat-form-field class="w-100">
-    <mat-label>Email</mat-label>
-    <input matInput formControlName="last_name" value="last_name">
-  </mat-form-field>
   <mat-form-field class="w-100">
     <mat-label>Mobile number</mat-label>
     <input matInput required type="tel" formControlName="mobile_number" placeholder="Ex. 9999999999" value="mobile_number">
@@ -34,6 +22,7 @@
     <mat-error *ngIf="registerForm.get('password')!.hasError('minlength')">
       Minimum 8 characters are <strong>required</strong>
     </mat-error>
+    <mat-hint>Password should be atleast 8 characters long</mat-hint>
   </mat-form-field>
   <mat-form-field class="w-100">
     <mat-label>Confirm Password</mat-label>
@@ -43,6 +32,6 @@
   <a class="mt-3" [routerLink]="['/user/login']">Already registered? Login</a>
 </form>
 
-<app-verify-otp [verifyOtpFn]="userService.verify_registration"
-  [resendOtpFn]="userService.resendOtp" (otpVerified)="onOtpVerified()">
+<app-verify-otp *ngIf="otpSent" [lastOtpSent]="lastOtpSent"
+  (verifyOtp)="onVerifyOtp($event)" (resendOtp)="onResendOtp()">
 </app-verify-otp>

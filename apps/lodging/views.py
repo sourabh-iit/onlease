@@ -49,6 +49,11 @@ class LodgingActionView(APIView):
       user.favorite_properties.add(prop)
     elif action == 'remove_from_favorites':
       user.favorite_properties.remove(prop)
+    elif action == 'disable' or action == 'enable':
+      if prop.posted_by_id != user.mobile_number:
+        raise ValidationError("Not allowed")
+      prop.isHidden = True if action == 'disable' else False
+      prop.save()
     else:
       raise ValidationError("Invalid action")
     return Response('success')
@@ -56,13 +61,13 @@ class LodgingActionView(APIView):
   def get(self, request, action):
     user = request.user
     if action == 'lodgings':
-      lodgings = Lodging.objects.prefetch_related('images', 'region', 'charges', 'posted_by').filter(posted_by=user)
+      lodgings = Lodging.objects.prefetch_related('images', 'region').filter(posted_by=user)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'bookings':
-      lodgings = Lodging.objects.prefetch_related('images', 'region', 'charges', 'posted_by').filter(lodging__tenant=request.user, is_booked=True)
+      lodgings = user.bookings.prefetch_related('images', 'region').filter(is_booked=True)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'favorites':
-      lodgings = user.favorite_properties.prefetch_related('images', 'region', 'charges').all()
+      lodgings = user.favorite_properties.prefetch_related('images', 'region').all()
       return Response(LodgingSerializer(lodgings, many=True).data)
     raise ValidationError('Invalid action')
 
@@ -70,7 +75,7 @@ class LodgingListView(APIView):
   def get(self, request):
     regions = request.query_params.get('regions', [])
     page_num = request.query_params.get('page', 1)
-    query = Q(region__in=regions) & (Q(is_booked=False) | Q(is_booked=True, available_from__lt=datetime.now()+timedelta(days=15)))
+    query = Q(region__in=regions) & (Q(is_booked=False) | Q(is_booked=True, available_from__lt=datetime.now()+timedelta(days=60)))
     lodgings = Lodging.objects.prefetch_related('posted_by', 'region', 'images', 'charges').filter(query)
     paginator = Paginator(lodgings, num_lodgings_per_page)
     page = paginator.page(page_num)
@@ -143,30 +148,23 @@ class LodgingView(APIView):
           continue
       if lodging.images.count() < 2:
         raise ValidationError('Atleast 2 images are requried')
+      lodging.charges.all().delete()
       for charge in data.get('charges', []):
-        instance = None
-        if 'id' in charge:
-          try:
-            instance = Charge.objects.get(id=charge['id'])
-          except Charge.DoesNotExist:
-            pass
-        serializer = ChargeSerializer(instance, data=charge, context={'lodging': lodging})
+        serializer = ChargeSerializer(data=charge, context={'lodging': lodging})
         serializer.is_valid(raise_exception=True)
         serializer.save()
     return lodging
 
 class TourLink(APIView):
-  def post(self, request, action=None):
-    if action == 'verify-link':
-      tour_link = request.data.get('virtual_tour_link')
-      try:
-        res = requests.get(tour_link)
-        if res.status_code==200 and 'kuula' in urlparse(tour_link)[1].split('.'):
-          return Response({'is_valid': True})
-      except:
-        pass
-      return Response({'is_valid': False})
-    raise ValidationError('Invalid action')
+  def post(self, request):
+    tour_link = request.data.get('link')
+    try:
+      res = requests.get(tour_link)
+      if res.status_code==200 and 'kuula' in urlparse(tour_link)[1].split('.'):
+        return Response({'is_valid': True})
+    except:
+      pass
+    return Response({'is_valid': False})
 
 customer_numbers = {}
 timer = {}
@@ -296,31 +294,33 @@ class TwilioHandler(APIView):
     lodging_type = Lodging.LODGINGS_IN_HINDI[ord(lodging.lodging_type)]
     return f"आपका {lodging_type} जिस्की पहचान है {lodging.reference} अगर खाली है तो १ दबाए अन्यथा २ दबाए! दोबारा दोहराने के लिए ० दबाये!"
 
-class ImageActionHandler(APIView):
+class ImageHandler(APIView):
   permission_classes = (IsAuthenticated,)
   
-  def post(self, request, image_id, action):
+  def put(self, request, image_id):
     data = request.data
-    if action == 'update-tag':
-      try:
-        if 'tag' not in data or data['tag'].strip() == "" or ord(data['tag']) < 48 or ord(data['tag']) >= 48+len(LodgingImage.LODGING_TAG_CHOICES):
-          raise ValidationError("invalid tag")
-        image = LodgingImage.objects.get(id=image_id)
-        image.tag = data['tag']
-        image.save()
-        return Response('success')
-      except LodgingImage.DoesNotExist:
-        raise ValidationError("invalid image id")
-    elif action == 'delete':
-      try:
-        image = LodgingImage.objects.get(id=image_id)
-        if image.lodging and image.lodging.images.count() < 3:
-          raise ValidationError('Cannot delete image. Atleast two images are required')
-        image.delete()
-        return Response('success')
-      except LodgingImage.DoesNotExist:
-        raise ValidationError("invalid image id")
-    raise ValidationError("invalid action")
+    try:
+      if 'tag' not in data or data['tag'].strip() == "" or int(data['tag']) >= len(LodgingImage.LODGING_TAG_CHOICES):
+        raise ValidationError("invalid tag")
+      image = LodgingImage.objects.get(id=image_id)
+      image.tag = data['tag']
+      image.tag_other = data['tag_other']
+      image.save()
+      return Response(ImageSerializer(image).data)
+    except LodgingImage.DoesNotExist:
+      raise ValidationError("invalid image id")
+    except ValueError:
+      raise ValidationError("invalid tag")
+  
+  def delete(self, request, image_id):
+    try:
+      image = LodgingImage.objects.get(id=image_id)
+      if image.lodging and image.lodging.images.count() < 3:
+        raise ValidationError('Cannot delete image. Atleast two images are required')
+      image.delete()
+      return Response('success')
+    except LodgingImage.DoesNotExist:
+      raise ValidationError("invalid image id")
 
 class ImageListHandler(APIView):
   permission_classes = (IsAuthenticated,)
@@ -332,15 +332,13 @@ class ImageListHandler(APIView):
     return Response(ImageSerializer(images, many=True).data)
 
   def post(self, request):
-    # dataUrlPattern = re.compile('data:image/(png|jpg|jpeg|gif);base64,(.*)$')
-    # image_data = data['image']
-    # image_data = dataUrlPattern.match(image_data).group(2)
-    # image_data = image_data.encode()
-    # image_data = base64.b64decode(image_data)
-    # file = InMemoryUploadedFile(io.BytesIO(image_data), 'image', image_name+'.jpeg', None, None, None)
     data = request.data
     if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
       raise ValidationError('invalid image')
+    if 'tag' not in data or data['tag'].strip() == "" or ord(data['tag']) < 48 or ord(data['tag']) >= 48+len(LodgingImage.LODGING_TAG_CHOICES):
+      raise ValidationError("invalid tag")
+    if data['tag'] == 47+len(LodgingImage.LODGING_TAG_CHOICES) and data.get('tag_other', '') == '':
+      raise ValidationError("invalid tag")
     file = data['image']
     if file.size > 8*1024*1024:
       raise ValidationError("Image size should not be larger than 8mb")
@@ -353,5 +351,9 @@ class ImageListHandler(APIView):
     file.name = f"{image_name}_{rand_str}.{image_extension}"
     image_mobile = create_thumbnail(file, mobile_image_size, f"{image_name}_mobile_{rand_str}.{image_extension}", img_type)
     thumb_file = create_thumbnail(file, thumbnail_size, f"{image_name}_thumbnail_{rand_str}.{image_extension}", img_type)
-    im = LodgingImage.objects.create(image=file, image_thumbnail=thumb_file, image_mobile=image_mobile, tag=data['tag'])
+    im = LodgingImage.objects.create(
+      image=file, image_thumbnail=thumb_file,
+      image_mobile=image_mobile, tag=data['tag'],
+      tag_other=data.get('tag_other', '')
+    )
     return Response(ImageSerializer(im).data)

@@ -1,0 +1,34 @@
+<form [formGroup]="imageForm" class="image-form" (ngSubmit)="saveImage()">
+    <h1 *ngIf="!data" mat-dialog-title>New property image</h1>
+    <h1 *ngIf="data" mat-dialog-title>Edit property image</h1>
+    <div mat-dialog-content>
+        <p *ngIf="!data">
+            <img class="lodging-image mr-2" [src]="imageSrc">
+            <button type="button" mat-raised-button color="accent" (click)="fileUpload.click()">Upload image</button>
+            <input [hidden]="true" type="file" accept="image/x-png,image/gif,image/jpeg"
+              id="file" #fileUpload formControlName="url" (change)="onFileAdded($event)">
+        </p>
+        <p *ngIf="data">
+            <img [src]="data.image_thumbnail">
+        </p>
+        <mat-form-field appearance="fill">
+            <mat-label>Choose image tag</mat-label>
+            <mat-select required formControlName="tag">
+                <ng-container *ngFor="let tag of tags">
+                    <mat-option [value]="tag.value">{{tag.text}}</mat-option>
+                </ng-container>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field class="ml-2" *ngIf="imageForm.get('tag')?.value == '11'" appearance="fill">
+            <mat-label>Other value</mat-label>
+            <input required matInput formControlName="tag_other">
+        </mat-form-field>
+    </div>
+    <div mat-dialog-actions>
+        <button mat-raised-button color="accent" [disabled]="!imageForm.valid">
+            <ng-container *ngIf="!data">Add</ng-container>
+            <ng-container *ngIf="data">Save</ng-container>
+        </button>
+        <button type="button" mat-button (click)="dialogRef.close(null)" cdkFocusInitial>Cancel</button>
+    </div>
+</form>

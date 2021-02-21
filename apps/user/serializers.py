@@ -34,6 +34,11 @@ class UserSerializer(serializers.ModelSerializer):
   mobile_numbers = MobileNumberSerializer(many=True)
   agreements = AgreementSerializer(many=True)
   image = ImageSerializer()
+  favorites = serializers.SerializerMethodField()
+
+  @staticmethod
+  def get_favorites(user):
+    return [lodging.id for lodging in user.favorite_properties.all()]
 
   class Meta:
     model = User
@@ -47,6 +52,6 @@ class UserSerializer(serializers.ModelSerializer):
       'updated_at',
       'image',
       'mobile_numbers',
-      'favorite_properties',
-      'agreements'
+      'agreements',
+      'favorites'
     )

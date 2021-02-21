@@ -1,0 +1,6 @@
+<div class="title">My Bookings</div>
+<div class="lodgings-container">
+  <ng-container *ngFor="let lodging of lodgings">
+    <app-lodging-card [lodging]="lodging"></app-lodging-card>
+  </ng-container>
+</div>

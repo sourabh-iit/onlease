@@ -29,7 +29,7 @@ export class VerifyOtpComponent implements OnDestroy {
   }
 
   setRemainingTime() {
-    this.time_remaining = 2;
+    this.time_remaining = 2*60;
     this.intervalId = setInterval(() => {
      this.time_remaining--;
      if(this.time_remaining <= 0) {

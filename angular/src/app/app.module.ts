@@ -10,10 +10,27 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import { ToastrModule } from 'ngx-toastr';
+import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { UserService } from './services/user.service';
 import { GlobalErrorHandler } from './services/error-handler.service';
+import {
+  faChevronLeft,
+  faChevronRight,
+  faHeart,
+  faMapMarkerAlt,
+  faPencilAlt,
+  faPlus,
+  faRupeeSign,
+  faSpinner,
+  faTimesCircle,
+  faTrash,
+  faUpload,
+  faUserCircle
+} from '@fortawesome/free-solid-svg-icons';
 import { ToasterService } from './services/toaster.service';
+import { RegionsService } from './services/regions.service';
+import { ConstantsService } from './services/constants.service';
 
 @NgModule({
   declarations: [
@@ -27,13 +44,32 @@ import { ToasterService } from './services/toaster.service';
     MatSidenavModule,
     MatButtonModule,
     MatIconModule,
-    ToastrModule.forRoot()
+    ToastrModule.forRoot(),
+    FontAwesomeModule,
+    FontAwesomeModule
   ],
   providers: [
-    UserService,
     { provide: HTTP_INTERCEPTORS, useClass: GlobalErrorHandler, multi: true },
-    ToasterService
+    UserService,
+    ToasterService,
+    RegionsService,
+    ConstantsService
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+  constructor(library: FaIconLibrary) {
+    library.addIcons(faUserCircle);
+    library.addIcons(faUpload);
+    library.addIcons(faTrash);
+    library.addIcons(faTimesCircle);
+    library.addIcons(faPlus);
+    library.addIcons(faPencilAlt);
+    library.addIcons(faSpinner);
+    library.addIcons(faChevronLeft);
+    library.addIcons(faChevronRight);
+    library.addIcons(faRupeeSign);
+    library.addIcons(faMapMarkerAlt);
+    library.addIcons(faHeart);
+  }
+}

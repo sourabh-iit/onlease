@@ -32,10 +32,6 @@ export class AddNumberComponent implements OnDestroy {
     }));
   }
 
-  onOtpVerified() {
-    this.router.navigateByUrl('/user/me/profile');
-  }
-
   onResendOtp() {
     this.subs.add(this.userService.resendOtpNumber().subscribe(() => {
       this.lastOtpSent = Date.now();

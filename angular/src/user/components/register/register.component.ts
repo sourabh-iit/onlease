@@ -30,23 +30,33 @@ export class RegisterComponent implements OnDestroy {
     last_name: [''],
     email: ['']
   }, {validators: confirmPasswordValidator});
+  public otpSent = false;
+  public lastOtpSent = Date.now();
 
   constructor(
     public userService: UserService,
     private fb: FormBuilder,
     private router: Router
   ) {
-    this.registerForm.valueChanges.subscribe(() => console.log(this.registerForm.errors));
   }
 
   register() {
     this.subs.add(this.userService.register(this.registerForm.value).subscribe(() => {
-      this.router.navigateByUrl('/user/verify-otp')
+      this.otpSent = true;
     }));
   }
 
-  onOtpVerified() {
-    this.router.navigateByUrl('/');
+  onResendOtp() {
+    this.subs.add(this.userService.resendOtp().subscribe(() => {
+      this.lastOtpSent = Date.now();
+    }));
+  }
+
+  onVerifyOtp(otp: string) {
+    console.log("event otp: ", otp);
+    this.subs.add(this.userService.verify_registration(otp).subscribe(() => {
+      this.router.navigateByUrl("/user/me/profile");
+    }));
   }
 
   ngOnDestroy() {

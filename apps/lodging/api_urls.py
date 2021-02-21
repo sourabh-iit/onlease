@@ -10,6 +10,6 @@ urlpatterns = [
     re_path(r'^my/(?P<action>[\w-]+)/?$', views.LodgingActionView.as_view(), name="action"),
     re_path(r'^tour-link/validate/?$', views.TourLink.as_view(), name="validate-tour-link"),
     re_path(r'^(?P<lodging_id>[0-9]+)/twilio/(?P<action>[\w-]+)/?$', views.TwilioHandler.as_view(), name='twilio-actions'),
-    re_path(r'^images/(?P<image_id>[0-9]+)/(?P<action>[\w-]+)/?$', views.ImageActionHandler.as_view(), name='image-action'),
+    re_path(r'^images/(?P<image_id>[0-9]+)/?$', views.ImageHandler.as_view(), name='image'),
     re_path(r'^images/?$', views.ImageListHandler.as_view(), name='image-list')
 ]

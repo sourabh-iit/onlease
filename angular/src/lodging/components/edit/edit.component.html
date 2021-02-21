@@ -1,0 +1,213 @@
+<form class="lodging-form mb-5" (ngSubmit)="saveLodging()" [formGroup]="lodgingForm">
+  <h2 *ngIf="lodgingId == -1">New Ad</h2>
+  <h2 *ngIf="lodgingId != -1">Edit Ad</h2>
+  <mat-slide-toggle class="mb-2" formControlName="is_booked">Is booked?</mat-slide-toggle>
+  <mat-form-field (click)="picker.open()" *ngIf="lodgingForm.get('is_booked')!.value" appearance="fill">
+    <mat-label>Available from</mat-label>
+    <input placeholder="MM/DD/YYYY" formControlName="available_from" readonly [min]="tomorrow" matInput [matDatepicker]="picker">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker disabled="false"></mat-datepicker>
+  </mat-form-field>
+  <mat-form-field class="w-100">
+    <mat-label>Region</mat-label>
+    <input type="text"
+      placeholder="Start typing..."
+      matInput required
+      formControlName="region_temp"
+      [matAutocomplete]="auto">
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onRegionSelected($event)" [displayWith]="displayRegionFn">
+      <mat-option *ngFor="let region of regions" [value]="region">
+        {{region.name}} ({{region.state.name}})
+      </mat-option>
+    </mat-autocomplete>
+    <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="loadingRegions" matSuffix></fa-icon>
+  </mat-form-field>
+  <mat-form-field class="w-100">
+    <mat-label>Address</mat-label>
+    <textarea matInput required rows="2" formControlName="address"></textarea>
+  </mat-form-field>
+  <div style="display: flex;">
+    <mat-form-field class="w-100">
+      <mat-label>Property type</mat-label>
+      <mat-select formControlName="lodging_type" required>
+        <mat-option *ngFor="let lodgingType of lodgingTypes" [value]="lodgingType.value">
+          {{lodgingType.text}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="w-100 ml-2" *ngIf="lodgingForm.get('lodging_type')?.value == '4'">
+      <mat-label>Other value</mat-label>
+      <input matInput type="text" placeholder="Other value" formControlName="lodging_type_other">
+    </mat-form-field>
+  </div>
+  <div style="display: flex;">
+    <mat-form-field class="w-100">
+      <mat-label>Total floors</mat-label>
+      <mat-select formControlName="total_floors" required>
+        <mat-option *ngFor="let floor of totalfloorOptions" [value]="floor.value">
+          {{floor.text}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="w-100 ml-2" required>
+      <mat-label>Floor number</mat-label>
+      <mat-select required formControlName="floor_no">
+        <mat-option *ngFor="let floor of floorNumOptions" [value]="floor.value">
+          {{floor.text}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <mat-form-field class="w-100">
+    <mat-label>Furnishing</mat-label>
+    <mat-select formControlName="furnishing" required>
+      <mat-option *ngFor="let furnishing of furnishingOptions" [value]="furnishing.value">
+        {{furnishing.text}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field class="w-100">
+    <mat-label>Facilities available</mat-label>
+    <mat-select formControlName="facilities" multiple>
+      <mat-option *ngFor="let facility of facilityOptions" [value]="facility.value">
+        {{facility.text}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <div class="d-flex">
+    <mat-form-field>
+      <mat-label>Rent per month</mat-label>
+      <input matInput required type="text" formControlName="rent">
+      <mat-error *ngIf="lodgingForm.get('rent')!.hasError('pattern')">
+        Invalid value
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field class="w-100 ml-2">
+      <mat-label>Rent of months in advance</mat-label>
+      <input matInput required type="text" formControlName="advance_rent_of_months">
+    </mat-form-field>
+  </div>
+  <div style="display: flex;">
+    <mat-form-field class="w-100">
+      <mat-label>Area of property (total)</mat-label>
+      <input matInput required type="text" formControlName="area">
+    </mat-form-field>
+    <mat-form-field class="w-100" style="max-width: 100px;">
+      <mat-select required formControlName="unit">
+        <mat-option *ngFor="let unit of areaUnitOptions" [value]="unit.value">
+          {{unit.text}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div style="display: flex;">
+    <mat-form-field class="w-100">
+      <mat-label>Number of rooms</mat-label>
+      <input required matInput type="text" formControlName="rooms">
+    </mat-form-field>
+    <mat-form-field class="w-100 ml-2">
+      <mat-label>Number of bathrooms</mat-label>
+      <input required matInput type="text" formControlName="bathrooms">
+    </mat-form-field>
+  </div>
+  <div style="display: flex;">
+    <mat-form-field class="w-100">
+      <mat-label>Number of balconies</mat-label>
+      <input matInput required type="text" formControlName="balconies">
+    </mat-form-field>
+    <mat-form-field class="w-100 ml-2">
+      <mat-label>Number of halls</mat-label>
+      <input matInput required type="text" formControlName="halls">
+    </mat-form-field>
+  </div>
+  <div style="display: flex;">
+    <mat-form-field class="w-100">
+      <mat-label>Flooring</mat-label>
+      <mat-select required formControlName="flooring">
+        <mat-option *ngFor="let flooring of flooringOptions" [value]="flooring.value">
+          {{flooring.text}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="w-100 ml-2" *ngIf="lodgingForm.get('flooring')?.value == '10'">
+      <mat-label>Other vaue</mat-label>
+      <input matInput type="text" formControlName="flooring_other">
+    </mat-form-field>
+  </div>
+  <div class="images-container">
+    <div class="header">
+      <span>Images:</span>
+      <button type="button" mat-mini-fab color="accent" (click)="addNewImage()">
+        <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+      </button>
+    </div>
+    <div *ngIf="images.length == 0" style="text-align: center; color: gray;">No image to display</div>
+    <div class="image mt-2" *ngFor="let image of images">
+      <div class="image-continer">
+        <div style="text-align: center; color: gray;">
+          <ng-container *ngIf="image.tag != '11'">{{tagText(image.tag)}}</ng-container>
+          <ng-container *ngIf="image.tag == '11'">{{image.tag_other}}</ng-container>
+        </div>
+        <img class="mr-2" [src]="image.image_thumbnail">
+      </div>
+      <div class="actions ml-2">
+        <button type="button" mat-mini-fab color="accent" (click)="editImage(image)">
+          <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+        </button>
+        <button type="button" class="ml-2" (click)="removeLodgingImage(image)" mat-mini-fab color="warn">
+          <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="images-container mt-2 mb-2" formArrayName="charges">
+    <div class="header">
+      <span>Additional charges:</span>
+      <button type="button" mat-mini-fab color="accent" (click)="addNewCharge()">
+        <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+      </button>
+    </div>
+    <div *ngIf="charges.length == 0" style="text-align: center; color: gray;">No addiional charge added yet</div>
+    <div class="image mt-2" *ngFor="let charge of charges.controls; let i=index">
+      <div class="container" style="background: beige; padding: 5px; margin-bottom: 10px;" [formGroupName]="i">
+        <div class="row">
+          <mat-form-field class="col-6">
+            <mat-label>Amount</mat-label>
+            <input type="text" required matInput placeholder="Amount" formControlName="amount">
+          </mat-form-field>
+          <mat-form-field class="col-6">
+            <mat-select formControlName="is_per_month">
+              <mat-option [value]="false">One time only</mat-option>
+              <mat-option [value]="true">Every month</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="row">
+          <mat-form-field class="col-10">
+            <mat-label>Description</mat-label>
+            <input type="text" matInput required placeholder="Description" formControlName="description">
+          </mat-form-field>
+          <div class="col-2">
+            <button type="button" (click)="removeCharge(i)" mat-mini-fab color="warn">
+              <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <mat-form-field>
+    <mat-label>Additional Details</mat-label>
+    <textarea matInput formControlName="additional_details" rows="4"></textarea>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Virtual tour link</mat-label>
+    <input matInput formControlName="virtual_tour_link">
+    <mat-error *ngIf="lodgingForm.get('virtual_tour_link')!.hasError('invalid')">
+      Invalid link
+    </mat-error>
+    <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="validatingLink" matSuffix></fa-icon>
+  </mat-form-field>
+  <button type="submit" mat-raised-button color="accent" class="mt-2"
+    [disabled]="!lodgingForm.valid || validatingLink">Save</button>
+</form>

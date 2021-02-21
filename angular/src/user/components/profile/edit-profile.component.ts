@@ -1,9 +1,12 @@
-import { Component, OnDestroy } from '@angular/core';
-import { AbstractControl, FormBuilder, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { ToasterService } from 'src/app/services/toaster.service';
 
+import { MatDialog } from '@angular/material/dialog';
+
+import { ToasterService } from 'src/app/services/toaster.service';
 import { UserService } from 'src/app/services/user.service';
+import { ConfirmDialogComponent } from 'src/shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-edit-profile',
@@ -20,10 +23,13 @@ export class EditProfileComponent implements OnDestroy {
   });
   public user: any = {};
 
+  @ViewChild('fileUpload') fileUpload: ElementRef;
+
   constructor(
     private userService: UserService,
     private fb: FormBuilder,
-    private toaster: ToasterService
+    private toaster: ToasterService,
+    private dialog: MatDialog
   ) {
     userService.getProfile();
     this.subs.add(userService.user$.subscribe((data: any) => {
@@ -37,6 +43,52 @@ export class EditProfileComponent implements OnDestroy {
     this.subs.add(this.userService.saveProfile(this.profileForm.value).subscribe(() => {
       this.toaster.success('Success', 'Profile updated')
     }));
+  }
+
+  handleFileInput(event: any) {
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    this.userService.uploadProfileImage(formData).subscribe((data: any) => {
+      this.fileUpload.nativeElement.value = "";
+    });
+  }
+
+  removeProfileImage() {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      disableClose: true,
+      data: {
+        title: 'Are you sure?',
+        content: 'This will remove your current profile image permanently',
+        cancelText: 'No',
+        confirmText: 'Yes'
+      }
+    });
+    dialogRef.afterClosed().subscribe((yes: boolean) => {
+      console.log(yes);
+      if(yes) {
+        this.userService.removeProfileImage().subscribe(() => {
+          this.toaster.success('Success', 'Profile image removed')
+        });
+      }
+    });
+  }
+
+  deleteNumber(number: MobileNumber) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      disableClose: true,
+      data: {
+        title: 'Are you sure?',
+        content: 'Are you sure you want to delete this mobile number permanently?',
+        cancelText: 'No',
+        confirmText: 'Yes'
+      }
+    });
+    dialogRef.afterClosed().subscribe((yes: boolean) => {
+      if(yes) {
+        this.userService.deleteNumber(number).subscribe(() => {});
+      }
+    });
   }
 
   ngOnDestroy() {

@@ -20,12 +20,12 @@
         <div class="item" (click)="routeTo('/user/register')">Register</div>
       </ng-container>
       <ng-container *ngIf="isLoggedIn">
-        <div class="item">Post new ad</div>
+        <div class="item" (click)="routeTo('/lodgings/edit/-1')">Post new ad</div>
         <div class="item" (click)="routeTo('/user/me/profile')">Profile</div>
         <div class="item" (click)="routeTo('/user/me/change-password')">Change password</div>
-        <div class="item">Ads</div>
-        <div class="item">Bookings</div>
-        <div class="item">Favorites</div>
+        <div class="item" (click)="routeTo('/user/me/ads')">Ads</div>
+        <div class="item" (click)="routeTo('/user/me/bookings')">Bookings</div>
+        <div class="item" (click)="routeTo('/user/me/favorites')">Favorites</div>
         <div class="item" (click)="logout()">Logout</div>
       </ng-container>
     </div>

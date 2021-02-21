@@ -11,7 +11,7 @@ urlpatterns = [
     re_path(r'^me/profile-image/(?P<image_id>[0-9]+)/?$', views.ImageHandler.as_view(), name="profile-image"),
     re_path(r'^me/?$', views.UserHandler.as_view(), name="user-detail"),
     re_path(r'^me/(?P<action>[\w-]+)/?$', views.UserActionHandler.as_view(), name="user-action"),
+    re_path(r'^me/number/(?P<number_id>[0-9]+)/?$', views.MobileNumberHandler.as_view(), name="delete-number"),
     re_path(r'^me/number/(?P<action>[\w-]+)/?$', views.MobileNumberHandler.as_view(), name="user-action"),
-    re_path(r'^me/number/(?P<number>[7-9][0-9]{9})/?$', views.MobileNumberHandler.as_view(), name="delete-number"),
     re_path(r'^password-reset/(?P<action>[\w-]+)/?$', views.PasswordResetView.as_view(), name="password=reset"),
 ]

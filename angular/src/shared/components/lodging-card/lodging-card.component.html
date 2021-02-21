@@ -1,0 +1,57 @@
+<mat-card class="lodging" [style]="lodging.isHidden ? 'background: #f3f0f0' : ''">
+  <mat-card-header>
+    <div class="title">
+      <span>{{lodgingType}}</span>
+      <span class="rent">
+        <fa-icon [icon]="['fas', 'rupee-sign']"></fa-icon> {{lodging.rent}}
+      </span>
+    </div>
+    <div class="sub-title">
+      <span>
+        <fa-icon style="color: blue;" [icon]="['fas', 'map-marker-alt']"></fa-icon>
+        {{lodging.region?.name}} ({{lodging.region?.state?.name}})
+      </span>
+      <span style="border-bottom: 1px solid gray;">{{lodgingFurnishing}}</span>
+    </div>
+  </mat-card-header>
+  <div class="image-slider mb-2">
+    <div class="prev button" (click)="prevImage()" *ngIf="hasPrevImage()">
+      <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
+    </div>
+    <img [src]="lodging.images[currImage].image_thumbnail">
+    <div class="next button" (click)="nextImage()" *ngIf="hasNextImage()">
+      <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
+    </div>
+  </div>
+  <hr>
+  <mat-card-content>
+    <div class="booking">
+      <div class="display vaccant" *ngIf="!lodging.is_booked">Vaccant</div>
+      <div style="color: red;" *ngIf="lodging.is_booked">
+        <div style="font-size: 14px;">Available from: {{toDate(lodging.available_from) | date}}</div>
+        <div></div>
+      </div>
+    </div>
+    <!-- <div class="facilities">
+      <div>
+        <fa-icon [icon]="['fas', 'cutlery']" *ngIf="hasFacility('kitchen', lodging)"></fa-icon>
+        <fa-icon [icon]="['fas', 'car']" *ngIf="hasFacility('parking', lodging)"></fa-icon>
+        <fa-icon [icon]="['fas', 'cutlery']" *ngIf="hasFacility('parking', lodging)"></fa-icon>
+      </div>
+    </div> -->
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button (click)="onButtonClick('details')">Go to Details</button>
+    <button mat-raised-button (click)="onButtonClick('tour')" *ngIf="lodging.virtual_tour_link != ''">View Tour</button>
+    <button type="button" [ngStyle]="{'color': isFavorite ? 'red' : 'lightgray'}"
+      mat-icon-button *ngIf="!lodging.posted_by || lodging.posted_by.mobile_number != me.mobile_number"
+      style="font-size: 20px;" (click)="favorite()">
+      <fa-icon [icon]="['fas', 'heart']"></fa-icon>
+    </button>
+  </mat-card-actions>
+  <mat-card-actions *ngIf="lodging.posted_by && lodging.posted_by.mobile_number == me.mobile_number">
+    <button mat-raised-button color="accent" [routerLink]="['/lodgings/edit', lodging.id]">Edit</button>
+    <button mat-raised-button color="warn" *ngIf="!lodging.isHidden" (click)="disable()">Disable</button>
+    <button mat-raised-button color="secondary" *ngIf="lodging.isHidden" (click)="enable()">Enable</button>
+  </mat-card-actions>
+</mat-card>

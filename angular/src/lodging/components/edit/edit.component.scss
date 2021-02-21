@@ -1,0 +1,35 @@
+.lodging-form {
+  margin: auto;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+
+  h2 {
+    text-align: center;
+  }
+
+  .images-container {
+    border: 1px solid lightgray;
+    padding: 10px;
+    border-radius: 5px;
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .image {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      .image-container {
+        img {
+          width: inherit;
+        }
+      }
+    }
+  }
+}

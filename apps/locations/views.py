@@ -1,5 +1,5 @@
 from apps.locations.serializers import RegionSerializer
-from .models import Region
+from .models import Region, State
 
 import googlemaps
 
@@ -7,24 +7,18 @@ from django.db.models import Count
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 import time
 
-regions_cache = {
-  "data": [],
-  "time": time.time() - 60*5
-}
+states = []
 
 class RegionListHandler(APIView):
 
   def get(self, request):
-    if time.time() - regions_cache["time"] > 60:
-      regions = Region.objects.annotate(num_lodgings=Count('lodgings')).filter(num_lodgings__gt=0)
-      data = RegionSerializer(regions, many=True).data
-      regions_cache["data"] = data
-      regions_cache["time"] = time.time()
-    else:
-      data = regions_cache["data"]
+    q = request.query_params.get('q')
+    regions = Region.objects.prefetch_related('state').filter(name__istartswith=q)[:20]
+    data = RegionSerializer(regions, many=True).data
     return Response(data)
 
 # def current_location_view(request):

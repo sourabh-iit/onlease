@@ -7,6 +7,7 @@ from apps.user.serializers import UserSerializer
 from .utils import clean_data
 
 from datetime import datetime
+import json
 
 
 class ChargeSerializer(serializers.ModelSerializer):
@@ -41,18 +42,20 @@ class ImageSerializer(serializers.ModelSerializer):
       'image_mobile',
       'image_thumbnail',
       'created_at',
-      'tag'
+      'tag',
+      'tag_other'
     )
 
 class LodgingSerializer(serializers.ModelSerializer):
   images = serializers.SerializerMethodField()
   charges = ChargeSerializer(many=True, required=False)
   region = RegionSerializer(required=False)
-  lodging_type = serializers.ChoiceField(choices=Lodging.RESIDENTIAL_CHOICES, required=False)
-  flooring = serializers.ChoiceField(choices=Lodging.FLOORING_CHOICES, required=False)
+  lodging_type = serializers.ChoiceField(choices=Lodging.RESIDENTIAL_CHOICES)
+  flooring = serializers.ChoiceField(choices=Lodging.FLOORING_CHOICES)
   region_id = serializers.IntegerField()
 
-  def get_images(self, lodging):
+  @staticmethod
+  def get_images(lodging):
     return ImageSerializer(lodging.images.all(), many=True).data
 
   class Meta:
@@ -87,12 +90,12 @@ class LodgingSerializer(serializers.ModelSerializer):
       'latlng',
       'charges',
       'virtual_tour_link',
-      'title',
       'unit',
       'last_confirmed',
       'is_confirming',
       'region_id',
-      'reference'
+      'reference',
+      'isHidden'
     )
     read_only_fields = (
       'id',
@@ -101,10 +104,16 @@ class LodgingSerializer(serializers.ModelSerializer):
       'no_times_booked',
       'region',
       'is_confirming',
-      'images'
+      'images',
+      'charges'
     )
     extra_kwargs = {
-      'virtual_tour_link': {'required': False},
+      'virtual_tour_link': {'required': False, 'allow_blank': True},
+      'additional_details': {'required': False, 'allow_blank': True},
+      'available_from': {'required': False},
+      'facilities': {'required': False, 'allow_blank': True},
+      'flooring_other': {'required': False, 'allow_blank': True},
+      'latlng': {'required': False, 'allow_blank': True},
       'address': {'write_only': True},
       'reference': {'write_only': True}
     }
@@ -146,13 +155,15 @@ class LodgingSerializer(serializers.ModelSerializer):
 
   def update(self, instance, validated_data):
     for key in validated_data:
-      setattr(instance, key, validated_data[key])
+      if key not in self.Meta.read_only_fields:
+        setattr(instance, key, validated_data[key])
     instance.posted_by = self.context['user']
     instance.save()
     return instance
 
 class FullLodgingSerializer(LodgingSerializer):
   posted_by = UserSerializer()
+  
   class Meta(LodgingSerializer.Meta):
     model = Lodging
     fields = LodgingSerializer.Meta.fields + ('address','reference','posted_by')

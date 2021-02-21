@@ -9,7 +9,7 @@
 </form>
 
 <ng-container *ngIf="otpSent">
-  <app-verify-otp (verifyOtp)="onVerifyOtp($event.value)"
+  <app-verify-otp (verifyOtp)="onVerifyOtp($event)"
     (resendOtp)="onResendOtp()" [lastOtpSent]="lastOtpSent">
   </app-verify-otp>
 </ng-container>

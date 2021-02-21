@@ -1,0 +1,94 @@
+.lodging {
+  margin-right: 20px;
+  margin-top: 20px;
+  width: 280px;
+
+  .image-slider {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    margin: 0 -16px;
+
+    &:hover {
+      .button {
+        display: flex;
+      }
+    }
+
+    .button {
+      display: none;
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 10%;
+      background-color: #194479;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 36px;
+      opacity: 0.3;
+      cursor: pointer;
+
+      &.prev {
+        left: 0px;
+      }
+
+      &.next {
+        right: 0px;
+      }
+    }
+  }
+
+  mat-card-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+
+    .title {
+      font-size: 18px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+
+      .rent {
+        font-size: 20px;
+        font-weight: 600;
+        color: green;
+      }
+    }
+
+    .sub-title {
+      color: rgba(0,0,0,.54);
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+  
+  .booking {
+    display: flex;
+    justify-content: center;
+
+    .display {
+      padding: 2.5px 10px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      &.vaccant {
+        background-color: green;
+      }
+      &.booked {
+        background-color: red;
+      }
+    }
+  }
+
+  mat-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

@@ -128,10 +128,10 @@ class MobileNumberHandler(APIView):
             raise ValidationError('You cannot add more than 3 numbers')
         send_otp(session, mobile_number)
     
-    def delete(self, request, number):
+    def delete(self, request, number_id):
         user = request.user
         try:
-            mobile_number = user.mobile_numbers.get(value=number)
+            mobile_number = user.mobile_numbers.get(id=number_id)
             mobile_number.delete()
         except ObjectDoesNotExist:
             raise ValidationError("Mobile number does not exist")
@@ -276,12 +276,6 @@ class ImageHandler(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        # dataUrlPattern = re.compile('data:image/(png|jpg|jpeg|gif);base64,(.*)$')
-        # image_data = data['image']
-        # image_data = dataUrlPattern.match(image_data).group(2)
-        # image_data = image_data.encode()
-        # image_data = base64.b64decode(image_data)
-        # file = InMemoryUploadedFile(io.BytesIO(image_data), 'image', image_name+'.jpeg', None, None, None)
         data = request.data
         user = request.user
         if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
@@ -305,11 +299,9 @@ class ImageHandler(APIView):
             im = ProfileImage.objects.create(file=file, thumbnail=thumb_file, user=request.user)
         return Response(ImageSerializer(im).data)
 
-    def delete(self, request, image_id):
+    def delete(self, request):
         user = request.user
         if not hasattr(user, "image"):
             raise ValidationError("No image")
-        if user.image.id != int(image_id):
-            raise ValidationError("Not authorized")
         user.image.delete()
         return Response('success')

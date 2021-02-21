@@ -7,7 +7,9 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToasterService } from './toaster.service';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class GlobalErrorHandler implements HttpInterceptor {
 
   constructor(public toaster: ToasterService) {}

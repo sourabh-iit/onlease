@@ -23,7 +23,7 @@
 
 .sidenav-content {
   margin-top: 50px;
-  height: 100%;
+  height: calc(100% - 50px)!important;
 }
 
 .sidenav {

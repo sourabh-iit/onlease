@@ -1,2 +1,0 @@
-throttle critical apis
-hide side nav on click on a link

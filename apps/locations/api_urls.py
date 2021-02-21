@@ -1,9 +1,9 @@
-from django.urls import path
+from django.urls import re_path
 
 from . import views
 
 
 app_name='locations'
 urlpatterns = [
-    path('all/', views.RegionListHandler.as_view(), name="regions"),
+    re_path(r'^all/?$', views.RegionListHandler.as_view(), name="regions"),
 ]

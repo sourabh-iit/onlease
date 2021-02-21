@@ -1,9 +1,37 @@
 <form class="profile-form" (ngSubmit)="saveProfile()" [formGroup]="profileForm">
   <h2>My Profile</h2>
+  <div class="profile-image">
+    <fa-icon [icon]="['fas', 'user-circle']" *ngIf="!user.image"></fa-icon>
+    <img [src]="user.image.thumbnail" *ngIf="user.image" alt="{{user.first_name}} profile image">
+    <div class="actions">
+      <button type="button" mat-mini-fab color="accent" (click)="fileUpload.click()">
+        <fa-icon [icon]="['fas', 'upload']"></fa-icon>
+      </button>
+      <input [hidden]="true" type="file" accept="image/x-png,image/gif,image/jpeg"
+        id="file" #fileUpload (change)="handleFileInput($event)">
+      <button *ngIf="user.image" type="button" class="ml-2" (click)="removeProfileImage()" mat-mini-fab color="warn">
+        <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+      </button>
+    </div>
+  </div>
   <mat-form-field class="w-100">
     <mat-label>Mobile Number</mat-label>
     <input matInput disabled type="tel" value="{{user.mobile_number}}">
   </mat-form-field>
+  <div class="mb-2">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      Alternate mobile numbers: 
+      <button matTooltip="Add new number" type="button" mat-mini-fab color="accent" [disabled]="user.mobile_numbers.length > 2" [routerLink]="['/user/me/add-number']">
+        <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+      </button>
+    </div>
+    <mat-chip-list>
+      <mat-chip *ngFor="let number of user.mobile_numbers" [removable]="true" [selectable]="false" (removed)="deleteNumber(number)">
+        {{number.value}}
+        <fa-icon matChipRemove [icon]="['fas', 'times-circle']">delete</fa-icon>
+      </mat-chip>
+    </mat-chip-list>
+  </div>
   <mat-form-field class="w-100">
     <mat-label>First Name</mat-label>
     <input matInput type="text" formControlName="first_name">
@@ -23,16 +51,5 @@
       <mat-radio-button class="ml-3" value="2">Female</mat-radio-button>
     </mat-radio-group>
   </div>
-  <button type="submit" mat-raised-button color="accent" [disabled]="!profileForm.valid">Submit</button>
+  <button type="submit" mat-raised-button color="accent" [disabled]="!profileForm.valid">Save</button>
 </form>
-
-<hr>
-<div class="profile-form">
-  <h2>My Mobile Numbers</h2>
-  <div class="mobile-number" *ngFor="let number of user.mobile_numbers">
-    <span>{{number}}</span>
-  </div>
-  <button type="button" mat-raised-button color="accent"
-    [disabled]="user.mobile_numbers.length > 2" [routerLink]="['/user/me/add-number']">
-    Add new number</button>
-</div>
