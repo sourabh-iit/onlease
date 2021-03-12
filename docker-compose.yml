@@ -1,0 +1,26 @@
+version: "3.9"
+   
+services:
+  db:
+    build:
+      context: ./
+      dockerfile: db.Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./var/pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=sourabh
+      - POSTGRES_PASSWORD=sourabh
+      - POSTGRES_DB=onlease
+  web:
+    restart: always
+    build:
+      context: ./
+      dockerfile: web.Dockerfile
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db

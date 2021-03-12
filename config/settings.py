@@ -5,7 +5,7 @@ import sentry_sdk
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '_q$l!3v2zo#$z+pt9hawchy2xjo)3+&y!f@w=o(2(_tz+quj&#'
 
-NG_ROK = '1f9a4c94431b'
+NG_ROK = '77807afe7903'
 USE_NG_ROK = True
 BASE_URL = 'http://127.0.0.1:8000'
 if USE_NG_ROK:
@@ -26,7 +26,7 @@ DATABASES = {
         'NAME': 'onlease',
         'USER': 'sourabh',
         'PASSWORD': 'sourabh',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432'
     }
 }
@@ -38,8 +38,8 @@ if not DEBUG:
             'NAME': 'onlease',
             'USER': os.environ.get('DB_USERNAME'),
             'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': 'localhost',
-            'PORT': ''
+            'HOST': 'postgres://db',
+            'PORT': '5432'
         }
     }
 
@@ -94,6 +94,8 @@ INSTAMOJO_API_KEY = 'test_6789fe46ddf86acf17557f8d030'
 INSTAMOJO_AUTH_KEY = 'test_0d6fd27a256047d31bf26b109a8'
 INSTAMOJO_SALT = b'1d83a8d73aa84093857eb269fd825d67'
 INSTAMOJO_ENDPOINT = 'https://test.instamojo.com/api/1.1/'
+
+PAYMENT_GATEWAY = '0'
 
 CONTACT_RECIPIENTS = ['sourabh7singh@gmail.com','feedback@onlease.in']
 
