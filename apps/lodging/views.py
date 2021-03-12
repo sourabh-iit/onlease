@@ -75,7 +75,9 @@ class LodgingListView(APIView):
   def get(self, request):
     regions = request.query_params.get('regions', [])
     page_num = request.query_params.get('page', 1)
-    query = Q(region__in=regions) & (Q(is_booked=False) | Q(is_booked=True, available_from__lt=datetime.now()+timedelta(days=60)))
+    query = (Q(is_booked=False) | Q(is_booked=True, available_from__lt=datetime.now()+timedelta(days=60))) & Q(isHidden=False)
+    if len(regions) > 0:
+      query &= Q(region__in=regions)
     lodgings = Lodging.objects.prefetch_related('posted_by', 'region', 'images', 'charges').filter(query)
     paginator = Paginator(lodgings, num_lodgings_per_page)
     page = paginator.page(page_num)

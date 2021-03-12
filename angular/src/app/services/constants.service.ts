@@ -41,6 +41,33 @@ export class ConstantsService {
     {'text': 'Kitchen', value: '0'},
     {'text': 'Parking', value: '1'},
     {'text': 'Air conditioner', value: '2'}
-  ]
+  ];
+
+  public areaUnitOptions = [
+    {text: 'sq. gaj', value: '0'},
+    {text: 'sq. yds.', value: '1'},
+    {text: 'sq. feet', value: '2'},
+    {text: 'sq. meter', value: '3'},
+    {text: 'acre', value: '4'},
+    {text: 'marla', value: '5'},
+    {text: 'kanal', value: '6'},
+    {text: 'biswa', value: '7'},
+    {text: 'ares', value: '8'},
+    {text: 'hectares', value: '9'}
+  ];
+  
+  public flooringOptions = [
+    {text: 'Marble', value: '0'},
+    {text: 'Vitrified Tile', value: '1'},
+    {text: 'Vinyl', value: '2'},
+    {text: 'Granite', value: '3'},
+    {text: 'Bamboo', value: '4'},
+    {text: 'Concrete', value: '5'},
+    {text: 'Laminate', value: '6'},
+    {text: 'Linoleum', value: '7'},
+    {text: 'Terrazzo', value: '8'},
+    {text: 'Brick', value: '9'},
+    {text: 'Other', value: '10'}
+  ];
   
 }

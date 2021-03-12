@@ -113,6 +113,31 @@ class ConstantsService {
             { 'text': 'Parking', value: '1' },
             { 'text': 'Air conditioner', value: '2' }
         ];
+        this.areaUnitOptions = [
+            { text: 'sq. gaj', value: '0' },
+            { text: 'sq. yds.', value: '1' },
+            { text: 'sq. feet', value: '2' },
+            { text: 'sq. meter', value: '3' },
+            { text: 'acre', value: '4' },
+            { text: 'marla', value: '5' },
+            { text: 'kanal', value: '6' },
+            { text: 'biswa', value: '7' },
+            { text: 'ares', value: '8' },
+            { text: 'hectares', value: '9' }
+        ];
+        this.flooringOptions = [
+            { text: 'Marble', value: '0' },
+            { text: 'Vitrified Tile', value: '1' },
+            { text: 'Vinyl', value: '2' },
+            { text: 'Granite', value: '3' },
+            { text: 'Bamboo', value: '4' },
+            { text: 'Concrete', value: '5' },
+            { text: 'Laminate', value: '6' },
+            { text: 'Linoleum', value: '7' },
+            { text: 'Terrazzo', value: '8' },
+            { text: 'Brick', value: '9' },
+            { text: 'Other', value: '10' }
+        ];
     }
 }
 ConstantsService.ɵfac = function ConstantsService_Factory(t) { return new (t || ConstantsService)(); };
@@ -361,6 +386,7 @@ class AppModule {
         library.addIcons(_fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_12__["faRupeeSign"]);
         library.addIcons(_fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_12__["faMapMarkerAlt"]);
         library.addIcons(_fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_12__["faHeart"]);
+        library.addIcons(_fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_12__["faBuilding"]);
     }
 }
 AppModule.ɵmod = _angular_core__WEBPACK_IMPORTED_MODULE_16__["ɵɵdefineNgModule"]({ type: AppModule, bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_2__["AppComponent"]] });
@@ -565,10 +591,13 @@ const routes = [
     {
         path: 'user',
         loadChildren: () => Promise.all(/*! import() | user-user-module */[__webpack_require__.e("default~lodging-lodging-module~user-user-module"), __webpack_require__.e("user-user-module")]).then(__webpack_require__.bind(null, /*! ../user/user.module */ "5AQx")).then(m => m.UserModule)
-    },
-    {
+    }, {
         path: 'lodgings',
         loadChildren: () => Promise.all(/*! import() | lodging-lodging-module */[__webpack_require__.e("default~lodging-lodging-module~user-user-module"), __webpack_require__.e("lodging-lodging-module")]).then(__webpack_require__.bind(null, /*! ../lodging/lodging.module */ "bxG9")).then(m => m.LodgingModule)
+    }, {
+        path: '',
+        redirectTo: 'lodgings',
+        pathMatch: 'full'
     }
 ];
 class AppRoutingModule {

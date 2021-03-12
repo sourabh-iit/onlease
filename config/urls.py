@@ -20,6 +20,7 @@ urlpatterns = [
     re_path(r'^lodgings/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^lodgings/(?P<lodging_id>[0-9]+)/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^lodgings/edit/(?P<lodging_id>-?[0-9]+)/?$', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^lodgings/details/(?P<lodging_id>-?[0-9]+)/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/profile/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/favorites/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/ads/?$', TemplateView.as_view(template_name='index.html')),

@@ -81,36 +81,35 @@ class TransactionHandler(APIView):
       raise PermissionDenied()
     return Response(TransactionSerializer(trans).data)
 
-  def post(self, request, lodging_id, gateway, action):
+  def post(self, request, lodging_id, action):
     data = request.data
     if action == 'create':
+      gateway = settings.PAYMENT_GATEWAY
       if settings.DEBUG:
         base_url = 'http://'+request.META['HTTP_HOST']
       else:
         base_url = settings.BASE_URL
       try:
         lodging = Lodging.objects.get(id=lodging_id)
-        if not lodging.last_confirmed or lodging.last_confirmed - time.time() > 24*60*60:
+        if not lodging.last_confirmed or lodging.last_confirmed.timestamp() - time.time() > 24*60*60:
           raise ValidationError('Latest confirmation for vaccancy is not done')
-        if lodging.is_booking:
-          raise ValidationError('Someone is booking this currently. Try again after 3 minutes.')
-        if lodging.is_booked:
+        if lodging.is_booked or lodging.isHidden:
           raise ValidationError('It is already booked.')
         trans_id = TransactionHandler.generate_random_transaction_id()
         trans = LodgingTransaction.objects.create(
           user = request.user,
           lodging = lodging,
           trans_id = trans_id,
-          gateway = gateway
+          payment_gateway = gateway
         )
-        if int(gateway) == 1:
+        if gateway == LodgingTransaction.INSTAMOJO:
           response = api.payment_request_create(
             amount=math.ceil((lodging.rent*commission_percent)/100),
             purpose=trans_id,
-            buyer_name=request.user.full_name(),
+            buyer_name=request.user.full_name,
             allow_repeated_payments=False,
-            redirect_url=base_url+reverse('transactions:lodging-post-redirection'),
-            webhook=base_url+reverse('transactions-api:lodging-actions', args=[lodging.id, gateway, "webhook"])
+            redirect_url=base_url+reverse('transactions-api:lodging-actions'),
+            webhook=base_url+reverse('transactions-api:lodging-actions', args=[lodging.id, "webhook"])
           )
         else:
           raise ValidationError("invalid gateway")

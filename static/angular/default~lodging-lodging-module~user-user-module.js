@@ -11630,14 +11630,14 @@ class LodgingCardComponent {
     }
     onButtonClick(action) {
         if (action == 'details') {
-            this.router.navigateByUrl('/');
+            this.router.navigateByUrl(`/lodgings/details/${this.lodging.id}`);
         }
         else if (action == 'tour') {
         }
     }
     setIsFavorite() {
         if (this.lodging) {
-            if (this.me.favorites.indexOf(this.lodging.id) > -1) {
+            if (this.me.favorites && this.me.favorites.indexOf(this.lodging.id) > -1) {
                 this.isFavorite = true;
             }
             else {
@@ -11752,7 +11752,7 @@ LodgingCardComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdef
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](23, "mat-card-actions");
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](24, "button", 14);
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function LodgingCardComponent_Template_button_click_24_listener() { return ctx.onButtonClick("details"); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](25, "Go to Details");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](25, "See Details");
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](26, LodgingCardComponent_button_26_Template, 2, 0, "button", 15);
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](27, LodgingCardComponent_button_27_Template, 2, 5, "button", 16);

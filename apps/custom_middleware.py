@@ -39,7 +39,8 @@ class LogData:
     except:
       body = {}
     response = self.get_response(request)
-    logger.info(f"{url} {response.status_code} {request.method} {body} {get_client_ip(request)}")
+    req_data = f"{url} {response.status_code} {request.method} {body} {get_client_ip(request)}"
+    logger.info(req_data)
     return response
 
 def custom_exception_handler(exc, context):

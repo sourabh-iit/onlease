@@ -15,6 +15,7 @@ import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontaweso
 import { UserService } from './services/user.service';
 import { GlobalErrorHandler } from './services/error-handler.service';
 import {
+  faBuilding,
   faChevronLeft,
   faChevronRight,
   faHeart,
@@ -71,5 +72,6 @@ export class AppModule {
     library.addIcons(faRupeeSign);
     library.addIcons(faMapMarkerAlt);
     library.addIcons(faHeart);
+    library.addIcons(faBuilding);
   }
 }

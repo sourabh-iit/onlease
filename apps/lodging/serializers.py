@@ -151,6 +151,8 @@ class LodgingSerializer(serializers.ModelSerializer):
 
   def create(self, validated_data):
     user = self.context['user']
+    if 'charges' in validated_data:
+      del validated_data['charges']
     return Lodging.objects.create(posted_by=user, **validated_data)
 
   def update(self, instance, validated_data):

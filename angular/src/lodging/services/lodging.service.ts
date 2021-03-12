@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 
 @Injectable()
@@ -36,5 +36,23 @@ export class LodgingService {
 
   updateImageTag(imageId: any, data: any) {
     return this.http.put(`/api/lodging/images/${imageId}`, data);
+  }
+
+  loadLodgings(regions: string[]) {
+    let params = new HttpParams();
+    for(let region of regions) {
+      params.set("regions", region);
+    }
+    return this.http.get('/api/lodging/list', {params});
+  }
+
+  confirmVaccant(lodgingId: any) {
+    let url = `/api/lodging/${lodgingId}/twilio/confirm-vaccancy`;
+    return this.http.post(url, {});
+  }
+
+  bookLodging(lodgingId: any) {
+    let url = `/api/transactions/lodging/${lodgingId}/create`;
+    return this.http.post(url, {});
   }
 }

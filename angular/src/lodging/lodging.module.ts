@@ -15,7 +15,8 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
-
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {IvyCarouselModule} from 'angular-responsive-carousel';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 
 import { SharedModule } from '../shared/shared.module';
@@ -26,6 +27,9 @@ import { LodgingService } from './services/lodging.service';
 import { LodgingImageComponent } from './components/image/image.component';
 import { GlobalErrorHandler } from 'src/app/services/error-handler.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HomeComponent } from './components/home/home.component';
+import { LodgingDetailsComponent } from './components/details/details.component';
+import { LodgingResolver } from './services/lodging-resolver.service';
 
 export const MY_FORMATS = {
   parse: {
@@ -42,7 +46,9 @@ export const MY_FORMATS = {
 @NgModule({
   declarations: [
     EditLodgingComponent,
-    LodgingImageComponent
+    LodgingImageComponent,
+    HomeComponent,
+    LodgingDetailsComponent
   ],
   imports: [
     ReactiveFormsModule,
@@ -61,12 +67,15 @@ export const MY_FORMATS = {
     MatAutocompleteModule,
     MatSlideToggleModule,
     MatDatepickerModule,
-    MatMomentDateModule
+    MatMomentDateModule,
+    MatProgressSpinnerModule,
+    IvyCarouselModule
   ],
   providers: [
     LodgingService,
     {provide: MAT_DATE_FORMATS, useValue: MY_FORMATS},
     { provide: HTTP_INTERCEPTORS, useClass: GlobalErrorHandler, multi: true },
+    LodgingResolver
   ],
   entryComponents: [
     LodgingImageComponent

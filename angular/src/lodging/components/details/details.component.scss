@@ -1,0 +1,48 @@
+.box {
+  box-shadow: 0 8px 32px rgb(0 0 0 / 10%), 0 2px 8px rgb(0 0 0 / 10%);
+  border-radius: 10px;
+}
+
+.content {
+  padding: 60px 120px;
+  display: flex;
+  justify-content: center;
+
+  .carousel-cell {
+    img {
+      width: inherit!important;
+      height: inherit;
+      max-width: 100%!important;
+      max-height: 100%;
+    }
+  }
+}
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  font-size: 18px;
+
+  .rent {
+    color: green;
+  }
+}
+
+.details {
+  color: gray;
+  div {
+    fa-icon {
+      margin-right: 10px;
+    }
+  }
+}
+
+.value {
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+.name {
+  
+}

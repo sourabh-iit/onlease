@@ -53,7 +53,6 @@ export class RegisterComponent implements OnDestroy {
   }
 
   onVerifyOtp(otp: string) {
-    console.log("event otp: ", otp);
     this.subs.add(this.userService.verify_registration(otp).subscribe(() => {
       this.router.navigateByUrl("/user/me/profile");
     }));

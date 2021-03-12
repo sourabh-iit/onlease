@@ -47,33 +47,7 @@ export const crossFieldValidator: ValidatorFn = (control: AbstractControl): Vali
 })
 export class EditLodgingComponent implements OnInit, OnDestroy {
   public subs = new Subscription();
-  public lodgingForm = this.fb.group({
-    address: ['', [Validators.required]],
-    region: ['', [Validators.required]],
-    lodging_type: ['3', [Validators.required]],
-    lodging_type_other: [''],
-    total_floors: ['', [Validators.required]],
-    floor_no: ['', [Validators.required]],
-    furnishing: ['1', [Validators.required]],
-    facilities: [[]],
-    rent: ['', [Validators.required, Validators.pattern(/^[1-9][0-9]*$/)]],
-    area: ['', [Validators.required, Validators.pattern(/^[1-9][0-9]*$/)]],
-    unit: ['0', [Validators.required]],
-    bathrooms: ['1', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
-    rooms: ['1', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
-    balconies: ['0', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
-    halls: ['0', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
-    advance_rent_of_months: ['1', [Validators.required, Validators.pattern(/^[1-9][0-9]*$/)]],
-    flooring: ['5', [Validators.required]],
-    flooring_other: [''],
-    additional_details: [''],
-    is_booked: [false, [Validators.required]],
-    available_from: [''],
-    latlng: [''],
-    virtual_tour_link: [''],
-    region_temp: ['', [Validators.required]],
-    charges: this.fb.array([])
-  }, { validator: crossFieldValidator});
+  public lodgingForm: any;
   public user: any = {};
   public lodgingId = -1;
   public lodging: any = {};
@@ -88,31 +62,8 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   public floorNumOptions: any = [];
   public furnishingOptions: any = [];
   public facilityOptions: any = [];
-  public areaUnitOptions = [
-    {text: 'sq. gaj', value: '0'},
-    {text: 'sq. yds.', value: '1'},
-    {text: 'sq. feet', value: '2'},
-    {text: 'sq. meter', value: '3'},
-    {text: 'acre', value: '4'},
-    {text: 'marla', value: '5'},
-    {text: 'kanal', value: '6'},
-    {text: 'biswa', value: '7'},
-    {text: 'ares', value: '8'},
-    {text: 'hectares', value: '9'}
-  ];
-  public flooringOptions = [
-    {text: 'Marble', value: '0'},
-    {text: 'Vitrified Tile', value: '1'},
-    {text: 'Vinyl', value: '2'},
-    {text: 'Granite', value: '3'},
-    {text: 'Bamboo', value: '4'},
-    {text: 'Concrete', value: '5'},
-    {text: 'Laminate', value: '6'},
-    {text: 'Linoleum', value: '7'},
-    {text: 'Terrazzo', value: '8'},
-    {text: 'Brick', value: '9'},
-    {text: 'Other', value: '10'}
-  ];
+  public areaUnitOptions: any = [];
+  public flooringOptions: any = [];
 
   constructor(
     private fb: FormBuilder,
@@ -125,6 +76,8 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     private router: Router
   ) {
     this.subs.add(this.route.params.subscribe(params => {
+      this.lodgingForm = this.createLodgingForm();
+      this.images = [];
       this.lodgingId = parseInt(params['lodgingId']);
       if(this.lodgingId > 0) {
         this.loadLodging();
@@ -142,6 +95,8 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.furnishingOptions = this.constantsService.furnishingTypes;
     this.facilityOptions = this.constantsService.facilities;
+    this.areaUnitOptions = this.constantsService.areaUnitOptions;
+    this.flooringOptions = this.constantsService.flooringOptions;
     this.subs.add(this.lodgingForm.get('region_temp')!.valueChanges.subscribe((query: any) => {
       if(this.regionControl.value == '') {
         this.regionTempControl.setErrors({'required': true});
@@ -150,7 +105,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
         this.regions = data;
       }));
     }));
-    this.subs.add(this.lodgingForm.get('total_floors')!.valueChanges.subscribe(val => {
+    this.subs.add(this.lodgingForm.get('total_floors')!.valueChanges.subscribe((val: any) => {
       let totalFloors = parseInt(val);
       this.floorNumOptions = [];
       for(let i=0; i<totalFloors; i++) {
@@ -164,6 +119,36 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       this.validateTourLink(val);
     }));
     this.lodgingTypes = this.constantsService.lodgingTypes;
+  }
+
+  private createLodgingForm() {
+    return this.fb.group({
+      address: ['', [Validators.required]],
+      region: ['', [Validators.required]],
+      lodging_type: ['3', [Validators.required]],
+      lodging_type_other: [''],
+      total_floors: ['', [Validators.required]],
+      floor_no: ['', [Validators.required]],
+      furnishing: ['1', [Validators.required]],
+      facilities: [[]],
+      rent: ['', [Validators.required, Validators.pattern(/^[1-9][0-9]*$/)]],
+      area: ['', [Validators.required, Validators.pattern(/^[1-9][0-9]*$/)]],
+      unit: ['0', [Validators.required]],
+      bathrooms: ['1', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
+      rooms: ['1', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
+      balconies: ['0', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
+      halls: ['0', [Validators.required, Validators.pattern(/^[0-9]*$/)]],
+      advance_rent_of_months: ['1', [Validators.required, Validators.pattern(/^[1-9][0-9]*$/)]],
+      flooring: ['5', [Validators.required]],
+      flooring_other: [''],
+      additional_details: [''],
+      is_booked: [false, [Validators.required]],
+      available_from: [''],
+      latlng: [''],
+      virtual_tour_link: [''],
+      region_temp: ['', [Validators.required]],
+      charges: this.fb.array([])
+    }, { validator: crossFieldValidator});
   }
 
   get charges() {
@@ -188,10 +173,9 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
 
   private getLocation() {
     if(navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(location) {
-        console.log(location.coords.latitude);
-        console.log(location.coords.longitude);
-        console.log(location.coords.accuracy);
+      navigator.geolocation.getCurrentPosition((location) => {
+        const coords = location.coords;
+        this.lodgingForm.get('latlng')!.setValue(`${coords.latitude},${coords.longitude},${coords.accuracy}`);
       });
     }
   }
@@ -266,12 +250,17 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     });
   }
 
-  tagText(tagId: string) {
+  tagText(image: any) {
+    let tag = "Unknown";
+    const tagId = image.tag;
     const index = this.constantsService.tags.findIndex((tag: any) => tag.value == tagId);
     if(index > -1) {
-      return this.constantsService.tags[index].text;
+      tag = this.constantsService.tags[index].text;
+      if(tag == 'Other') {
+        tag = image.tag_other;
+      }
     }
-    return "Unknown";
+    return tag;
   }
 
   loadLodging() {
@@ -312,7 +301,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   }
 
   populateForm(data: Lodging) {
-    console.log(data);
     this.images = data.images;
     if(data.region) {
       this.regions = [data.region];

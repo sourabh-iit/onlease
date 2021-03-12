@@ -144,10 +144,7 @@
     <div *ngIf="images.length == 0" style="text-align: center; color: gray;">No image to display</div>
     <div class="image mt-2" *ngFor="let image of images">
       <div class="image-continer">
-        <div style="text-align: center; color: gray;">
-          <ng-container *ngIf="image.tag != '11'">{{tagText(image.tag)}}</ng-container>
-          <ng-container *ngIf="image.tag == '11'">{{image.tag_other}}</ng-container>
-        </div>
+        <div style="text-align: center; color: gray;">{{tagText(image)}}</div>
         <img class="mr-2" [src]="image.image_thumbnail">
       </div>
       <div class="actions ml-2">

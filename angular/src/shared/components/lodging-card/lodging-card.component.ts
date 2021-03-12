@@ -60,7 +60,7 @@ export class LodgingCardComponent implements OnDestroy {
 
   onButtonClick(action: string) {
     if(action == 'details') {
-      this.router.navigateByUrl('/');
+      this.router.navigateByUrl(`/lodgings/details/${this.lodging.id}`);
     } else if(action == 'tour') {
 
     }
@@ -68,7 +68,7 @@ export class LodgingCardComponent implements OnDestroy {
 
   setIsFavorite() {
     if(this.lodging) {
-      if(this.me.favorites.indexOf(this.lodging.id) > -1) {
+      if(this.me.favorites && this.me.favorites.indexOf(this.lodging.id) > -1) {
         this.isFavorite = true;
       } else {
         this.isFavorite = false;

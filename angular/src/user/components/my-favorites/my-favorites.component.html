@@ -3,4 +3,8 @@
   <ng-container *ngFor="let lodging of lodgings">
     <app-lodging-card [lodging]="lodging"></app-lodging-card>
   </ng-container>
+  <ng-container *ngIf="lodgings.length == 0">
+    <div class="no-booking">
+      <fa-icon [icon]="['fas', 'times-circle']" style="color: red;"></fa-icon> There is no ad in favorite yet</div>
+  </ng-container>
 </div>

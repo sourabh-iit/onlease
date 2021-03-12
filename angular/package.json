@@ -26,6 +26,8 @@
     "@fortawesome/angular-fontawesome": "^0.8.2",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
+    "@types/jquery": "^3.5.5",
+    "angular-responsive-carousel": "^2.0.2",
     "bootstrap": "^4.6.0",
     "jquery": "^3.5.1",
     "moment": "^2.29.1",

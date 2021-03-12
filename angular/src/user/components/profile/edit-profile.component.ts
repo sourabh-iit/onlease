@@ -33,7 +33,6 @@ export class EditProfileComponent implements OnDestroy {
   ) {
     userService.getProfile();
     this.subs.add(userService.user$.subscribe((data: any) => {
-      console.log(data);
       this.user = data != null ? data : {};
       this.profileForm.patchValue(this.user);
     }));
@@ -65,7 +64,6 @@ export class EditProfileComponent implements OnDestroy {
       }
     });
     dialogRef.afterClosed().subscribe((yes: boolean) => {
-      console.log(yes);
       if(yes) {
         this.userService.removeProfileImage().subscribe(() => {
           this.toaster.success('Success', 'Profile image removed')
