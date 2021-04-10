@@ -19,12 +19,14 @@ import {MatChipsModule} from '@angular/material/chips';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { VirtualTourComponent } from './components/virutal-tour/virtual-tour.component';
 
 @NgModule({
   declarations: [
     ToMinutesAndSecondsPipe,
     LodgingCardComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    VirtualTourComponent
   ],
   imports: [
     RouterModule,
@@ -63,7 +65,8 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
     ConfirmDialogComponent
   ],
   entryComponents: [
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    VirtualTourComponent
   ]
 })
 export class SharedModule { }

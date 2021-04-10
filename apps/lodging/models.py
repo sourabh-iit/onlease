@@ -2,10 +2,12 @@ from django.db import models
 from django.core.validators import RegexValidator, validate_slug
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+from django.conf import settings
 
 from apps.locations.models import Region
 
 import json
+import math
 
 User = get_user_model()
 
@@ -187,6 +189,24 @@ class Lodging(models.Model):
 
   def get_booking_amount(self):
     return int(self.rent)//8
+
+  @property
+  def all_charges(self):
+    charges = [
+      { 'text': 'Rent', 'amount': self.rent, 'is_per_month': True },
+      { 'text': 'Brokerage', 'amount': (self.rent*settings.BROKERAGE_PERCENT)/100, 'is_per_month': False }
+    ]
+    if self.advance_rent_of_months > 1:
+      charges.append({ 'text': 'Security', 'amount': (self.advance_rent_of_months-1)*self.rent, 'is_per_month': False })
+    for charge in self.charges.all():
+      charges.append({ 'text': charge.description, 'amount': charge.amount, 'is_per_month': charge.is_per_month })
+    return charges
+
+  @property
+  def booking_amount(self):
+    rent = self.rent
+    tot_amt = math.ceil((rent*(settings.BOOKING_PERCENT + settings.BROKERAGE_PERCENT))/100)
+    return tot_amt
 
   def save(self, *args, **kwargs):
     if isinstance(self.facilities, list):

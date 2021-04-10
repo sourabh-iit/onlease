@@ -15,6 +15,20 @@
   top: 0;
   width: 100%;
   z-index: 4;
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    .text {
+      color: #c5aeae;
+      font-weight: 600;
+      font-family: cursive;
+      font-size: 23px;
+      margin-left: 5px;
+    }
+  }
 
   .toggle {
 

@@ -32,7 +32,6 @@ api = Instamojo(api_key=settings.INSTAMOJO_API_KEY,
         auth_token=settings.INSTAMOJO_AUTH_KEY,
         endpoint=settings.INSTAMOJO_ENDPOINT)
 
-commission_percent = 10
 timer_jobs = {}
 
 logger = logging.getLogger('onlease-logger')
@@ -104,7 +103,7 @@ class TransactionHandler(APIView):
         )
         if gateway == LodgingTransaction.INSTAMOJO:
           response = api.payment_request_create(
-            amount=math.ceil((lodging.rent*commission_percent)/100),
+            amount=lodging.booking_amount,
             purpose=trans_id,
             buyer_name=request.user.full_name,
             allow_repeated_payments=False,
@@ -155,7 +154,7 @@ def on_transaction(trans, response, user, lodging):
     owner = None
     if response['status'] == 'Credit':
       amount_paid = int(float(response['amount']))
-      if amount_paid == math.ceil((lodging.rent*commission_percent)/100):
+      if amount_paid == lodging.booking_amount:
         trans.amount = amount_paid
         trans.payment_gateway_fees = response['fees']
         trans.status = LodgingTransaction.SUCCESS

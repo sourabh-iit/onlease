@@ -96,17 +96,11 @@ class LodgingView(APIView):
       raise ValidationError('Lodging does not exist')
     user = request.user
     show_contact_details = self.can_show_contact_details(user, lodging)
-    if action is None:
-      if show_contact_details:
-        serializer = FullLodgingSerializer(lodging)
-      else:
-        serializer = LodgingSerializer(lodging)
-      return Response(serializer.data)
-    elif action == 'contact-details':
-      if show_contact_details:
-        return Response(FullLodgingSerializer(lodging).data)
-      raise ValidationError('Unauthorized request')
-    raise ValidationError('Invalid action')
+    if show_contact_details:
+      serializer = FullLodgingSerializer(lodging)
+    else:
+      serializer = LodgingSerializer(lodging)
+    return Response(serializer.data)
 
   def can_show_contact_details(self, user, lodging):
     return user.is_authenticated and (lodging.posted_by == user or (lodging.is_booked and lodging.tenant == user))
@@ -156,6 +150,20 @@ class LodgingView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
     return lodging
+
+class LodgingChargesHandler(APIView):
+
+  def get(self, request, lodging_id):
+    try:
+      lodging = Lodging.objects.get(id=lodging_id)
+    except Lodging.DoesNotExist:
+      raise ValidationError('Lodging does not exist')
+    return Response({
+      'charges': lodging.all_charges,
+      'bookingAmount': lodging.booking_amount,
+      'brokerage': settings.BROKERAGE_PERCENT,
+      'advanceRent': settings.BOOKING_PERCENT
+    })
 
 class TourLink(APIView):
   def post(self, request):

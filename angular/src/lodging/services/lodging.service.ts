@@ -55,4 +55,9 @@ export class LodgingService {
     let url = `/api/transactions/lodging/${lodgingId}/create`;
     return this.http.post(url, {});
   }
+
+  getAllCharges(lodgingId: any) {
+    const url = `/api/lodging/charges/${lodgingId}`;
+    return this.http.get(url);
+  }
 }

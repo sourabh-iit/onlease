@@ -19,6 +19,7 @@ import {
   faChevronLeft,
   faChevronRight,
   faHeart,
+  faLock,
   faMapMarkerAlt,
   faPencilAlt,
   faPlus,
@@ -73,5 +74,6 @@ export class AppModule {
     library.addIcons(faMapMarkerAlt);
     library.addIcons(faHeart);
     library.addIcons(faBuilding);
+    library.addIcons(faLock);
   }
 }

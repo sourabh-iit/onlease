@@ -1,12 +1,52 @@
+::ng-deep {
+  @media only screen and (max-width: 800px) {
+    .content {
+      padding: 10px 30px;
+  
+      .carousel-arrow {
+        height: 20px!important;
+        width: 20px!important;
+        background-size: 20px!important;
+      }
+      
+      .carousel-arrow-next {
+        right: -25px!important;
+      }
+      
+      .carousel-arrow-prev {
+        left: -25px!important;
+      }
+  
+    }
+    
+    .ku-embed {
+      height: 400px;
+    }
+  }
+}
+
+@media only screen and (min-width: 800px) {
+  .content {
+    padding: 60px 120px;
+  }
+    
+  .ku-embed {
+    height: 600px;
+  }
+}
+
 .box {
   box-shadow: 0 8px 32px rgb(0 0 0 / 10%), 0 2px 8px rgb(0 0 0 / 10%);
   border-radius: 10px;
-}
 
+  .ku-embed {
+    width: 100%;
+  }
+}
 .content {
-  padding: 60px 120px;
   display: flex;
   justify-content: center;
+  position: relative;
 
   .carousel-cell {
     img {
@@ -15,6 +55,16 @@
       max-width: 100%!important;
       max-height: 100%;
     }
+  }
+}
+
+@media only screen and (min-width: 800px) {
+  .content {
+    padding: 60px 120px;
+  }
+    
+  .ku-embed {
+    height: 600px;
   }
 }
 

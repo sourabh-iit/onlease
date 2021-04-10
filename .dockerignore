@@ -2,4 +2,5 @@ angular
 media
 var
 venv
+*.log
 .git

@@ -1,0 +1,12 @@
+<div class="header">
+    <div class="title">Displaying virtual tour</div>
+    <fa-icon [icon]="['fas', 'times-circle']" 
+        class="close-button"
+        (click)="dialogRef.close()"></fa-icon>
+</div>
+<div class="body">
+    <iframe class="ku-embed" frameborder="0" scrolling="no"
+        allow="xr-spatial-tracking; gyroscope; accelerometer" 
+        [src]="tourLink"
+    ></iframe>
+</div>

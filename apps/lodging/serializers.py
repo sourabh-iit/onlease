@@ -48,11 +48,11 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class LodgingSerializer(serializers.ModelSerializer):
   images = serializers.SerializerMethodField()
-  charges = ChargeSerializer(many=True, required=False)
   region = RegionSerializer(required=False)
   lodging_type = serializers.ChoiceField(choices=Lodging.RESIDENTIAL_CHOICES)
   flooring = serializers.ChoiceField(choices=Lodging.FLOORING_CHOICES)
   region_id = serializers.IntegerField()
+  charges = ChargeSerializer(many=True)
 
   @staticmethod
   def get_images(lodging):
@@ -88,14 +88,14 @@ class LodgingSerializer(serializers.ModelSerializer):
       'is_booked',
       'images',
       'latlng',
-      'charges',
       'virtual_tour_link',
       'unit',
       'last_confirmed',
       'is_confirming',
       'region_id',
       'reference',
-      'isHidden'
+      'isHidden',
+      'charges'
     )
     read_only_fields = (
       'id',

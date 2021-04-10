@@ -8,6 +8,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster.service';
 import { Router } from '@angular/router';
+import { VirtualTourComponent } from '../virutal-tour/virtual-tour.component';
 
 @Component({
   selector: 'app-lodging-card',
@@ -62,7 +63,14 @@ export class LodgingCardComponent implements OnDestroy {
     if(action == 'details') {
       this.router.navigateByUrl(`/lodgings/details/${this.lodging.id}`);
     } else if(action == 'tour') {
-
+      this.dialog.open(VirtualTourComponent, {
+        data: {
+          tourLink: this.lodging.virtual_tour_link
+        },
+        width: "100%",
+        height: "100%",
+        panelClass: "virtual-tour-dialog"
+      });
     }
   }
 

@@ -1,29 +1,37 @@
-import { AfterViewInit, Component, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import * as $ from "jquery";
 import * as moment from 'moment';
+import * as $ from 'jquery';
 
 import { ConstantsService } from 'src/app/services/constants.service';
 import { UserService } from 'src/app/services/user.service';
 import { ToasterService } from 'src/app/services/toaster.service';
 import { LodgingService } from 'src/lodging/services/lodging.service';
+import { environment } from 'src/environments/environment';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-lodging-details',
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss']
 })
-export class LodgingDetailsComponent implements AfterViewInit, OnDestroy {
+export class LodgingDetailsComponent implements OnDestroy {
   public lodging: any;
   public subs = new Subscription();
   public me: User;
-  public currImage = 0;
   public isFavorite = false;
-
+  public env: any = {};
+  public isLoggedIn = false;
+  public tourLink: SafeResourceUrl;
   @ViewChild('carousel') carousel: any;
   private prevButton: any = null;
   private nextButton: any = null;
+  public currImage = 0;
+  public charges: any[] = [];
+  public bookingAmt = 0;
+  public brokerage = 0;
+  public advanceRent = 0;
 
   constructor(
     private userService: UserService,
@@ -31,8 +39,12 @@ export class LodgingDetailsComponent implements AfterViewInit, OnDestroy {
     private toasterService: ToasterService,
     private router: Router,
     private route: ActivatedRoute,
-    private lodgingService: LodgingService
+    private lodgingService: LodgingService,
+    private sanitizer: DomSanitizer
   ) {
+    this.subs.add(userService.isLoggedIn$.subscribe((res) => {
+      this.isLoggedIn = res;
+    }));
     this.subs.add(this.route.data.subscribe((data) => {
       this.lodging = data.lodging;
     }));
@@ -40,6 +52,14 @@ export class LodgingDetailsComponent implements AfterViewInit, OnDestroy {
       this.me = user;
       this.setIsFavorite();
     }));
+    this.subs.add(lodgingService.getAllCharges(this.lodging.id).subscribe((res: any) => {
+      this.charges = res.charges;
+      this.bookingAmt = res.bookingAmount;
+      this.brokerage = res.brokerage;
+      this.advanceRent = res.advanceRent;
+    }));
+    this.env = environment;
+    this.tourLink = this.sanitizer.bypassSecurityTrustResourceUrl(this.lodging.virtual_tour_link);
   }
 
   ngAfterViewInit() {
@@ -56,6 +76,19 @@ export class LodgingDetailsComponent implements AfterViewInit, OnDestroy {
         this.currImage += 1;
       }
     });
+  }
+
+  tagText(image: any) {
+    let tag = "Unknown";
+    const tagId = image.tag;
+    const index = this.constantsService.tags.findIndex((tag: any) => tag.value == tagId);
+    if(index > -1) {
+      tag = this.constantsService.tags[index].text;
+      if(tag == 'Other') {
+        tag = image.tag_other;
+      }
+    }
+    return tag;
   }
 
   get type() {
@@ -97,31 +130,16 @@ export class LodgingDetailsComponent implements AfterViewInit, OnDestroy {
   }
   
   get oneMonthRent() {
-    const charges = this.lodging.charges.filter((charge: any) => charge.is_per_month);
-    const totalCharge = charges.reduce((acc: number, currVal: any) => acc + parseInt(currVal.amount), 0);
-    return parseInt (this.lodging.rent) + totalCharge;
+    return this.charges.filter((charge: any) => charge.is_per_month).reduce((acc: number, currVal: any) => acc + parseInt(currVal.amount), 0);
   }
 
   get firstMonthRent() {
-    return this.lodging.charges.reduce((acc: number, currVal: any) => acc + parseInt(currVal.amount), 0) + parseInt(this.lodging.rent)*this.lodging.advance_rent_of_months;
+    return this.charges.reduce((acc: number, currVal: any) => acc + parseInt(currVal.amount), 0);
   }
 
   get needToConfirm() {
     const last_confirmed = moment(this.lodging.last_confirmed);
     return moment.duration(moment().diff(last_confirmed)).asHours() >= 24;
-  }
-
-  tagText(image: any) {
-    let tag = "Unknown";
-    const tagId = image.tag;
-    const index = this.constantsService.tags.findIndex((tag: any) => tag.value == tagId);
-    if(index > -1) {
-      tag = this.constantsService.tags[index].text;
-      if(tag == 'Other') {
-        tag = image.tag_other;
-      }
-    }
-    return tag;
   }
 
   setIsFavorite() {

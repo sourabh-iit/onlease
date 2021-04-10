@@ -1,3 +1,20 @@
+::ng-deep {
+  .virtual-tour-dialog {
+    width: 100%;
+    max-width: 100%!important;
+  
+    .mat-dialog-container {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    iframe {
+      height: 100%;
+      width: 100%;
+    }
+  }
+}
+
 .lodging {
   margin-right: 20px;
   margin-top: 20px;
