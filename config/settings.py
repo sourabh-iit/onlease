@@ -123,7 +123,7 @@ if USE_NG_ROK:
     BASE_URL='https://'+NG_ROK+'.ngrok.io'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(int(os.environ.get('DEBUG')))
 
 ALLOWED_HOSTS = [ BASE_URL ]
 if os.environ.get('ALLOWED_HOSTS'):
@@ -148,7 +148,7 @@ MEDIA_URL = '/media/'
 
 if not DEBUG:
     STATICFILES_FINDERS = (
-        'django.contrib.staticfiles.finders.FileSystemFinder'
+        'django.contrib.staticfiles.finders.FileSystemFinder',
     )
     STATIC_ROOT = os.environ.get('STATIC_ROOT')
     MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
@@ -196,7 +196,7 @@ CONTACT_RECIPIENTS = [ 'sourabh7singh@gmail.com','sourabh.singh@onlease.in' ]
 
 ADMINS = [('Sourabh singh','sourabh7singh@gmail.com'),('Vinit kumar','dhayania1992vinit@gmail.com')]
 
-MANAGERS = [('Sourabh singh','sourabh7singh@gmail.com'),]
+MANAGERS = [('Sourabh singh','sourabh7singh@gmail.com')]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 if DEBUG:
