@@ -1,6 +1,9 @@
 import os
 import sentry_sdk
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = bool(int(os.environ.get('DEBUG')))
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -121,9 +124,6 @@ USE_NG_ROK = bool(int(os.environ.get('USE_NG_ROK')))
 BASE_URL = os.environ.get('BASE_URL')
 if DEBUG and USE_NG_ROK:
     BASE_URL = f'https://{NG_ROK}.ngrok.io'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(os.environ.get('DEBUG')))
 
 ALLOWED_HOSTS = [ '*' ]
 
