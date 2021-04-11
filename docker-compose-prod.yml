@@ -5,10 +5,8 @@ services:
         build:
             context: ./
             dockerfile: docker/db.Dockerfile
-        ports:
-            - ${DB_PORT}:${DB_PORT}
         volumes:
-            - ./var/pgdata:/var/lib/postgresql/data
+            - ./var/prod/pgdata:/var/lib/postgresql/data
         environment:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}

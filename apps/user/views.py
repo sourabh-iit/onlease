@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 
 from .models import ProfileImage, User, MobileNumber
-from apps.transactions.utils import send_otp
+from apps.utils import send_otp
 from .serializers import MobileNumberSerializer, UserSerializer, ImageSerializer
 from apps.utils import generate_random, create_thumbnail, thumbnail_size
 

@@ -5,18 +5,23 @@ import io
 import os
 from PIL import Image
 import requests
+import time
+import logging
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
 from django.conf import settings
 
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.exceptions import ValidationError
 
 from twilio.rest import Client
 
 from apps.user.models import User
 
 from sentry_sdk import capture_message
+
+logger = logging.getLogger('onlease-logger')
 
 def generate_random(size):
     # generate random number of given size
@@ -97,3 +102,40 @@ def send_message(body, to):
         response = requests.post(url, data)
         if response["status"] == "failure":
             capture_message(json.dumps({response['errors']}), level='error')
+
+onlease_last_message = 'www.onlease.in'
+
+def generate_otp(length):
+    if settings.DEBUG:
+        return '0000'
+    rng = random.SystemRandom()
+    return ''.join([str(rng.randint(0,9)) for _ in range(length)])
+
+def send_otp(session, mobile_number):
+    if 'time' in session and time.time() - session['time'] < 2*60:
+        raise ValidationError('Request to send OTP can be made only after 2 minutes')
+    otp = generate_otp(4)
+    session['otp'] = otp
+    session['mobile_number'] = mobile_number
+    session['time'] = time.time()
+    session['attempts'] = 0
+    if settings.DEBUG==True:
+        return
+    url = 'http://control.msg91.com/api/sendotp.php'
+    params={
+        'mobile': mobile_number,
+        'authkey': os.environ.get('MSG91_AUTH_KEY'),
+        'message': 'Your verification code is '+otp+'. This code will expire in 3 minutes.'+onlease_last_message,
+        'sender': 'ONLOTP',
+        'otp': otp
+    }
+    res = requests.post(url=url, params=params)
+    data = json.loads(res.text)
+    if data['type']=='error':
+        logger.error(f"Error in sending OTP using msg91: {data['message']}")
+        url = f"https://2factor.in/API/V1/{settings.TF_APIKEY}/SMS/{mobile_number}/{otp}"
+        res = requests.get(url)
+        data = res.json()
+        if data['Status'] == 'Error':
+            logger.error(f"Error in sending OTP using 2factor: {data['Details']}")
+            raise ValidationError("Unable to send OTP. Please contact admin.")

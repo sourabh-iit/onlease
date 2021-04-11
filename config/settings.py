@@ -183,7 +183,7 @@ DATABASES = {
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'db',
-        'PORT': os.environ.get('DB_PORT')
+        'PORT': 5432
     }
 }
 
@@ -291,6 +291,7 @@ sentry_sdk.init(
 MESSAGE_GATEWAY = 'twilio'
 TEXTLOCAL_APIKEY = os.environ.get("TEXTLOCAL_APIKEY")
 MSG91_AUTH_KEY = os.environ.get("MSG91_AUTH_KEY")
+TF_APIKEY=os.environ.get("TF_APIKEY")
 
 BROKERAGE_PERCENT = 25
 BOOKING_PERCENT = 25
