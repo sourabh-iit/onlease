@@ -119,15 +119,13 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 NG_ROK = os.environ.get('NG_ROK')
 USE_NG_ROK = bool(int(os.environ.get('USE_NG_ROK')))
 BASE_URL = os.environ.get('BASE_URL')
-if USE_NG_ROK:
-    BASE_URL='https://'+NG_ROK+'.ngrok.io'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get('DEBUG')))
 
-ALLOWED_HOSTS = [ BASE_URL ]
-if os.environ.get('ALLOWED_HOSTS'):
-    ALLOWED_HOSTS.extend(os.environ.get('ALLOWED_HOSTS').split(','))
+ALLOWED_HOSTS = [ 'localhost', '103.86.176.106', '.onlease.in' ]
+if USE_NG_ROK:
+    ALLOWED_HOSTS.append([ f'https://{NG_ROK}.ngrok.io', f'http://{NG_ROK}.ngrok.io' ])
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
