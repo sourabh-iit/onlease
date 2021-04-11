@@ -191,8 +191,8 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 if not DEBUG:
-    STATIC_ROOT = '/vol/static'
-    MEDIA_ROOT = '/vol/media'
+    STATIC_ROOT = os.environ.get('STATIC_ROOT')
+    MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
 
 INSTAMOJO_API_KEY = os.environ.get('INSTAMOJO_API_KEY')
 INSTAMOJO_AUTH_KEY = os.environ.get('INSTAMOJO_AUTH_KEY')

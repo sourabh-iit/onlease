@@ -6,7 +6,7 @@ services:
             context: ./
             dockerfile: docker/db.Dockerfile
         volumes:
-            - ./var/prod/pgdata:/var/lib/postgresql/data
+            - ./var/test/pgdata:/var/lib/postgresql/data
         environment:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -18,8 +18,8 @@ services:
             dockerfile: docker/web.Dockerfile
         volumes:
             - .:/code
-            - static_data:/vol/static
-            - static_data:/vol/media
+            - static_data:/vol/test/static
+            - static_data:/vol/test/media
         ports:
             - "8000:8000"
         depends_on:
@@ -35,8 +35,8 @@ services:
             - DB_USER=${DB_USER}
             - ALLOWED_HOSTS=${ALLOWED_HOSTS}
             - TF_APIKEY=${TF_APIKEY}
-            - STATIC_ROOT=/vol/static
-            - MEDIA_ROOT=/vol/media
+            - STATIC_ROOT=/vol/test/static
+            - MEDIA_ROOT=/vol/test/media
     nginx:
         build:
             context: ./
@@ -45,7 +45,7 @@ services:
             - "80:8000"
             - "443:8000"
         volumes:
-            - static_data:/vol/static
+            - static_data:/vol/test/static
         depends_on:
             - web
 
