@@ -2,6 +2,7 @@ version: "3.9"
    
 services:
     test_db:
+        restart: always
         build:
             context: ./
             dockerfile: docker/db.Dockerfile
@@ -37,6 +38,7 @@ services:
             - STATIC_ROOT=/vol/test/static
             - MEDIA_ROOT=/vol/test/media
     test_nginx:
+        restart: always
         build:
             context: ./
             dockerfile: docker/test.nginx.Dockerfile

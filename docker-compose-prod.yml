@@ -2,6 +2,7 @@ version: "3.9"
    
 services:
     db:
+        restart: always
         build:
             context: ./
             dockerfile: docker/db.Dockerfile
@@ -37,6 +38,7 @@ services:
             - STATIC_ROOT=/vol/static
             - MEDIA_ROOT=/vol/media
     nginx:
+        restart: always
         build:
             context: ./
             dockerfile: docker/prod.nginx.Dockerfile
