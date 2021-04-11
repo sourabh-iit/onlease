@@ -148,8 +148,8 @@ if not DEBUG:
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.FileSystemFinder',
     )
-    STATIC_ROOT = os.environ.get('STATIC_ROOT')
-    MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
+    STATIC_ROOT = '/vol/static'
+    MEDIA_ROOT = '/vol/media'
 else:
     MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
