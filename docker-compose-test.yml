@@ -2,10 +2,7 @@ version: "3.9"
    
 services:
     test_db:
-        restart: always
-        build:
-            context: ./
-            dockerfile: docker/db.Dockerfile
+        image: postgres
         volumes:
             - ./var/test/pgdata:/var/lib/postgresql/data
         environment:
