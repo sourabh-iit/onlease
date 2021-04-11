@@ -1,7 +1,7 @@
 version: "3.9"
    
 services:
-    db:
+    test_db:
         build:
             context: ./
             dockerfile: docker/db.Dockerfile
@@ -11,7 +11,7 @@ services:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
             - POSTGRES_DB=onlease
-    web:
+    test_web:
         restart: always
         build:
             context: ./
@@ -23,7 +23,7 @@ services:
         ports:
             - "8000:8000"
         depends_on:
-            - db
+            - test_db
         environment:
             - DEBUG=0
             - BASE_URL=${BASE_URL}
@@ -36,7 +36,7 @@ services:
             - TF_APIKEY=${TF_APIKEY}
             - STATIC_ROOT=/vol/test/static
             - MEDIA_ROOT=/vol/test/media
-    nginx:
+    test_nginx:
         build:
             context: ./
             dockerfile: docker/test.nginx.Dockerfile
@@ -45,7 +45,7 @@ services:
         volumes:
             - static_data:/vol/test/static
         depends_on:
-            - web
+            - test_web
 
 volumes:
     static_data:
