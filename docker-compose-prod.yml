@@ -21,8 +21,6 @@ services:
             - .:/code
             - static_data:/vol/static
             - static_data:/vol/media
-        ports:
-            - "8000:8000"
         depends_on:
             - db
         environment:

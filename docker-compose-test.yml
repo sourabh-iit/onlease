@@ -21,8 +21,6 @@ services:
             - .:/code
             - static_data:/vol/test/static
             - static_data:/vol/test/media
-        ports:
-            - "8000:8000"
         depends_on:
             - test_db
         environment:
