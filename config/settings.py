@@ -11,13 +11,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
-    # for custom widgets
-    # 'django.forms',
     'rest_framework',
-    "compressor",
-    # external library to add class in django template tags
-    # 'widget_tweaks',
     'apps.user.apps.UserConfig',
     'apps.lodging.apps.LodgingConfig',
     'apps.transactions',
@@ -28,7 +22,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -46,9 +39,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR,'templates'),
-            os.path.join(BASE_DIR,'vrview-master'),
             BASE_DIR,
-            os.path.join(BASE_DIR,'vrview-master'),
             os.path.join(BASE_DIR,'static/angular'),
         ],
         'APP_DIRS': False,
@@ -59,18 +50,11 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages'
             ],
-        },
-        # 'libraries': {
-        #     ''
-        # }
+        }
     },
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     # {
@@ -90,9 +74,6 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/2.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Kolkata'
@@ -102,16 +83,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = False
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
-
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
-)
 
 AUTHENTICATION_BACKENDS = ('apps.utils.EmailOrMobileNumberAuthenticate',)
 
@@ -129,29 +100,14 @@ USE_I18N = False
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-# for custom widgets
-# FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
-
 GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY')
 
-ADMINS_LIST = ['98997612536']
+ADMINS_LIST = [ '9899761236', '7827866709' ]
 
 REST_FRAMEWORK = {
   'DATE_FORMAT' : '%d-%m-%Y',
   'EXCEPTION_HANDLER': 'apps.custom_middleware.custom_exception_handler'
 }
-
-# django sass processor settings
-# SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR,'static')
-# SASS_PRECISION = 8
-# SASS_PROCESSOR_INCLUDE_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
-
-COMPRESS_PRECOMPILERS = (
-    ('text/x-scss', 'django_libsass.SassCompiler'),
-)
-COMPRESS_ROOT = os.path.join(BASE_DIR,'static')
 
 TWILIO_SID = os.environ.get('TWILIO_SID')
 TWILIO_TOKEN = os.environ.get('TWILIO_TOKEN')
@@ -167,7 +123,7 @@ if USE_NG_ROK:
     BASE_URL='https://'+NG_ROK+'.ngrok.io'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(os.environ.get('DEBUG')))
+DEBUG = True
 
 ALLOWED_HOSTS = [ BASE_URL ]
 if os.environ.get('ALLOWED_HOSTS'):
@@ -191,15 +147,18 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 if not DEBUG:
+    STATICFILES_FINDERS = (
+        'django.contrib.staticfiles.finders.FileSystemFinder'
+    )
     STATIC_ROOT = os.environ.get('STATIC_ROOT')
     MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
+else:
+    MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
 INSTAMOJO_API_KEY = os.environ.get('INSTAMOJO_API_KEY')
 INSTAMOJO_AUTH_KEY = os.environ.get('INSTAMOJO_AUTH_KEY')
 INSTAMOJO_SALT = os.environ.get('INSTAMOJO_SALT')
 INSTAMOJO_ENDPOINT = os.environ.get('INSTAMOJO_ENDPOINT')
-
-COMPRESS_OFFLINE = True
 
 LOGGING = {
     'version': 1,
@@ -233,7 +192,7 @@ LOGGING = {
 
 PAYMENT_GATEWAY = '0'
 
-CONTACT_RECIPIENTS = ['sourabh7singh@gmail.com','feedback@onlease.in']
+CONTACT_RECIPIENTS = [ 'sourabh7singh@gmail.com','sourabh.singh@onlease.in' ]
 
 ADMINS = [('Sourabh singh','sourabh7singh@gmail.com'),('Vinit kumar','dhayania1992vinit@gmail.com')]
 
@@ -250,7 +209,7 @@ if DEBUG:
 # EMAIL_HOST_PASSWORD = os.environ.get('BIGROCK_EMAIL_PASSWORD')
 # EMAIL_USE_TLS = True
 
-DEFAULT_FROM_EMAIL = 'feedback@onlease.in'
+DEFAULT_FROM_EMAIL = 'sourabh.singh@onlease.in'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('GMAIL_EMAIL')
@@ -264,8 +223,6 @@ DATE_INPUT_FORMATS = ['%d-%m-%Y','%Y-%m-%d']
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
-# STATIC_ROOT = os.path.join(BASE_DIR,'static')
 
 # CACHES = {
 #     "default": {
