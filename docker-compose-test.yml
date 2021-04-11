@@ -40,10 +40,9 @@ services:
     nginx:
         build:
             context: ./
-            dockerfile: docker/nginx.Dockerfile
+            dockerfile: docker/test.nginx.Dockerfile
         ports:
-            - "80:8000"
-            - "443:8000"
+            - "8002:8000"
         volumes:
             - static_data:/vol/test/static
         depends_on:
