@@ -194,12 +194,6 @@ if not DEBUG:
     STATIC_ROOT = '/vol/static'
     MEDIA_ROOT = '/vol/media'
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = (
-    BASE_URL
-)
-
 INSTAMOJO_API_KEY = os.environ.get('INSTAMOJO_API_KEY')
 INSTAMOJO_AUTH_KEY = os.environ.get('INSTAMOJO_AUTH_KEY')
 INSTAMOJO_SALT = os.environ.get('INSTAMOJO_SALT')

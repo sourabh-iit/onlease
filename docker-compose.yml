@@ -36,3 +36,4 @@ services:
       - DB_USER=${DB_USER}
       - DB_PORT=${DB_PORT}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - TF_APIKEY=${TF_APIKEY}

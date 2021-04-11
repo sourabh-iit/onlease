@@ -28,7 +28,7 @@ services:
             - db
         environment:
             - DEBUG=0
-            - BASE_URL=test.onlease.in
+            - BASE_URL=${BASE_URL}
             - GOOGLE_MAPS_API_KEY= ${GOOGLE_MAPS_API_KEY}
             - SECRET_KEY=${SECRET_KEY}
             - NG_ROK=${NG_ROK}
@@ -37,6 +37,7 @@ services:
             - DB_USER=${DB_USER}
             - DB_PORT=${DB_PORT}
             - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+            - TF_APIKEY=${TF_APIKEY}
     nginx:
         build:
             context: ./
