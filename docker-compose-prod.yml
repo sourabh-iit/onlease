@@ -4,7 +4,7 @@ services:
     db:
         image: postgres
         volumes:
-            - ./var/prod/pgdata:/var/lib/postgresql/data
+            - ./var/pgdata:/var/lib/postgresql/data
         environment:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -32,6 +32,8 @@ services:
             - TF_APIKEY=${TF_APIKEY}
             - STATIC_ROOT=/vol/static
             - MEDIA_ROOT=/vol/media
+            - DB_NAME=onlease
+            - DB_HOST=db
     nginx:
         restart: always
         build:

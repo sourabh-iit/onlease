@@ -4,11 +4,11 @@ services:
     test_db:
         image: postgres
         volumes:
-            - ./var/test/pgdata:/var/lib/postgresql/data
+            - ./var/pgdata:/var/lib/postgresql/data
         environment:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
-            - POSTGRES_DB=onlease
+            - POSTGRES_DB=onlease-test
     test_web:
         restart: always
         build:
@@ -32,6 +32,8 @@ services:
             - TF_APIKEY=${TF_APIKEY}
             - STATIC_ROOT=/vol/test/static
             - MEDIA_ROOT=/vol/test/media
+            - DB_NAME=onlease-test
+            - DB_HOST=test_db
     test_nginx:
         restart: always
         build:
