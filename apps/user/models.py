@@ -13,12 +13,15 @@ def profile_thumbnail_upload_path(instance, filename):
 
 
 class CustomUserManager(BaseUserManager):
-  def create_user(self,mobile_number,password):
+  use_in_migrations = True
+  
+  def create_user(self, mobile_number, password):
     user = User.objects.create(mobile_number=mobile_number)
     user.set_password(password)
     user.save()
     return user
-  def create_superuser(self,mobile_number,email,password):
+
+  def create_superuser(self, mobile_number, email, password):
     user = User.objects.create(mobile_number=mobile_number)
     user.set_password(password)
     user.is_superuser=True

@@ -45,7 +45,7 @@ TEMPLATES = [
             BASE_DIR,
             os.path.join(BASE_DIR,'static/angular'),
         ],
-        'APP_DIRS': False,
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
