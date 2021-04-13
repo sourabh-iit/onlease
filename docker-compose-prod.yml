@@ -34,6 +34,9 @@ services:
             - MEDIA_ROOT=/vol/media
             - DB_NAME=onlease
             - DB_HOST=db
+            - SUPERUSER_MOBILE=${SUPERUSER_MOBILE}
+            - SUPERUSER_EMAIL=${SUPERUSER_MOBILE}
+            - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
     nginx:
         restart: always
         build:
