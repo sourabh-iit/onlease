@@ -43,11 +43,8 @@ class LogData:
     logger.info(req_data)
     return response
 
-def custom_exception_handler(exc, context):
-    response = exception_handler(exc, context)
+  def process_exception(self, request, exception):
     logger.error(traceback.format_exc())
-    if response is None:
-        if not settings.DEBUG:
-            capture_exception(exc)
-        response = Response(['Unknow error occurred'], status=500)
-    return response
+    if not settings.DEBUG:
+      capture_exception(exception)
+    response = Response(['Unknow error occurred'], status=500)
