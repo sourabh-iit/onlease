@@ -108,8 +108,7 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY')
 ADMINS_LIST = [ '9899761236', '7827866709' ]
 
 REST_FRAMEWORK = {
-  'DATE_FORMAT' : '%d-%m-%Y',
-  'EXCEPTION_HANDLER': 'apps.custom_middleware.custom_exception_handler'
+  'DATE_FORMAT' : '%d-%m-%Y'
 }
 
 TWILIO_SID = os.environ.get('TWILIO_SID')
@@ -133,10 +132,10 @@ ALLOWED_HOSTS = [ '*' ]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
+        'NAME': 'onlease',
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
+        'HOST': 'db',
         'PORT': 5432
     }
 }

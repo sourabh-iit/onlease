@@ -4,11 +4,13 @@ services:
     db:
         image: postgres
         volumes:
-            - ./var/pgdata:/var/lib/postgresql/data
+            - ./var/pgdata/prod:/var/lib/postgresql/data
         environment:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
             - POSTGRES_DB=onlease
+        networks:
+            - onlease_prod
     web:
         restart: always
         build:
@@ -30,24 +32,38 @@ services:
             - DB_PASSWORD=${DB_PASSWORD}
             - DB_USER=${DB_USER}
             - TF_APIKEY=${TF_APIKEY}
-            - STATIC_ROOT=/vol/static
-            - MEDIA_ROOT=/vol/media
-            - DB_NAME=onlease
-            - DB_HOST=db
             - SUPERUSER_MOBILE=${SUPERUSER_MOBILE}
             - SUPERUSER_EMAIL=${SUPERUSER_MOBILE}
             - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+            - INSTAMOJO_API_KEY=${INSTAMOJO_API_KEY}
+            - INSTAMOJO_AUTH_KEY=${INSTAMOJO_AUTH_KEY}
+            - INSTAMOJO_SALT=${INSTAMOJO_SALT}
+            - INSTAMOJO_ENDPOINT=${INSTAMOJO_ENDPOINTTWILIO_SID}
+            - TWILIO_TOKEN=${TWILIO_TOKEN}
+            - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+            - GMAIL_EMAIL=${GMAIL_EMAIL}
+            - GMAIL_PASSWORD=${GMAIL_PASSWORD}
+            - TEXTLOCAL_APIKEY=${TEXTLOCAL_APIKEY}
+            - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
+        networks:
+            - onlease_prod
     nginx:
         restart: always
         build:
             context: ./
-            dockerfile: docker/prod.nginx.Dockerfile
+            dockerfile: docker/nginx.Dockerfile
         ports:
             - "8001:8000"
         volumes:
             - static_data:/vol/static
         depends_on:
             - web
+        networks:
+            - onlease_prod
 
 volumes:
     static_data:
+
+networks:
+    onlease_prod:
+        driver: bridge

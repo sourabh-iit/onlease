@@ -4,11 +4,13 @@ services:
   db:
     image: postgres
     volumes:
-      - ./var/pgdata:/var/lib/postgresql/data
+      - ./var/pgdata/local:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=onlease
+    networks:
+        - onlease_local
   web:
     restart: always
     build:
@@ -20,7 +22,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    command: sh -c "python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     environment:
       - DEBUG=1
       - BASE_URL=0.0.0.0:8000
@@ -31,5 +33,22 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_USER=${DB_USER}
       - TF_APIKEY=${TF_APIKEY}
-      - DB_NAME=onlease
-      - DB_HOST=db
+      - SUPERUSER_MOBILE=${SUPERUSER_MOBILE}
+      - SUPERUSER_EMAIL=${SUPERUSER_MOBILE}
+      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - INSTAMOJO_API_KEY=${INSTAMOJO_API_KEY}
+      - INSTAMOJO_AUTH_KEY=${INSTAMOJO_AUTH_KEY}
+      - INSTAMOJO_SALT=${INSTAMOJO_SALT}
+      - INSTAMOJO_ENDPOINT=${INSTAMOJO_ENDPOINTTWILIO_SID}
+      - TWILIO_TOKEN=${TWILIO_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      - GMAIL_EMAIL=${GMAIL_EMAIL}
+      - GMAIL_PASSWORD=${GMAIL_PASSWORD}
+      - TEXTLOCAL_APIKEY=${TEXTLOCAL_APIKEY}
+      - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
+    networks:
+        - onlease_local
+
+networks:
+  onlease_local:
+    driver: bridge
