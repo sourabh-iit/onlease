@@ -14,6 +14,16 @@
     padding: 10px;
     border-radius: 5px;
 
+    .upload-progress-container {
+      margin-top: 10px;
+
+      .image-progress {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
     .header {
       display: flex;
       align-items: center;

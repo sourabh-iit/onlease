@@ -168,8 +168,8 @@
     </div>
     <div *ngIf="vrImages.length == 0" style="text-align: center; color: gray;">No image to display</div>
     <div class="upload-progress-container">
-      <div *ngFor="let im of filterUploadedImages(uploadingVRImages)">
-        <img [src]="im.src" height="30" width="30" class="mr-1">
+      <div *ngFor="let im of filterUploadedImages(uploadingVRImages)" class="image-progress">
+        <img [src]="im.src" height="30" width="30" class="mr-2">
         <mat-progress-bar mode="determinate" [value]="im.percent"></mat-progress-bar>
       </div>
     </div>
