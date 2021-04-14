@@ -270,6 +270,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     // TODO: confirm popup
     this.lodgingService.deleteLodgingVRImage(image.id).subscribe(() => {
       this.vrImages = this.vrImages.filter((im: any) => im.id != image.id);
+      this.saveForm();
     });
   }
 
@@ -291,6 +292,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     // TODO: confirm popup
     this.lodgingService.deleteLodgingImage(image.id).subscribe(() => {
       this.images = this.images.filter((im: any) => im.id != image.id);
+      this.saveForm();
     });
   }
 
