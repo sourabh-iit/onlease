@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from .models import Lodging, Charge, LodgingImage
+from .models import Lodging, Charge, LodgingImage, LodgingVRImage
 from apps.locations.serializers import RegionSerializer
 from apps.user.serializers import UserSerializer
 from .utils import clean_data
@@ -46,8 +46,19 @@ class ImageSerializer(serializers.ModelSerializer):
       'tag_other'
     )
 
+class VRImageSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = LodgingVRImage
+    fields = (
+      'id',
+      'image',
+      'image_thumbnail',
+      'created_at'
+    )
+
 class LodgingSerializer(serializers.ModelSerializer):
   images = serializers.SerializerMethodField()
+  vrimages = serializers.SerializerMethodField()
   region = RegionSerializer(required=False)
   lodging_type = serializers.ChoiceField(choices=Lodging.RESIDENTIAL_CHOICES)
   flooring = serializers.ChoiceField(choices=Lodging.FLOORING_CHOICES)
@@ -57,6 +68,10 @@ class LodgingSerializer(serializers.ModelSerializer):
   @staticmethod
   def get_images(lodging):
     return ImageSerializer(lodging.images.all(), many=True).data
+
+  @staticmethod
+  def get_vrimages(lodging):
+    return VRImageSerializer(lodging.vrimages.filter(disabled=False), many=True).data
 
   class Meta:
     model = Lodging
@@ -95,7 +110,8 @@ class LodgingSerializer(serializers.ModelSerializer):
       'region_id',
       'reference',
       'isHidden',
-      'charges'
+      'charges',
+      'vrimages'
     )
     read_only_fields = (
       'id',
@@ -105,7 +121,8 @@ class LodgingSerializer(serializers.ModelSerializer):
       'region',
       'is_confirming',
       'images',
-      'charges'
+      'charges',
+      'vrimages'
     )
     extra_kwargs = {
       'virtual_tour_link': {'required': False, 'allow_blank': True},

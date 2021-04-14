@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import * as moment from 'moment';
 import { ToasterService } from 'src/app/services/toaster.service';
 import { ConstantsService } from 'src/app/services/constants.service';
+import { HttpEventType } from '@angular/common/http';
 
 export const crossFieldValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const lodgingTypeControl = control.get('lodging_type')!;
@@ -64,6 +65,10 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   public facilityOptions: any = [];
   public areaUnitOptions: any = [];
   public flooringOptions: any = [];
+
+  public vrImages: any = [];
+  public uploadingVRImages: any = [];
+  @ViewChild('fileUpload') fileUpload: ElementRef;
 
   constructor(
     private fb: FormBuilder,
@@ -229,6 +234,45 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     });
   }
 
+  onFileAdded(event: any) {
+    let file;
+    for(file of event.target.files) {
+      let uploadVRImage = {src: '', percent: 0};
+      let formData = new FormData();
+      formData.append('image', file);
+      const reader = new FileReader();
+      reader.onload = e => {
+        uploadVRImage.src = <string> reader.result;
+        this.uploadingVRImages.push(uploadVRImage);
+      }
+      reader.readAsDataURL(file);
+      this.subs.add(this.lodgingService.uploadLodgingVRImage(formData).subscribe((resp: any) => {
+        if (resp.type === HttpEventType.Response) {
+          if(this.uploadingVRImages.filter((im: any) => im.percent < 100).length == 0) {
+            this.uploadingVRImages = [];
+          }
+          this.vrImages.push(resp.body);
+          this.saveForm();
+        }
+        if (resp.type === HttpEventType.UploadProgress) {
+          uploadVRImage.percent = Math.round(100 * resp.loaded / resp.total);
+        }
+      }));
+    }
+    this.fileUpload.nativeElement.value = '';
+  }
+
+  filterUploadedImages(images: any) {
+    return images.filter((im: any) => im.percent < 100);
+  }
+
+  removeVRImage(image: LodgingImage) {
+    // TODO: confirm popup
+    this.lodgingService.deleteLodgingVRImage(image.id).subscribe(() => {
+      this.vrImages = this.vrImages.filter((im: any) => im.id != image.id);
+    });
+  }
+
   editImage(image: any) {
     const dialogRef = this.dialog.open(LodgingImageComponent, {
       disableClose: true,
@@ -273,6 +317,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     const data = this.createSaveData();
     delete data.region;
     data.images = data.images.map((image: any) => image.id);
+    data.vrimages = data.vrimages.map((image: any) => image.id);
     data.id = this.lodgingId;
     if(this.lodgingId > 0) {
       this.subs.add(this.lodgingService.update(data).subscribe(() => {
@@ -289,6 +334,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   createSaveData() {
     const data = Object.assign({}, this.lodgingForm.value);
     data.images = this.images;
+    data.vrimages = this.vrImages;
     data.facilities = JSON.stringify(data.facilities);
     if(data.available_from == "") {
       delete data.available_from;
@@ -302,6 +348,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
 
   populateForm(data: Lodging) {
     this.images = data.images;
+    this.vrImages = data.vrimages ? data.vrimages : [];
     if(data.region) {
       this.regions = [data.region];
     }

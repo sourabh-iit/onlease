@@ -13,8 +13,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-from .models import Lodging, Charge, LodgingImage
-from .serializers import ChargeSerializer, FullLodgingSerializer, LodgingSerializer, ImageSerializer
+from .models import Lodging, Charge, LodgingImage, LodgingVRImage
+from .serializers import (
+  ChargeSerializer, FullLodgingSerializer, LodgingSerializer, ImageSerializer,
+  VRImageSerializer
+)
 from apps.utils import ReadOnly
 from apps.utils import generate_random, create_thumbnail
 from apps.utils import *
@@ -141,6 +144,13 @@ class LodgingView(APIView):
           image.lodging = lodging
           image.save()
         except LodgingImage.DoesNotExist:
+          continue
+      for image_id in data.get('vrimages', []):
+        try:
+          image = LodgingVRImage.objects.get(id=image_id)
+          image.lodging = lodging
+          image.save()
+        except LodgingVRImage.DoesNotExist:
           continue
       if lodging.images.count() < 2:
         raise ValidationError('Atleast 2 images are requried')
@@ -367,3 +377,49 @@ class ImageListHandler(APIView):
       tag_other=data.get('tag_other', '')
     )
     return Response(ImageSerializer(im).data)
+
+class VRImageListHandler(APIView):
+  permission_classes = (IsAuthenticated,)
+  
+  def get(self, request):
+    data = request.query_params
+    image_ids = data.get('ids', [])
+    images = LodgingVRImage.objects.filter(id__in=image_ids)
+    return Response(VRImageSerializer(images, many=True).data)
+
+  def post(self, request):
+    data = request.data
+    if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
+      raise ValidationError('invalid image')
+    file = data['image']
+    if file.size > 8*1024*1024:
+      raise ValidationError("Image size should not be larger than 8mb")
+    if file.content_type not in ['image/png', 'image/jpg', 'image/jpeg']:
+      raise ValidationError("invalid image")
+    image_extension = file.name.split('.')[-1]
+    rand_str = generate_random(8)
+    image_name = '_'.join('_'.join(file.name.split('.')[0:-1]).split())
+    img_type = file.content_type.split('/')[-1]
+    file.name = f"{image_name}_{rand_str}.{image_extension}"
+    thumb_file = create_thumbnail(file, thumbnail_size, f"{image_name}_thumbnail_{rand_str}.{image_extension}", img_type)
+    im = LodgingVRImage.objects.create(
+      image=file, image_thumbnail=thumb_file
+    )
+    return Response(VRImageSerializer(im).data)
+
+class VRImageHandler(APIView):
+  permission_classes = (IsAuthenticated,)
+  
+  def delete(self, request, image_id):
+    try:
+      image = LodgingVRImage.objects.get(id=image_id)
+      lodging = image.lodging
+      if lodging and lodging.images.count() < 3:
+        raise ValidationError('Cannot delete image. Atleast two images are required')
+      if lodging and request.user != lodging.posted_by:
+        raise ValidationError('Permission denied')
+      image.disabled = True
+      image.save()
+      return Response('success')
+    except LodgingImage.DoesNotExist:
+      raise ValidationError("invalid image id")

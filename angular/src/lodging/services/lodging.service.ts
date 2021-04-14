@@ -38,6 +38,17 @@ export class LodgingService {
     return this.http.put(`/api/lodging/images/${imageId}`, data);
   }
 
+  uploadLodgingVRImage(data: any) {
+    return this.http.post('/api/lodging/vrimages', data, {
+      reportProgress: true,
+      observe: 'events'
+    });
+  }
+
+  deleteLodgingVRImage(imageId: string|number) {
+    return this.http.delete(`/api/lodging/vrimages/${imageId}`);
+  }
+
   loadLodgings(regions: string[]) {
     let params = new HttpParams();
     for(let region of regions) {

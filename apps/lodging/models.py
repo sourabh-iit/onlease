@@ -20,6 +20,12 @@ def lodging_thumbnail_upload_path(instance, filename):
 def lodging_mobile_image_upload_path(instance, filename):
       return f'lodgings/mobile_images/{filename}'
 
+def lodging_vr_image_upload_path(instance, filename):
+  return f'lodgings/vrimages/{filename}'
+
+def lodging_vr_thumbnail_upload_path(instance, filename):
+      return f'lodgings/vrthumbnails/{filename}'
+
 class Lodging(models.Model):
   '''Lodging'''
   FLAT = "0"
@@ -270,6 +276,16 @@ class LodgingImage(models.Model):
   created_at = models.DateTimeField(auto_now=True)
   tag = models.CharField(choices=LODGING_TAG_CHOICES, max_length=2, default=BEDROOM)
   tag_other = models.CharField(max_length=100, default="")
+
+  def __str__(self):
+    return self.image_thumbnail.url
+
+class LodgingVRImage(models.Model):
+  lodging = models.ForeignKey(Lodging, on_delete=models.CASCADE, related_name="vrimages", null=True)
+  image = models.ImageField(upload_to=lodging_vr_image_upload_path)
+  image_thumbnail = models.ImageField(upload_to=lodging_vr_thumbnail_upload_path)
+  created_at = models.DateTimeField(auto_now=True)
+  disabled = models.BooleanField(default=False)
 
   def __str__(self):
     return self.image_thumbnail.url

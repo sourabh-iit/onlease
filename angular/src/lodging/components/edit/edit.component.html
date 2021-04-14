@@ -136,7 +136,7 @@
   </div>
   <div class="images-container">
     <div class="header">
-      <span>Images:</span>
+      <span class="font-weight-bold">Images:</span>
       <button type="button" mat-mini-fab color="accent" (click)="addNewImage()">
         <fa-icon [icon]="['fas', 'plus']"></fa-icon>
       </button>
@@ -157,9 +157,36 @@
       </div>
     </div>
   </div>
+  <div class="images-container mt-2">
+    <div class="header">
+      <span class="font-weight-bold">360&deg; Images:</span>
+      <button type="button" mat-mini-fab color="accent" (click)="fileUpload.click()">
+        <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+      </button>
+      <input [hidden]="true" type="file" accept="image/x-png,image/gif,image/jpeg"
+        id="file" #fileUpload (change)="onFileAdded($event)" multiple>
+    </div>
+    <div *ngIf="vrImages.length == 0" style="text-align: center; color: gray;">No image to display</div>
+    <div class="upload-progress-container">
+      <div *ngFor="let im of filterUploadedImages(uploadingVRImages)">
+        <img [src]="im.src" height="30" width="30" class="mr-1">
+        <mat-progress-bar mode="determinate" [value]="im.percent"></mat-progress-bar>
+      </div>
+    </div>
+    <div class="image mt-2" *ngFor="let image of vrImages">
+      <div class="image-continer">
+        <img class="mr-2" [src]="image.image_thumbnail">
+      </div>
+      <div class="actions ml-2">
+        <button type="button" class="ml-2" (click)="removeVRImage(image)" mat-mini-fab color="warn">
+          <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="images-container mt-2 mb-2" formArrayName="charges">
     <div class="header">
-      <span>Additional charges:</span>
+      <span class="font-weight-bold">Additional charges:</span>
       <button type="button" mat-mini-fab color="accent" (click)="addNewCharge()">
         <fa-icon [icon]="['fas', 'plus']"></fa-icon>
       </button>

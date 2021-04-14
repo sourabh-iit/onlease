@@ -6,7 +6,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import {MatBadgeModule} from '@angular/material/badge';
 import {MatRadioModule} from '@angular/material/radio';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatDialogModule } from '@angular/material/dialog';
 import {MatCardModule} from '@angular/material/card';
 import {MatTooltipModule} from '@angular/material/tooltip';
@@ -16,8 +15,12 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {IvyCarouselModule} from 'angular-responsive-carousel';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import {IvyCarouselModule} from 'angular-responsive-carousel';
+
 
 import { SharedModule } from '../shared/shared.module';
 import { LodgingRoutingModule } from './lodging-routing.module';
@@ -69,7 +72,8 @@ export const MY_FORMATS = {
     MatDatepickerModule,
     MatMomentDateModule,
     MatProgressSpinnerModule,
-    IvyCarouselModule
+    IvyCarouselModule,
+    MatProgressBarModule
   ],
   providers: [
     LodgingService,

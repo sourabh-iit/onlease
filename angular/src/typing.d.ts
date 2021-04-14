@@ -23,6 +23,13 @@ interface LodgingImage {
   tag_other: string;
 }
 
+interface LodgingVRImage {
+  id: number;
+  image: string;
+  image_thumbnail: string;
+  created_at: string;
+}
+
 interface Lodging {
   id: number;
   region?: Region;
@@ -51,6 +58,7 @@ interface Lodging {
   virtual_tour_link: string;
   region_temp?: Region;
   images: LodgingImage[];
+  vrimages: LodgingVRImage[];
   charges: Charge[];
   posted_by?: User;
   isHidden: boolean;
