@@ -1,3 +1,5 @@
+declare var GOOGLE_API_KEY: any;
+
 interface MobileNumber {
   id: number;
   value: string;

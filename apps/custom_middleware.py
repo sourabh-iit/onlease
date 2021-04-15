@@ -48,3 +48,8 @@ class LogData:
     if not settings.DEBUG:
       capture_exception(exception)
     response = Response(['Unknow error occurred'], status=500)
+
+def custom_context_variables(request):
+    return {
+      'GOOGLE_API_KEY': settings.GOOGLE_API_KEY
+    }

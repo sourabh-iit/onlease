@@ -51,7 +51,8 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages'
+                'django.contrib.messages.context_processors.messages',
+                'apps.custom_middleware.custom_context_variables'
             ],
         }
     },
@@ -103,7 +104,7 @@ USE_I18N = False
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY')
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 
 ADMINS_LIST = [ '9899761236', '7827866709' ]
 
