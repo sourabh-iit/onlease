@@ -33,6 +33,7 @@ import {
 import { ToasterService } from './services/toaster.service';
 import { RegionsService } from './services/regions.service';
 import { ConstantsService } from './services/constants.service';
+import { ScriptLoadingService } from './services/loadscript.service';
 
 @NgModule({
   declarations: [
@@ -55,7 +56,8 @@ import { ConstantsService } from './services/constants.service';
     UserService,
     ToasterService,
     RegionsService,
-    ConstantsService
+    ConstantsService,
+    ScriptLoadingService
   ],
   bootstrap: [AppComponent]
 })
