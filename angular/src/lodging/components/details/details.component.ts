@@ -2,7 +2,6 @@ import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
-import * as $ from 'jquery';
 
 import { ConstantsService } from 'src/app/services/constants.service';
 import { UserService } from 'src/app/services/user.service';
@@ -63,15 +62,15 @@ export class LodgingDetailsComponent implements OnDestroy {
   }
 
   ngAfterViewInit() {
-    let $elem = $(this.carousel.elementRef.nativeElement);
-    this.prevButton = $elem.find('.carousel-arrow-prev');
-    this.nextButton = $elem.find('.carousel-arrow-next');
-    this.prevButton.click(() => {
+    const elem = this.carousel.elementRef.nativeElement;
+    this.prevButton = elem.getElementsByClassName('.carousel-arrow-prev')[0];
+    this.nextButton = elem.getElementsByClassName('.carousel-arrow-next')[0];
+    this.prevButton.addEventListener('click', () => {
       if(this.currImage > 0) {
         this.currImage -= 1;
       }
     });
-    this.nextButton.click(() => {
+    this.nextButton.addEventListener('click', () => {
       if(this.currImage < this.lodging.images.length - 1) {
         this.currImage += 1;
       }

@@ -178,6 +178,9 @@
         <img class="mr-2" [src]="image.image_thumbnail">
       </div>
       <div class="actions ml-2">
+        <a class="ml-2" mat-mini-fab color="primary" [href]="image.image" [download]="getFileName(image.image)">
+          <fa-icon [icon]="['fas', 'download']"></fa-icon>
+        </a>
         <button type="button" class="ml-2" (click)="removeVRImage(image)" mat-mini-fab color="warn">
           <fa-icon [icon]="['fas', 'trash']"></fa-icon>
         </button>

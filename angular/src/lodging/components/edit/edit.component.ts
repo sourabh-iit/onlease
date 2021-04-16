@@ -266,12 +266,21 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     return images.filter((im: any) => im.percent < 100);
   }
 
-  removeVRImage(image: LodgingImage) {
+  removeVRImage(image: LodgingVRImage) {
     // TODO: confirm popup
     this.lodgingService.deleteLodgingVRImage(image.id).subscribe(() => {
       this.vrImages = this.vrImages.filter((im: any) => im.id != image.id);
       this.saveForm();
     });
+  }
+
+  downloadVRImage(image: LodgingVRImage) {
+
+  }
+
+  getFileName(link: string) {
+    const arr = link.split('/');
+    return arr[arr.length-1];
   }
 
   editImage(image: any) {

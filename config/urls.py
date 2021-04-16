@@ -9,10 +9,9 @@ def not_found_handler(request, exception=None):
     return HttpResponse('Url not found', status=404)
 
 urlpatterns = [
+    path('admin/map', TemplateView.as_view(template_name='index.html')),
     path('admin/', admin.site.urls),
     path('api/', include('config.api_urls')),
-    path('vrview/',TemplateView.as_view(template_name="vrview-master/index.html"),
-                   name='vrview'),
     path('privacy-policy/', TemplateView.as_view(template_name='privacy-policy.html'), name="privacy-policy"),
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/login/?$', TemplateView.as_view(template_name='index.html')),

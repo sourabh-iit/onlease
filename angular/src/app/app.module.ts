@@ -18,6 +18,8 @@ import {
   faBuilding,
   faChevronLeft,
   faChevronRight,
+  faDownload,
+  faFileDownload,
   faHeart,
   faLock,
   faMapMarkerAlt,
@@ -77,5 +79,7 @@ export class AppModule {
     library.addIcons(faHeart);
     library.addIcons(faBuilding);
     library.addIcons(faLock);
+    library.addIcons(faFileDownload);
+    library.addIcons(faDownload);
   }
 }

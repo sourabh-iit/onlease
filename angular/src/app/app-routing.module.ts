@@ -9,6 +9,9 @@ const routes: Routes = [
     path: 'lodgings',
     loadChildren: () => import('../lodging/lodging.module').then(m => m.LodgingModule)
   }, {
+    path: 'admin',
+    loadChildren: () => import('../admin/admin.module').then(m => m.AdminModule)
+  }, {
     path: '',
     redirectTo: 'lodgings',
     pathMatch: 'full'
