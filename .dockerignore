@@ -1,6 +1,12 @@
 angular
+backup
+logs
+docker
 media
+static/images
+static/img
 var
 venv
-*.log
 .git
+*.yml
+*.sql

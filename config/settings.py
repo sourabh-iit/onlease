@@ -171,7 +171,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'onlease.log',
+            'filename': 'logs/onlease.log',
             'formatter': 'verbose'
         },
         'console': {
