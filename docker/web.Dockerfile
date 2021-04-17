@@ -16,7 +16,7 @@ COPY . .
 RUN mkdir -p /vol/static
 RUN mkdir -p /vol/media
 
-COPY ./scripts/entrypoint.sh /
+COPY ./scripts/web_entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 CMD [ "/entrypoint.sh" ]
