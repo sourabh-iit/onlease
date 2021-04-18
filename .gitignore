@@ -16,3 +16,4 @@ dump.rdb
 var
 .env
 static/angular/**
+backup/data
