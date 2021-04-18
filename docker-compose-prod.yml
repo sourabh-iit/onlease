@@ -22,29 +22,10 @@ services:
             - ./media:/vol/media
         depends_on:
             - db
+        env_file:
+            - .env
         environment:
             - DEBUG=0
-            - BASE_URL=${BASE_URL}
-            - GOOGLE_API_KEY= ${GOOGLE_API_KEY}
-            - SECRET_KEY=${SECRET_KEY}
-            - NG_ROK=${NG_ROK}
-            - USE_NG_ROK=${USE_NG_ROK}
-            - DB_PASSWORD=${DB_PASSWORD}
-            - DB_USER=${DB_USER}
-            - TF_APIKEY=${TF_APIKEY}
-            - SUPERUSER_MOBILE=${SUPERUSER_MOBILE}
-            - SUPERUSER_EMAIL=${SUPERUSER_MOBILE}
-            - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
-            - INSTAMOJO_API_KEY=${INSTAMOJO_API_KEY}
-            - INSTAMOJO_AUTH_KEY=${INSTAMOJO_AUTH_KEY}
-            - INSTAMOJO_SALT=${INSTAMOJO_SALT}
-            - INSTAMOJO_ENDPOINT=${INSTAMOJO_ENDPOINT}
-            - TWILIO_TOKEN=${TWILIO_TOKEN}
-            - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
-            - GMAIL_EMAIL=${GMAIL_EMAIL}
-            - GMAIL_PASSWORD=${GMAIL_PASSWORD}
-            - TEXTLOCAL_APIKEY=${TEXTLOCAL_APIKEY}
-            - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
         networks:
             - onlease_prod
     nginx:
