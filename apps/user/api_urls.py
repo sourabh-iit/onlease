@@ -14,4 +14,6 @@ urlpatterns = [
     re_path(r'^me/number/(?P<number_id>[0-9]+)/?$', views.MobileNumberHandler.as_view(), name="delete-number"),
     re_path(r'^me/number/(?P<action>[\w-]+)/?$', views.MobileNumberHandler.as_view(), name="user-action"),
     re_path(r'^password-reset/(?P<action>[\w-]+)/?$', views.PasswordResetView.as_view(), name="password=reset"),
+    re_path(r'^agreements/?$', views.AgreementHandler.as_view(), name="agreement-create"),
+    re_path(r'^agreements/(?P<agreement_id>[0-9]+)/?$', views.AgreementHandler.as_view(), name="agreement"),
 ]

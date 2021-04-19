@@ -16,6 +16,16 @@ interface Region {
   }
 }
 
+interface AgreementPoint {
+  id: number;
+  text: string;
+}
+
+interface Agreement {
+  id: number;
+  points: AgreementPoint[];
+}
+
 interface LodgingImage {
   id: number;
   image: string;

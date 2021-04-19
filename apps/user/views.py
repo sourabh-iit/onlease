@@ -11,9 +11,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 
-from .models import ProfileImage, User, MobileNumber
+from .models import ProfileImage, User, MobileNumber, Agreement, AgreementPoint
 from apps.utils import send_otp
-from .serializers import MobileNumberSerializer, UserSerializer, ImageSerializer
+from .serializers import MobileNumberSerializer, UserSerializer, ImageSerializer, AgreementSerializer
 from apps.utils import generate_random, create_thumbnail, thumbnail_size
 
 import time
@@ -305,3 +305,46 @@ class ImageHandler(APIView):
             raise ValidationError("No image")
         user.image.delete()
         return Response('success')
+
+class AgreementHandler(APIView):
+  permission_classes = (IsAuthenticated,)
+
+  def post(self, request):
+    agreement = self.save_agreement(request, Agreement())
+    return Response(AgreementSerializer(agreement).data)
+
+  def put(self, request, agreement_id):
+    try:
+      agreement = Agreement.objects.get(id=agreement_id)
+    except Agreement.DoesNotExist:
+      raise ValidationError('Invalid id')
+    agreement = self.save_agreement(request, agreement)
+    return Response(AgreementSerializer(agreement).data)
+
+  @staticmethod
+  def save_agreement(request, agreement):
+    data = request.data
+    agreement.title = data['title']
+    agreement.user = request.user
+    agreement.save()
+    agreement.points.all().delete()
+    for point in data['points']:
+      AgreementPoint.objects.create(agreement=agreement, text=point['text'])
+    return agreement
+
+  def delete(self, request, agreement_id):
+    try:
+      agreement = Agreement.objects.get(id=agreement_id)
+      if agreement.user_id != request.user.id:
+        raise ValidationError('You don\'t have permission to perform this action')
+      agreement.delete()
+      return Response("success")
+    except Agreement.DoesNotExist:
+      raise ValidationError('Invalid id')
+
+  def get(self, request, agreement_id):
+    try:
+      agreement = Agreement.objects.get(id=agreement_id)
+      return Response(AgreementSerializer(agreement).data)
+    except Agreement.DoesNotExist:
+      raise ValidationError('Invalid id')

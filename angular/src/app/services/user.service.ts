@@ -170,4 +170,24 @@ export class UserService {
   public enableLodging(lodgingId: any) {
     return this.http.post(`/api/lodging/${lodgingId}/enable`, {});
   }
+
+  public loadAgreement(agreementId:  number) {
+    const url = `/api/account/agreements/${agreementId}`;
+    return this.http.get(url);
+  }
+
+  public saveAgreement(agreementId:  number, data: any) {
+    const url = `/api/account/agreements/${agreementId}`;
+    return this.http.put(url, data);
+  }
+
+  public cŗeateAgreement(data: any) {
+    const url = `/api/account/agreements`;
+    return this.http.post(url, data);
+  }
+
+  public loadAgreements() {
+    const url = `/api/account/agreements`;
+    return this.http.get(url);
+  }
 }

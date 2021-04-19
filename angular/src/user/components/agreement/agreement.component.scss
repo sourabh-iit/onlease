@@ -1,0 +1,25 @@
+.agreement-container {
+    max-width: 500px;
+    margin: auto;
+    text-align: center;
+    margin-top: 40px;
+
+    .new-point {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        align-items: center;
+    }
+
+    .point {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        fa-icon {
+            color: red;
+            cursor: pointer;
+            font-size: 20px;
+        }
+    }
+}

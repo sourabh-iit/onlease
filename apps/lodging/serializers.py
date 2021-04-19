@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from .models import Lodging, Charge, LodgingImage, LodgingVRImage
 from apps.locations.serializers import RegionSerializer
-from apps.user.serializers import UserSerializer
+from apps.user.serializers import UserSerializer, AgreementSerializer
 from .utils import clean_data
 
 from datetime import datetime
@@ -64,6 +64,7 @@ class LodgingSerializer(serializers.ModelSerializer):
   flooring = serializers.ChoiceField(choices=Lodging.FLOORING_CHOICES)
   region_id = serializers.IntegerField()
   charges = ChargeSerializer(many=True)
+  agreement = AgreementSerializer()
 
   @staticmethod
   def get_images(lodging):
@@ -111,7 +112,9 @@ class LodgingSerializer(serializers.ModelSerializer):
       'reference',
       'isHidden',
       'charges',
-      'vrimages'
+      'vrimages',
+      'agreement',
+      'agreement_id'
     )
     read_only_fields = (
       'id',
@@ -122,7 +125,8 @@ class LodgingSerializer(serializers.ModelSerializer):
       'is_confirming',
       'images',
       'charges',
-      'vrimages'
+      'vrimages',
+      'agreement'
     )
     extra_kwargs = {
       'virtual_tour_link': {'required': False, 'allow_blank': True},
@@ -132,7 +136,8 @@ class LodgingSerializer(serializers.ModelSerializer):
       'flooring_other': {'required': False, 'allow_blank': True},
       'latlng': {'required': False, 'allow_blank': True},
       'address': {'write_only': True},
-      'reference': {'write_only': True}
+      'reference': {'write_only': True},
+      'agreement': {'required': False, 'allow_blank': True}
     }
 
   def clean_address(self, value):

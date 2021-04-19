@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+
 import { AddNumberComponent } from './components/add-number/add-number.component';
+import { AgreementComponent } from './components/agreement/agreement.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { LoginComponent } from './components/login/login.component';
 import { MyBookingsComponent } from './components/my-bookings/my-bookings.component';
@@ -13,12 +15,13 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
-  },
-  {
+  }, {
     path: 'register',
     component: RegisterComponent
-  },
-  {
+  }, {
+    path: 'agreements/:agreementId',
+    component: AgreementComponent
+  }, {
     path: 'me',
     children: [{
       path: 'change-password',

@@ -16,6 +16,8 @@ urlpatterns = [
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/login/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/register/?$', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^user/agreements/?$', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^user/agreements/(?P<agreement_id>-?[0-9]+)/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^lodgings/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^lodgings/(?P<lodging_id>[0-9]+)/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^lodgings/edit/(?P<lodging_id>-?[0-9]+)/?$', TemplateView.as_view(template_name='index.html')),
@@ -26,6 +28,5 @@ urlpatterns = [
     re_path(r'^user/me/bookings/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/change-password/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/add-number/?$', TemplateView.as_view(template_name='index.html')),
-    re_path(r'^user/profile/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^api/.*', not_found_handler),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

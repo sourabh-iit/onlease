@@ -1,0 +1,32 @@
+<div class="agreement-container">
+    <h2 *ngIf="agreementId != -1">Edit Agreement</h2>
+    <h2 *ngIf="agreementId == -1">New Agreement</h2>
+    <form [formGroup]="agreementForm" (ngSubmit)="saveAgreement()">
+        <mat-form-field class="w-100">
+            <mat-label>Title</mat-label>
+            <input matInput type="text" required formControlName="title">
+            <mat-error *ngIf="agreementForm.get('title')!.hasError('required')">
+                Title is <strong>required</strong>
+            </mat-error>
+        </mat-form-field>
+        <div class="new-point">
+          <span class="font-weight-bold">Points:</span>
+          <button type="button" mat-mini-fab color="accent" (click)="addNewPoint()">
+            <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+          </button>
+        </div>
+        <div class="points-container" formArrayName="points">
+            <div class="point" *ngFor="let point of points.controls; let i=index">
+                <mat-form-field class="w-100" [formGroupName]="i">
+                    <mat-label>Point {{i+1}}</mat-label>
+                    <input matInput type="text" required formControlName="text">
+                </mat-form-field>
+                <fa-icon class="ml-5" [icon]="['fas', 'times-circle']" (click)="points.removeAt(i)"></fa-icon>
+            </div>
+        </div>
+        <button type="submit" mat-raised-button color="accent" [disabled]="!agreementForm.valid">
+            <span *ngIf="agreementId == -1">Create</span>
+            <span *ngIf="agreementId != -1">Save</span>
+        </button>
+    </form>
+</div>
