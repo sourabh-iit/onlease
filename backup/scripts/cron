@@ -1,1 +1,1 @@
-0 20 * * * python3 /home/onlease/backup/scripts/script.py
+*/15 * * * * python3 /Users/sousingh/onlease/backup/scripts/script.py
