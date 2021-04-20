@@ -121,18 +121,21 @@ def send_otp(session, mobile_number):
     session['attempts'] = 0
     if settings.DEBUG==True:
         return
-    url = 'http://control.msg91.com/api/sendotp.php'
-    params={
-        'mobile': mobile_number,
-        'authkey': os.environ.get('MSG91_AUTH_KEY'),
-        'message': 'Your verification code is '+otp+'. This code will expire in 3 minutes.'+onlease_last_message,
-        'sender': 'ONLOTP',
-        'otp': otp
-    }
-    res = requests.post(url=url, params=params)
-    data = json.loads(res.text)
-    if data['type']=='error':
-        logger.error(f"Error in sending OTP using msg91: {data['message']}")
+    try:
+        url = 'http://control.msg91.com/api/sendotp.php'
+        params={
+            'mobile': mobile_number,
+            'authkey': os.environ.get('MSG91_AUTH_KEY'),
+            'message': 'Your verification code is '+otp+'. This code will expire in 3 minutes.'+onlease_last_message,
+            'sender': 'ONLOTP',
+            'otp': otp
+        }
+        res = requests.post(url=url, params=params)
+        data = json.loads(res.text)
+        if data['type']=='error':
+            raise Exception(data['message'])
+    except Exception as e:
+        logger.error('msg91 otp send fail', exc_info=e)
         url = f"https://2factor.in/API/V1/{settings.TF_APIKEY}/SMS/{mobile_number}/{otp}"
         res = requests.get(url)
         data = res.json()
