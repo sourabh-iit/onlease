@@ -1,0 +1,24 @@
+.my-agreements-container {
+    margin: auto;
+    max-width: 500px;
+
+    .agreements {
+        display: block;
+        margin-top: 20px;
+    
+        .mat-expansion-panel-header-description {
+            justify-content: flex-end;
+        }
+    }
+    
+    .heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .new-agreement {
+        display: flex;
+        justify-content: flex-end;
+    }
+}

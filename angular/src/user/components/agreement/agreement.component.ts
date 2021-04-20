@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from "@angular/core";
 import { AbstractControl, FormArray, FormBuilder, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Subscription } from "rxjs";
 import { finalize } from "rxjs/operators";
 import { ToasterService } from "src/app/services/toaster.service";
@@ -36,7 +36,8 @@ export class AgreementComponent implements OnDestroy {
         private route: ActivatedRoute,
         private userService: UserService,
         private fb: FormBuilder,
-        private toaster: ToasterService
+        private toaster: ToasterService,
+        private router: Router
     ){
         this.agreementId = parseInt(this.route.snapshot.paramMap.get('agreementId')!);
         if(this.agreementId != -1) {
@@ -84,8 +85,12 @@ export class AgreementComponent implements OnDestroy {
         this.subs.add(obs.pipe(
             finalize(() => { this.savingAgreement = false; })
         ).subscribe((agreement: any) => {
-            this.patchForm(agreement);
-            this.toaster.success('Success', 'Agreement saved');
+            if(this.agreementId == -1) {
+                this.router.navigateByUrl('/user/me/agreements');
+            } else {
+                this.patchForm(agreement);
+                this.toaster.success('Success', 'Agreement saved');
+            }
         }));
     }
 

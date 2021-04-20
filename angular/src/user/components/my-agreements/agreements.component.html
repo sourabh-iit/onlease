@@ -1,0 +1,27 @@
+<div class="my-agreements-container mt-5">
+    <h2 class="mt-2" style="text-align: center;">My Agreements</h2>
+    <div class="new-agreement">
+        <button type="button" mat-mini-fab color="accent" routerLink="/user/agreements/-1">
+          <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+        </button>
+    </div>
+    <mat-accordion class="agreements" multi>
+        <mat-expansion-panel *ngFor="let agreement of agreements">
+    
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    {{agreement.title}}
+                </mat-panel-title>
+                <mat-panel-description>
+                    <fa-icon style="color: #ffd740;" [routerLink]="'/user/agreements/'+agreement.id" [icon]="['fas', 'pencil-alt']"></fa-icon>
+                    <fa-icon style="color: red;" (click)="delete(agreement.id)" class="ml-3" [icon]="['fas', 'trash']"></fa-icon>
+                </mat-panel-description>
+            </mat-expansion-panel-header>
+    
+            <mat-list role="list">
+                <mat-list-item role="listitem" *ngFor="let point of agreement.points">{{point.text}}</mat-list-item>
+            </mat-list>
+    
+        </mat-expansion-panel>
+      </mat-accordion>
+</div>

@@ -190,4 +190,9 @@ export class UserService {
     const url = `/api/account/agreements`;
     return this.http.get(url);
   }
+
+  public deleteAgreement(agreementId: number) {
+    const url = `/api/account/agreements/${agreementId}`;
+    return this.http.delete(url);
+  }
 }

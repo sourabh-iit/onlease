@@ -28,5 +28,6 @@ urlpatterns = [
     re_path(r'^user/me/bookings/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/change-password/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/add-number/?$', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^user/me/agreements/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^api/.*', not_found_handler),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

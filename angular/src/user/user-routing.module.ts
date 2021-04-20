@@ -5,6 +5,7 @@ import { AddNumberComponent } from './components/add-number/add-number.component
 import { AgreementComponent } from './components/agreement/agreement.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { LoginComponent } from './components/login/login.component';
+import { MyAgreementsComponent } from './components/my-agreements/agreements.component';
 import { MyBookingsComponent } from './components/my-bookings/my-bookings.component';
 import { MyFavoritesComponent } from './components/my-favorites/my-favorites.component';
 import { MyLodgingsComponent } from './components/my-lodgings/my-lodgings.component';
@@ -41,6 +42,9 @@ const routes: Routes = [
     }, {
       path: 'bookings',
       component: MyBookingsComponent
+    }, {
+      path: 'agreements',
+      component: MyAgreementsComponent
     }]
   }
 ];

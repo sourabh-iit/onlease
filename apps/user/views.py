@@ -306,45 +306,57 @@ class ImageHandler(APIView):
         user.image.delete()
         return Response('success')
 
+
+class AgreementListHandler(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        agreements = request.user.agreements.all()
+        return Response(AgreementSerializer(agreements, many=True).data)
+
+    def post(self, request):
+        data = request.data
+        agreement = Agreement()
+        agreement.title = data['title']
+        agreement.user = request.user
+        agreement.save()
+        agreement.points.all().delete()
+        for point in data['points']:
+            AgreementPoint.objects.create(agreement=agreement, text=point['text'])
+        return Response(AgreementSerializer(agreement).data)
+
+
 class AgreementHandler(APIView):
-  permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
-  def post(self, request):
-    agreement = self.save_agreement(request, Agreement())
-    return Response(AgreementSerializer(agreement).data)
+    def put(self, request, agreement_id):
+        try:
+            agreement = Agreement.objects.get(id=agreement_id)
+        except Agreement.DoesNotExist:
+            raise ValidationError('Invalid id')
+        if agreement.user != request.user:
+            raise ValidationError('You don\'t have permission to perform this action')
+        data = request.data
+        agreement.title = data['title']
+        agreement.save()
+        agreement.points.all().delete()
+        for point in data['points']:
+            AgreementPoint.objects.create(agreement=agreement, text=point['text'])
+        return Response(AgreementSerializer(agreement).data)
 
-  def put(self, request, agreement_id):
-    try:
-      agreement = Agreement.objects.get(id=agreement_id)
-    except Agreement.DoesNotExist:
-      raise ValidationError('Invalid id')
-    agreement = self.save_agreement(request, agreement)
-    return Response(AgreementSerializer(agreement).data)
+    def delete(self, request, agreement_id):
+        try:
+            agreement = Agreement.objects.get(id=agreement_id)
+            if agreement.user != request.user:
+                raise ValidationError('You don\'t have permission to perform this action')
+            agreement.delete()
+            return Response("success")
+        except Agreement.DoesNotExist:
+            raise ValidationError('Invalid id')
 
-  @staticmethod
-  def save_agreement(request, agreement):
-    data = request.data
-    agreement.title = data['title']
-    agreement.user = request.user
-    agreement.save()
-    agreement.points.all().delete()
-    for point in data['points']:
-      AgreementPoint.objects.create(agreement=agreement, text=point['text'])
-    return agreement
-
-  def delete(self, request, agreement_id):
-    try:
-      agreement = Agreement.objects.get(id=agreement_id)
-      if agreement.user_id != request.user.id:
-        raise ValidationError('You don\'t have permission to perform this action')
-      agreement.delete()
-      return Response("success")
-    except Agreement.DoesNotExist:
-      raise ValidationError('Invalid id')
-
-  def get(self, request, agreement_id):
-    try:
-      agreement = Agreement.objects.get(id=agreement_id)
-      return Response(AgreementSerializer(agreement).data)
-    except Agreement.DoesNotExist:
-      raise ValidationError('Invalid id')
+    def get(self, request, agreement_id):
+        try:
+            agreement = Agreement.objects.get(id=agreement_id)
+            return Response(AgreementSerializer(agreement).data)
+        except Agreement.DoesNotExist:
+            raise ValidationError('Invalid id')

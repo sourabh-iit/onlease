@@ -13,6 +13,7 @@ import { MyLodgingsComponent } from './components/my-lodgings/my-lodgings.compon
 import { MyFavoritesComponent } from './components/my-favorites/my-favorites.component';
 import { MyBookingsComponent } from './components/my-bookings/my-bookings.component';
 import { AgreementComponent } from './components/agreement/agreement.component';
+import { MyAgreementsComponent } from './components/my-agreements/agreements.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { AgreementComponent } from './components/agreement/agreement.component';
     MyLodgingsComponent,
     MyFavoritesComponent,
     MyBookingsComponent,
-    AgreementComponent
+    AgreementComponent,
+    MyAgreementsComponent
   ],
   imports: [
     ReactiveFormsModule,
