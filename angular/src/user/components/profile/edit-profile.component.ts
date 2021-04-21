@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfirmDialogComponent } from 'src/shared/components/confirm-dialog/confirm-dialog.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-edit-profile',
@@ -29,7 +30,8 @@ export class EditProfileComponent implements OnDestroy {
     private userService: UserService,
     private fb: FormBuilder,
     private toaster: ToasterService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router
   ) {
     userService.getProfile();
     this.subs.add(userService.user$.subscribe((data: any) => {
@@ -40,7 +42,8 @@ export class EditProfileComponent implements OnDestroy {
 
   saveProfile() {
     this.subs.add(this.userService.saveProfile(this.profileForm.value).subscribe(() => {
-      this.toaster.success('Success', 'Profile updated')
+      this.toaster.success('Success', 'Profile updated');
+      this.router.navigateByUrl('/');
     }));
   }
 

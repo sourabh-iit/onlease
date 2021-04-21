@@ -202,7 +202,7 @@ class RegisterView(APIView):
         data = request.data
         session = request.session
         if action == 'details':
-            fields = ['password', 'confirm_password', 'mobile_number']
+            fields = ['password', 'confirm_password', 'mobile_number', 'user_type']
             for field in fields:
                 if field not in data:
                     raise ValidationError(f"{field} is required")
@@ -211,6 +211,7 @@ class RegisterView(APIView):
             mobile_number = data['mobile_number']
             first_name = data['first_name']
             last_name = data.get('last_name')
+            user_type = data['user_type']
             if len(password) < 8:
                 raise ValidationError("Password should be atleast 8 characters long")
             if password and confirm_password and password != confirm_password:
@@ -225,6 +226,7 @@ class RegisterView(APIView):
             session['first_name'] = first_name
             session['last_name'] = last_name
             session['password'] = password
+            session['user_type'] = user_type
             send_otp(session, mobile_number)
             return Response('success')
         elif action == 'verify':
@@ -240,7 +242,8 @@ class RegisterView(APIView):
             user = User(
                 mobile_number = mobile_number,
                 first_name = first_name,
-                last_name = last_name
+                last_name = last_name,
+                user_type = session['user_type']
             )
             user.set_password(password)
             user.save()
@@ -315,6 +318,8 @@ class AgreementListHandler(APIView):
         return Response(AgreementSerializer(agreements, many=True).data)
 
     def post(self, request):
+        if request.user.user_type == User.TENANT:
+            raise ValidationError('You don\'t have permission to perform this action')
         data = request.data
         agreement = Agreement()
         agreement.title = data['title']
@@ -329,13 +334,19 @@ class AgreementListHandler(APIView):
 class AgreementHandler(APIView):
     permission_classes = (IsAuthenticated,)
 
+    @staticmethod
+    def check_edit(agreement, user):
+        if user.user_type == User.TENANT:
+            raise ValidationError('You don\'t have permission to perform this action')
+        if agreement.user != user:
+            raise ValidationError('You don\'t have permission to perform this action')
+
     def put(self, request, agreement_id):
         try:
             agreement = Agreement.objects.get(id=agreement_id)
         except Agreement.DoesNotExist:
             raise ValidationError('Invalid id')
-        if agreement.user != request.user:
-            raise ValidationError('You don\'t have permission to perform this action')
+        self.check_edit(agreement, request.user)
         data = request.data
         agreement.title = data['title']
         agreement.save()
@@ -347,8 +358,7 @@ class AgreementHandler(APIView):
     def delete(self, request, agreement_id):
         try:
             agreement = Agreement.objects.get(id=agreement_id)
-            if agreement.user != request.user:
-                raise ValidationError('You don\'t have permission to perform this action')
+            self.check_edit(agreement, request.user)
             agreement.delete()
             return Response("success")
         except Agreement.DoesNotExist:

@@ -44,7 +44,7 @@
     <button mat-raised-button (click)="onButtonClick('details')">See Details</button>
     <button mat-raised-button (click)="onButtonClick('tour')" *ngIf="lodging.virtual_tour_link != ''">View Tour</button>
     <button type="button" [ngStyle]="{'color': isFavorite ? 'red' : 'lightgray'}"
-      mat-icon-button *ngIf="!lodging.posted_by || lodging.posted_by.mobile_number != me.mobile_number"
+      mat-icon-button *ngIf="(!lodging.posted_by || lodging.posted_by.mobile_number != me.mobile_number) && me?.user_type == 'tenant'"
       style="font-size: 20px;" (click)="favorite()">
       <fa-icon [icon]="['fas', 'heart']"></fa-icon>
     </button>

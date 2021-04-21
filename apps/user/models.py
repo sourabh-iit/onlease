@@ -48,6 +48,14 @@ class User(AbstractUser):
       (True,'Yes'),
       (False,'No')
   )
+  TENANT = '0'
+  OWNER = '1'
+  ADMIN = '2'
+  USER_CHOICES = (
+    (TENANT, 'Tenant'),
+    (OWNER, 'Owner'),
+    (ADMIN, 'Admin')
+  )
   mobile_number = models.CharField(max_length=16, primary_key=True, db_index=True,
       validators=[RegexValidator(mobile_number_regex)])
   password = models.CharField(max_length=100, null=False, blank=False, validators=[MinLengthValidator(8)])
@@ -60,6 +68,7 @@ class User(AbstractUser):
   created_at = models.DateTimeField(auto_now=True)
   updated_at = models.DateTimeField(auto_now_add=True, null=True)
   favorite_properties = models.ManyToManyField("lodging.Lodging", related_name="favorite_of")
+  user_type = models.CharField(max_length=1, choices=USER_CHOICES, default=TENANT)
 
   USERNAME_FIELD = 'mobile_number'
   objects = CustomUserManager()

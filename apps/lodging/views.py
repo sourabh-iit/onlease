@@ -49,10 +49,16 @@ class LodgingActionView(APIView):
     except Lodging.DoesNotExist:
       return Response("Not found", status=404)
     if action == 'add_to_favorites':
+      if user.user_type == User.OWNER:
+        raise ValidationError('You don\'t have permission to perform this action')
       user.favorite_properties.add(prop)
     elif action == 'remove_from_favorites':
+      if user.user_type == User.OWNER:
+        raise ValidationError('You don\'t have permission to perform this action')
       user.favorite_properties.remove(prop)
     elif action == 'disable' or action == 'enable':
+      if user.user_type == User.TENANT:
+        raise ValidationError('You don\'t have permission to perform this action')
       if prop.posted_by_id != user.mobile_number:
         raise ValidationError("Not allowed")
       prop.isHidden = True if action == 'disable' else False
@@ -67,9 +73,13 @@ class LodgingActionView(APIView):
       lodgings = Lodging.objects.prefetch_related('images', 'region').filter(posted_by=user)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'bookings':
+      if user.user_type == User.OWNER:
+        raise ValidationError('You don\'t have permission to perform this action')
       lodgings = user.bookings.prefetch_related('images', 'region').filter(is_booked=True)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'favorites':
+      if user.user_type == User.OWNER:
+        raise ValidationError('You don\'t have permission to perform this action')
       lodgings = user.favorite_properties.prefetch_related('images', 'region').all()
       return Response(LodgingSerializer(lodgings, many=True).data)
     raise ValidationError('Invalid action')
@@ -118,11 +128,13 @@ class LodgingView(APIView):
     except Lodging.DoesNotExist:
       raise ValidationError('Property does not exist')
     if request.user.mobile_number != lodging.posted_by_id:
-      raise ValidationError('You are not authorized to perform this action')
+      raise ValidationError('You don\'t have permission to perform this action')
     lodging = self.save_lodging(request.data, request.user, lodging)
     return Response(FullLodgingSerializer(lodging).data)
 
   def delete(self, request, lodging_id):
+    if request.user.user_type == User.TENANT:
+      raise ValidationError('You don\'t have permission to perform this action')
     try:
       lodging = Lodging.objects.get(id=lodging_id)
     except Lodging.DoesNotExist:
@@ -131,6 +143,8 @@ class LodgingView(APIView):
     return Response({'success':True})
 
   def save_lodging(self, data, user, lodging):
+    if user.user_type == User.TENANT:
+        raise ValidationError('You don\'t have permission to perform this action')
     with transaction.atomic():
       data['last_confirmed'] = datetime.now()
       serializer = LodgingSerializer(lodging, data=data, context={'user': user})
@@ -319,6 +333,8 @@ class ImageHandler(APIView):
   permission_classes = (IsAuthenticated,)
   
   def put(self, request, image_id):
+    if request.user.user_type == User.TENANT:
+      raise ValidationError('You don\'t have permission to perform this action')
     data = request.data
     try:
       if 'tag' not in data or data['tag'].strip() == "" or int(data['tag']) >= len(LodgingImage.LODGING_TAG_CHOICES):
@@ -334,6 +350,8 @@ class ImageHandler(APIView):
       raise ValidationError("invalid tag")
   
   def delete(self, request, image_id):
+    if request.user.user_type == User.TENANT:
+      raise ValidationError('You don\'t have permission to perform this action')
     try:
       image = LodgingImage.objects.get(id=image_id)
       if image.lodging and image.lodging.images.count() < 3:
@@ -353,6 +371,8 @@ class ImageListHandler(APIView):
     return Response(ImageSerializer(images, many=True).data)
 
   def post(self, request):
+    if request.user.user_type == User.TENANT:
+      raise ValidationError('You don\'t have permission to perform this action')
     data = request.data
     if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
       raise ValidationError('invalid image')
@@ -389,6 +409,8 @@ class VRImageListHandler(APIView):
     return Response(VRImageSerializer(images, many=True).data)
 
   def post(self, request):
+    if request.user.user_type == User.TENANT:
+      raise ValidationError('You don\'t have permission to perform this action')
     data = request.data
     if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
       raise ValidationError('invalid image')
@@ -412,6 +434,8 @@ class VRImageHandler(APIView):
   permission_classes = (IsAuthenticated,)
   
   def delete(self, request, image_id):
+    if request.user.user_type == User.TENANT:
+      raise ValidationError('You don\'t have permission to perform this action')
     try:
       image = LodgingVRImage.objects.get(id=image_id)
       lodging = image.lodging

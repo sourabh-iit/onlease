@@ -22,11 +22,20 @@ export class UserService {
     });
     this.http.get('/api/account/me').subscribe((data: any) => {
       if(data) {
+        data.user_type = this.getUserType(data.user_type);
         this.user$.next(data);
       }
     }, () => {
       this.user$.next(null);
     });
+  }
+
+  private getUserType(user_type: string) {
+    switch(user_type) {
+      case '0': return 'tenant';
+      case '1': return 'owner';
+    }
+    return 'admin';
   }
 
   public getProfile() {

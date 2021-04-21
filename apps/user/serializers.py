@@ -9,16 +9,16 @@ class MobileNumberSerializer(serializers.ModelSerializer):
 
 
 class AgreementPointSerializer(serializers.ModelSerializer):
-      class Meta:
-            model = AgreementPoint
-            fields = ('id', 'text', 'updated_at')
+  class Meta:
+    model = AgreementPoint
+    fields = ('id', 'text', 'updated_at')
 
 
 class AgreementSerializer(serializers.ModelSerializer):
-      points = AgreementPointSerializer(many=True)
-      class Meta:
-            model = Agreement
-            fields = ('id', 'points', 'title')
+  points = AgreementPointSerializer(many=True)
+  class Meta:
+    model = Agreement
+    fields = ('id', 'points', 'title')
 
 class ImageSerializer(serializers.ModelSerializer):
   class Meta:
@@ -53,5 +53,7 @@ class UserSerializer(serializers.ModelSerializer):
       'image',
       'mobile_numbers',
       'agreements',
-      'favorites'
+      'favorites',
+      'user_type',
+      'is_superuser'
     )

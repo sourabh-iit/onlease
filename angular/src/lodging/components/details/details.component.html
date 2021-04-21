@@ -120,7 +120,7 @@
         I agree to above terms and conditions of owner.</mat-checkbox>
       <mat-error class="d-block">{{agreementError}}</mat-error>
     </div>
-    <div *ngIf="!lodging.posted_by" class="mt-4">
+    <div *ngIf="!lodging.posted_by && me?.user_type == 'tenant'" class="mt-4">
       <div *ngIf="lodging.is_booked || lodging.isHidden; else loginTestConfirmAndBook">
         <button class="w-100" type="button" disabled>Already booked</button>
       </div>

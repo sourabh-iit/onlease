@@ -110,6 +110,8 @@ interface User {
   favorites: Array<number>;
   image?: Image;
   agreements: Agreement[];
+  user_type: string;
+  is_superuser?: boolean;
 }
 
 interface Charge {

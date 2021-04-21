@@ -36,6 +36,11 @@ export class AppComponent implements OnDestroy {
     this.subs.unsubscribe();
   }
 
+  isOwner() {
+    const user = this.user!;
+    return user.user_type == 'owner' || user.user_type == 'admin';
+  }
+
   logout() {
     this.userService.logout().subscribe(() => {
       this.document.location.href = '/user/login';
