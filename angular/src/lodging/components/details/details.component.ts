@@ -31,6 +31,8 @@ export class LodgingDetailsComponent implements OnDestroy {
   public bookingAmt = 0;
   public brokerage = 0;
   public advanceRent = 0;
+  public agreeToTandC = false;
+  public agreementError = '';
 
   constructor(
     private userService: UserService,
@@ -171,7 +173,17 @@ export class LodgingDetailsComponent implements OnDestroy {
     }));
   }
 
+  onAgreementChange(val: boolean) {
+    if(val) {
+      this.agreementError = '';
+    }
+  }
+
   bookLodging() {
+    if(!this.agreeToTandC) {
+      this.agreementError = "Accept owner terms and conditions";
+      return;
+    }
     this.subs.add(this.lodgingService.bookLodging(this.lodging.id).subscribe((resp: any) => {
       window.open(resp.url);
     }));

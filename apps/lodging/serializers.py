@@ -63,8 +63,9 @@ class LodgingSerializer(serializers.ModelSerializer):
   lodging_type = serializers.ChoiceField(choices=Lodging.RESIDENTIAL_CHOICES)
   flooring = serializers.ChoiceField(choices=Lodging.FLOORING_CHOICES)
   region_id = serializers.IntegerField()
+  agreement_id = serializers.IntegerField()
   charges = ChargeSerializer(many=True)
-  agreement = AgreementSerializer()
+  agreement = AgreementSerializer(required=False)
 
   @staticmethod
   def get_images(lodging):
@@ -125,8 +126,7 @@ class LodgingSerializer(serializers.ModelSerializer):
       'is_confirming',
       'images',
       'charges',
-      'vrimages',
-      'agreement'
+      'vrimages'
     )
     extra_kwargs = {
       'virtual_tour_link': {'required': False, 'allow_blank': True},
@@ -136,8 +136,7 @@ class LodgingSerializer(serializers.ModelSerializer):
       'flooring_other': {'required': False, 'allow_blank': True},
       'latlng': {'required': False, 'allow_blank': True},
       'address': {'write_only': True},
-      'reference': {'write_only': True},
-      'agreement': {'required': False, 'allow_blank': True}
+      'reference': {'write_only': True}
     }
 
   def clean_address(self, value):

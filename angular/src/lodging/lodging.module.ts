@@ -4,19 +4,20 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import {MatBadgeModule} from '@angular/material/badge';
-import {MatRadioModule} from '@angular/material/radio';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatDialogModule } from '@angular/material/dialog';
-import {MatCardModule} from '@angular/material/card';
-import {MatTooltipModule} from '@angular/material/tooltip';
+import { MatCardModule } from '@angular/material/card';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {IvyCarouselModule} from 'angular-responsive-carousel';
@@ -33,6 +34,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { HomeComponent } from './components/home/home.component';
 import { LodgingDetailsComponent } from './components/details/details.component';
 import { LodgingResolver } from './services/lodging-resolver.service';
+import { AgreementChoiceComponent } from './components/agreements-choice/agreements-choice.component';
 
 export const MY_FORMATS = {
   parse: {
@@ -51,7 +53,8 @@ export const MY_FORMATS = {
     EditLodgingComponent,
     LodgingImageComponent,
     HomeComponent,
-    LodgingDetailsComponent
+    LodgingDetailsComponent,
+    AgreementChoiceComponent
   ],
   imports: [
     ReactiveFormsModule,
@@ -73,7 +76,8 @@ export const MY_FORMATS = {
     MatMomentDateModule,
     MatProgressSpinnerModule,
     IvyCarouselModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatCheckboxModule
   ],
   providers: [
     LodgingService,
@@ -82,7 +86,8 @@ export const MY_FORMATS = {
     LodgingResolver
   ],
   entryComponents: [
-    LodgingImageComponent
+    LodgingImageComponent,
+    AgreementChoiceComponent
   ]
 })
 export class LodgingModule { }

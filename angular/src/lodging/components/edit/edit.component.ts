@@ -13,6 +13,8 @@ import * as moment from 'moment';
 import { ToasterService } from 'src/app/services/toaster.service';
 import { ConstantsService } from 'src/app/services/constants.service';
 import { HttpEventType } from '@angular/common/http';
+import { UserService } from 'src/app/services/user.service';
+import { AgreementChoiceComponent } from '../agreements-choice/agreements-choice.component';
 
 export const crossFieldValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const lodgingTypeControl = control.get('lodging_type')!;
@@ -66,9 +68,12 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   public areaUnitOptions: any = [];
   public flooringOptions: any = [];
 
+  public agreements: Agreement[] = [];
+  public selectedAgreement: Agreement|null = null;
+
   public vrImages: any = [];
   public uploadingVRImages: any = [];
-  @ViewChild('fileUpload') fileUpload: ElementRef;
+  @ViewChild('fileUpload') fileUpload!: ElementRef;
 
   constructor(
     private fb: FormBuilder,
@@ -78,7 +83,9 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private toastr: ToasterService,
     private constantsService: ConstantsService,
-    private router: Router
+    private router: Router,
+    private userService: UserService,
+    private modalService: MatDialog
   ) {
     this.subs.add(this.route.params.subscribe(params => {
       this.lodgingForm = this.createLodgingForm();
@@ -124,6 +131,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       this.validateTourLink(val);
     }));
     this.lodgingTypes = this.constantsService.lodgingTypes;
+    this.loadAgreements();
   }
 
   private createLodgingForm() {
@@ -151,6 +159,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       available_from: [''],
       latlng: [''],
       virtual_tour_link: [''],
+      agreement_id: [''],
       region_temp: ['', [Validators.required]],
       charges: this.fb.array([])
     }, { validator: crossFieldValidator});
@@ -166,6 +175,43 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       description: ['', [Validators.required]],
       is_per_month: [false],
     }));
+  }
+
+  loadAgreements() {
+    this.subs.add(this.userService.loadAgreements().subscribe((agreements: any) => {
+      this.agreements = agreements;
+      this.selectAgreement();
+    }));
+  }
+
+  selectAgreement() {
+    const agreementId = this.lodgingForm.get('agreement_id').value;
+    if(agreementId != '') {
+      this.selectedAgreement = this.agreements.find((agreement: Agreement) => agreement.id == agreementId)!;
+    }
+  }
+
+  deselectAgreement() {
+    this.lodgingForm.get('agreement_id').setValue('');
+    this.selectedAgreement = null;
+  }
+
+  getAgreementById(agreementId: number) {
+    return this.agreements.find((agreement: Agreement) => agreement.id == agreementId);
+  }
+
+  chooseAgreement() {
+    const modalRef = this.modalService.open(AgreementChoiceComponent, {
+      data: {
+        agreements: this.agreements
+      }
+    });
+    modalRef.afterClosed().subscribe((agreementId: number) => {
+      if(agreementId) {
+        this.selectedAgreement = this.agreements.find((a: Agreement) => a.id == agreementId)!;
+        this.lodgingForm.get('agreement_id').setValue(agreementId);
+      }
+    });
   }
 
   removeCharge(index: number) {
@@ -320,6 +366,11 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
 
   loadLodging() {
     this.subs.add(this.lodgingService.loadLodging(this.lodgingId).subscribe((data: any) => {
+      if(data.agreement_id == null) {
+        data.agreement_id = '';
+      } else {
+        data.agreement_id = data.agreement_id.toString();
+      }
       this.populateForm(data);
     }));
   }
@@ -327,6 +378,9 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   saveLodging() {
     const data = this.createSaveData();
     delete data.region;
+    if(data.agreement_id == '') {
+      delete data.agreement_id;
+    }
     data.images = data.images.map((image: any) => image.id);
     data.vrimages = data.vrimages.map((image: any) => image.id);
     data.id = this.lodgingId;
@@ -371,6 +425,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     }
     this.lodgingForm.patchValue(data);
     this.lodgingForm.patchValue({ region_temp: data.region });
+    this.selectAgreement();
   }
 
   deleteForm() {

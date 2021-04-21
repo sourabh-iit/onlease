@@ -75,6 +75,8 @@ interface Lodging {
   charges: Charge[];
   posted_by?: User;
   isHidden: boolean;
+  agreement?: Agreement;
+  agreement_id?: string|null;
 }
 
 interface Image {

@@ -15,14 +15,18 @@ import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontaweso
 import { UserService } from './services/user.service';
 import { GlobalErrorHandler } from './services/error-handler.service';
 import {
+  faAddressBook,
   faBuilding,
   faChevronLeft,
   faChevronRight,
   faDownload,
   faFileDownload,
+  faHandshake,
   faHeart,
+  faInfoCircle,
   faLock,
   faMapMarkerAlt,
+  faMoneyBill,
   faPencilAlt,
   faPlus,
   faRupeeSign,
@@ -81,5 +85,9 @@ export class AppModule {
     library.addIcons(faLock);
     library.addIcons(faFileDownload);
     library.addIcons(faDownload);
+    library.addIcons(faHandshake);
+    library.addIcons(faMoneyBill);
+    library.addIcons(faAddressBook);
+    library.addIcons(faInfoCircle);
   }
 }

@@ -1,0 +1,27 @@
+<div>
+    <h2>Select Agreement</h2>
+    <mat-radio-group [(ngModel)]="selectedAgreement">
+        <ng-container *ngFor="let agreement of data.agreements">
+            <mat-radio-button class="agreement" [value]="agreement.id">
+                <mat-accordion>
+                    <mat-expansion-panel>
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                {{agreement?.title}}
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                            <mat-list role="list">
+                                <mat-list-item role="listitem" *ngFor="let point of agreement?.points">{{point.text}}</mat-list-item>
+                            </mat-list>
+                    </mat-expansion-panel>
+                </mat-accordion>
+            </mat-radio-button>
+        </ng-container>
+    </mat-radio-group>
+    <div style="text-align: center;">
+        <button mat-raised-button color="accent"
+            [disabled]="selectedAgreement == ''"
+            (click)="dialogRef.close(selectedAgreement)"
+        >Select</button>
+    </div>
+</div>

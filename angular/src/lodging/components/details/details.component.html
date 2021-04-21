@@ -1,12 +1,12 @@
 <div class="row p-1 p-md-5 pt-2">
   <div class="col-12 col-md-8">
-    <div class="box" *ngIf="lodging.virtual_tour_link != ''">
+    <div class="box mb-4" *ngIf="lodging.virtual_tour_link != ''">
       <iframe class="ku-embed" frameborder="0" scrolling="no"
         allowfullscreen allow="xr-spatial-tracking; gyroscope; accelerometer" 
         [src]="tourLink"
       ></iframe>
     </div>
-    <div class="box mt-4">
+    <div class="box">
       <div class="content">
         <div style="position: absolute; top: 20px; color: gray; font-weight: bold;">{{tagText(lodging.images[currImage])}}</div>
         <carousel #carousel arrowsTheme="dark" cellWidth="100%" [dots]="true" [height]="400" [arrowsOutside]="true">
@@ -19,56 +19,56 @@
       </div>
     </div>
     <div class="box mt-4 p-3">
-      <h2>Details</h2>
+      <h2><fa-icon [icon]="['fas', 'info-circle']" class="mr-2"></fa-icon> Details</h2>
       <div class="row container">
-        <div class="col-4">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Location:</span>
           <span class="value">{{lodging.region?.name}} ({{lodging.region?.state?.name}})</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Floor:</span>
           <span class="value"><b>{{lodging.floor_no}}</b> out of <b>{{lodging.total_floors}}</b> floors</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Area:</span>
           <span class="value">{{lodging.area}} {{areaUnit}}</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Type:</span>
           <span class="value">{{type}}</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Furnishing:</span>
           <span class="value">{{furnishing}}</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Bathrooms:</span>
           <span class="value">{{lodging.bathrooms}}</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Rooms:</span>
           <span class="value">{{lodging.rooms}}</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Balconies:</span>
           <span class="value">{{lodging.balconies}}</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Halls:</span>
           <span class="value">{{lodging.halls}}</span>
         </div>
-        <div class="col-4 mb-3">
+        <div class="col-6 col-md-4 mb-3">
           <span class="name">Flooring:</span>
           <span class="value">{{flooring}}</span>
         </div>
       </div>
     </div>
     <div class="box mt-4 p-3" *ngIf="lodging.additional_details.length > 0">
-      <h2>Additional details</h2>
+      <h2><fa-icon [icon]="['fas', 'info-circle']" class="mr-2"></fa-icon> Additional details</h2>
       <div>{{lodging.additional_details}}</div>
     </div>
     <div class="box mt-4 p-3" *ngIf="lodging.posted_by">
-      <h2>Contact Details</h2>
+      <h2><fa-icon [icon]="['fas', 'address-book']" class="mr-2"></fa-icon> Contact Details</h2>
       <div class="mb-3">
         <span class="name">Address: </span>
         <span class="value">{{lodging.address}}</span>
@@ -81,7 +81,7 @@
   </div>
   <div class="col-12 col-md-4">
     <div class="box p-3 mt-4 mt-md-0">
-      <h2>All Charges</h2>
+      <h2><fa-icon [icon]="['fas', 'money-bill']" class="mr-2"></fa-icon> All Charges</h2>
       <div class="row mb-3" *ngFor="let charge of charges">
         <span class="col name">{{charge.text}}</span>
         <span class="col value">
@@ -108,6 +108,17 @@
           <fa-icon [icon]="['fas', 'rupee-sign']"></fa-icon>{{bookingAmt}}
         </span>
       </div>
+    </div>
+    <div class="box p-3 mt-4" *ngIf="lodging.agreement && !needToConfirm">
+      <h2><fa-icon [icon]="['fas', 'handshake']" class="mr-2"></fa-icon> Agreement</h2>
+      <mat-list role="list">
+        <mat-list-item role="listitem" *ngFor="let point of lodging.agreement.points">
+          {{point.text}}</mat-list-item>
+      </mat-list>
+      <hr>
+      <mat-checkbox [(ngModel)]="agreeToTandC" (ngModelChange)="onAgreementChange($event)" color="primary">
+        I agree to above terms and conditions of owner.</mat-checkbox>
+      <mat-error class="d-block">{{agreementError}}</mat-error>
     </div>
     <div *ngIf="!lodging.posted_by" class="mt-4">
       <div *ngIf="lodging.is_booked || lodging.isHidden; else loginTestConfirmAndBook">

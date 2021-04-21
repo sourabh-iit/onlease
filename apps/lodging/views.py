@@ -134,6 +134,7 @@ class LodgingView(APIView):
     with transaction.atomic():
       data['last_confirmed'] = datetime.now()
       serializer = LodgingSerializer(lodging, data=data, context={'user': user})
+      print("sakjdfh kdfjghzs ksjdfh: ", data['agreement_id'])
       serializer.is_valid(raise_exception=True)
       lodging = serializer.save()
       tot_images = 0

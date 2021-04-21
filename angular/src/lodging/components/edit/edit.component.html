@@ -194,7 +194,7 @@
         <fa-icon [icon]="['fas', 'plus']"></fa-icon>
       </button>
     </div>
-    <div *ngIf="charges.length == 0" style="text-align: center; color: gray;">No addiional charge added yet</div>
+    <div *ngIf="charges.length == 0" style="text-align: center; color: gray;">None added yet</div>
     <div class="image mt-2" *ngFor="let charge of charges.controls; let i=index">
       <div class="container" style="background: beige; padding: 5px; margin-bottom: 10px;" [formGroupName]="i">
         <div class="row">
@@ -235,6 +235,37 @@
     </mat-error>
     <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="validatingLink" matSuffix></fa-icon>
   </mat-form-field>
+  <div class="images-container mt-2 mb-2">
+    <h4 style="display: flex; justify-content: space-between;">
+      <span>Agreement:</span>
+      <button type="button" (click)="chooseAgreement()" mat-mini-fab color="accent">
+        <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+      </button>
+    </h4>
+    <div class="d-flex">
+      <div style="color: gray; text-align: center;" *ngIf="lodgingForm.get('agreement_id').value == ''">
+        None selected</div>
+      <div *ngIf="lodgingForm.get('agreement_id').value != ''">
+        <mat-accordion multi>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                {{selectedAgreement?.title}}
+              </mat-panel-title>
+              <mat-panel-description>
+                <fa-icon style="color: red;" (click)="deselectAgreement()" class="ml-3" [icon]="['fas', 'times-circle']"></fa-icon>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+      
+            <mat-list role="list">
+              <mat-list-item role="listitem" *ngFor="let point of selectedAgreement?.points">{{point.text}}</mat-list-item>
+            </mat-list>
+      
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+    </div>
+  </div>
   <button type="submit" mat-raised-button color="accent" class="mt-2"
     [disabled]="!lodgingForm.valid || validatingLink">Save</button>
 </form>
