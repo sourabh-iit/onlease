@@ -28,7 +28,8 @@ export class RegisterComponent implements OnDestroy {
     confirm_password: ['', [Validators.required]],
     first_name: [''],
     last_name: [''],
-    email: ['']
+    email: [''],
+    user_type: ['', Validators.required]
   }, {validators: confirmPasswordValidator});
   public otpSent = false;
   public lastOtpSent = Date.now();

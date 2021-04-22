@@ -10,11 +10,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
-from .models import ProfileImage, User, MobileNumber, Agreement, AgreementPoint
-from apps.utils import send_otp
-from .serializers import MobileNumberSerializer, UserSerializer, ImageSerializer, AgreementSerializer
-from apps.utils import generate_random, create_thumbnail, thumbnail_size
+from .models import ProfileImage, User, MobileNumber, Agreement, AgreementPoint, Address
+from apps.utils import send_otp, generate_random, create_thumbnail, thumbnail_size
+from .serializers import (
+    MobileNumberSerializer, UserSerializer, ImageSerializer, AgreementSerializer,
+    AddressSerializer
+)
+from apps.permissions import IsLodgingOwner, IsAdmin, IsLodgingTenant, IsOwnerOrReadOnly
 
 import time
 
@@ -41,14 +45,14 @@ def set_password(password, user):
     user.save()
 
 class UserHandler(APIView):
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({})
         user = UserSerializer(request.user).data
         return Response(user)
 
 class UserActionHandler(APIView):
+    permission_classes = [IsAuthenticated]
     
     def post(self, request, action):
         user = request.user
@@ -311,15 +315,13 @@ class ImageHandler(APIView):
 
 
 class AgreementListHandler(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsLodgingOwner]
 
     def get(self, request):
         agreements = request.user.agreements.all()
         return Response(AgreementSerializer(agreements, many=True).data)
 
     def post(self, request):
-        if request.user.user_type == User.TENANT:
-            raise ValidationError('You don\'t have permission to perform this action')
         data = request.data
         agreement = Agreement()
         agreement.title = data['title']
@@ -332,21 +334,13 @@ class AgreementListHandler(APIView):
 
 
 class AgreementHandler(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    @staticmethod
-    def check_edit(agreement, user):
-        if user.user_type == User.TENANT:
-            raise ValidationError('You don\'t have permission to perform this action')
-        if agreement.user != user:
-            raise ValidationError('You don\'t have permission to perform this action')
+    permission_classes = [IsLodgingOwner, IsOwnerOrReadOnly]
 
     def put(self, request, agreement_id):
         try:
             agreement = Agreement.objects.get(id=agreement_id)
         except Agreement.DoesNotExist:
             raise ValidationError('Invalid id')
-        self.check_edit(agreement, request.user)
         data = request.data
         agreement.title = data['title']
         agreement.save()
@@ -358,7 +352,6 @@ class AgreementHandler(APIView):
     def delete(self, request, agreement_id):
         try:
             agreement = Agreement.objects.get(id=agreement_id)
-            self.check_edit(agreement, request.user)
             agreement.delete()
             return Response("success")
         except Agreement.DoesNotExist:
@@ -370,3 +363,48 @@ class AgreementHandler(APIView):
             return Response(AgreementSerializer(agreement).data)
         except Agreement.DoesNotExist:
             raise ValidationError('Invalid id')
+
+
+class AddressHandler(APIView):
+    permission_classes = [IsLodgingOwner, IsOwnerOrReadOnly]
+
+    def get(self, request, address_id):
+        try:
+            address = Address.objects.get(id=address_id)
+            return Response(AddressSerializer(address).data)
+        except Address.DoesNotExist:
+            raise ValidationError("Address does not exist")
+
+    def put(self, request, address_id):
+        try:
+            address = Address.objects.get(id=address_id)
+            if address.user != request.user:
+                raise ValidationError('You don\'t have permission to perform this action.')
+            serializer = AddressSerializer(address, request.data)
+            address = serializer.save()
+            return Response(AddressSerializer(address).data)
+        except Address.DoesNotExist:
+            raise ValidationError("Address does not exist")
+
+    def delete(self, request, address_id):
+        try:
+            address = Address.objects.get(id=address_id)
+            if address.user != request.user:
+                raise ValidationError('You don\'t have permission to perform this action.')
+                address.delete()
+            return Response('success')
+        except Address.DoesNotExist:
+            raise ValidationError("Address does not exist")
+
+
+class AddressListHandler(APIView):
+    permission_classes = [IsLodgingOwner]
+
+    def get(self, request):
+        addresses = request.user.addresses.all()
+        return Response(AddressSerializer(addresses, many=True).data)
+
+    def post(self, request):
+        serializer = AddressSerializer(None, request.data)
+        address = serializer.save()
+        return Response(AddressSerializer(address).data)

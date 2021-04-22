@@ -2,6 +2,7 @@ import string
 import random
 import re
 
+
 def generate_random(size):
     # generate random number of given size
     char_arr = string.ascii_letters + string.digits

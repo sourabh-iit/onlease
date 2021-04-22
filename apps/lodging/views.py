@@ -18,9 +18,8 @@ from .serializers import (
   ChargeSerializer, FullLodgingSerializer, LodgingSerializer, ImageSerializer,
   VRImageSerializer
 )
-from apps.utils import ReadOnly
-from apps.utils import generate_random, create_thumbnail
 from apps.utils import *
+from apps.permissions import ReadOnly, IsOwnerOrReadOnly, IsAdmin, IsLodgingOwner, IsLodgingTenant
 
 import requests
 from urllib.parse import urlparse
@@ -73,13 +72,9 @@ class LodgingActionView(APIView):
       lodgings = Lodging.objects.prefetch_related('images', 'region').filter(posted_by=user)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'bookings':
-      if user.user_type == User.OWNER:
-        raise ValidationError('You don\'t have permission to perform this action')
       lodgings = user.bookings.prefetch_related('images', 'region').filter(is_booked=True)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'favorites':
-      if user.user_type == User.OWNER:
-        raise ValidationError('You don\'t have permission to perform this action')
       lodgings = user.favorite_properties.prefetch_related('images', 'region').all()
       return Response(LodgingSerializer(lodgings, many=True).data)
     raise ValidationError('Invalid action')
@@ -100,7 +95,7 @@ class LodgingListView(APIView):
     })
 
 class LodgingView(APIView):
-  permission_classes = [IsAuthenticated|ReadOnly]
+  permission_classes = [IsOwnerOrReadOnly, IsLodgingOwner|ReadOnly]
 
   def get(self, request, lodging_id, action=None):
     try:
@@ -127,14 +122,10 @@ class LodgingView(APIView):
       lodging = Lodging.objects.get(id=lodging_id)
     except Lodging.DoesNotExist:
       raise ValidationError('Property does not exist')
-    if request.user.mobile_number != lodging.posted_by_id:
-      raise ValidationError('You don\'t have permission to perform this action')
     lodging = self.save_lodging(request.data, request.user, lodging)
     return Response(FullLodgingSerializer(lodging).data)
 
   def delete(self, request, lodging_id):
-    if request.user.user_type == User.TENANT:
-      raise ValidationError('You don\'t have permission to perform this action')
     try:
       lodging = Lodging.objects.get(id=lodging_id)
     except Lodging.DoesNotExist:
@@ -143,12 +134,9 @@ class LodgingView(APIView):
     return Response({'success':True})
 
   def save_lodging(self, data, user, lodging):
-    if user.user_type == User.TENANT:
-        raise ValidationError('You don\'t have permission to perform this action')
     with transaction.atomic():
       data['last_confirmed'] = datetime.now()
       serializer = LodgingSerializer(lodging, data=data, context={'user': user})
-      print("sakjdfh kdfjghzs ksjdfh: ", data['agreement_id'])
       serializer.is_valid(raise_exception=True)
       lodging = serializer.save()
       tot_images = 0
@@ -177,6 +165,7 @@ class LodgingView(APIView):
     return lodging
 
 class LodgingChargesHandler(APIView):
+  permission_classes = [IsLodgingOwner|ReadOnly]
 
   def get(self, request, lodging_id):
     try:
@@ -191,6 +180,8 @@ class LodgingChargesHandler(APIView):
     })
 
 class TourLink(APIView):
+  permission_classes = [IsLodgingOwner]
+
   def post(self, request):
     tour_link = request.data.get('link')
     try:
@@ -330,11 +321,9 @@ class TwilioHandler(APIView):
     return f"आपका {lodging_type} जिस्की पहचान है {lodging.reference} अगर खाली है तो १ दबाए अन्यथा २ दबाए! दोबारा दोहराने के लिए ० दबाये!"
 
 class ImageHandler(APIView):
-  permission_classes = (IsAuthenticated,)
+  permission_classes = [IsOwnerOrReadOnly, IsLodgingOwner]
   
   def put(self, request, image_id):
-    if request.user.user_type == User.TENANT:
-      raise ValidationError('You don\'t have permission to perform this action')
     data = request.data
     try:
       if 'tag' not in data or data['tag'].strip() == "" or int(data['tag']) >= len(LodgingImage.LODGING_TAG_CHOICES):
@@ -350,8 +339,6 @@ class ImageHandler(APIView):
       raise ValidationError("invalid tag")
   
   def delete(self, request, image_id):
-    if request.user.user_type == User.TENANT:
-      raise ValidationError('You don\'t have permission to perform this action')
     try:
       image = LodgingImage.objects.get(id=image_id)
       if image.lodging and image.lodging.images.count() < 3:
@@ -362,7 +349,7 @@ class ImageHandler(APIView):
       raise ValidationError("invalid image id")
 
 class ImageListHandler(APIView):
-  permission_classes = (IsAuthenticated,)
+  permission_classes = [IsLodgingOwner]
   
   def get(self, request):
     data = request.query_params
@@ -371,8 +358,6 @@ class ImageListHandler(APIView):
     return Response(ImageSerializer(images, many=True).data)
 
   def post(self, request):
-    if request.user.user_type == User.TENANT:
-      raise ValidationError('You don\'t have permission to perform this action')
     data = request.data
     if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
       raise ValidationError('invalid image')
@@ -400,7 +385,7 @@ class ImageListHandler(APIView):
     return Response(ImageSerializer(im).data)
 
 class VRImageListHandler(APIView):
-  permission_classes = (IsAuthenticated,)
+  permission_classes = [IsLodgingOwner]
   
   def get(self, request):
     data = request.query_params
@@ -409,8 +394,6 @@ class VRImageListHandler(APIView):
     return Response(VRImageSerializer(images, many=True).data)
 
   def post(self, request):
-    if request.user.user_type == User.TENANT:
-      raise ValidationError('You don\'t have permission to perform this action')
     data = request.data
     if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
       raise ValidationError('invalid image')
@@ -431,18 +414,14 @@ class VRImageListHandler(APIView):
     return Response(VRImageSerializer(im).data)
 
 class VRImageHandler(APIView):
-  permission_classes = (IsAuthenticated,)
+  permission_classes = [IsLodgingOwner, IsOwnerOrReadOnly]
   
   def delete(self, request, image_id):
-    if request.user.user_type == User.TENANT:
-      raise ValidationError('You don\'t have permission to perform this action')
     try:
       image = LodgingVRImage.objects.get(id=image_id)
       lodging = image.lodging
       if lodging and lodging.images.count() < 3:
         raise ValidationError('Cannot delete image. Atleast two images are required')
-      if lodging and request.user != lodging.posted_by:
-        raise ValidationError('Permission denied')
       image.disabled = True
       image.save()
       return Response('success')

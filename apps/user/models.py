@@ -4,6 +4,7 @@ from django.core.validators import RegexValidator, MinLengthValidator
 from django.contrib.contenttypes.fields import GenericRelation
 
 from .utils import *
+from apps.locations.models import Region
 
 def profile_image_upload_path(instance, filename):
   return f'profile/images/{filename}'
@@ -89,6 +90,16 @@ class User(AbstractUser):
 
   def __str__(self):
     return self.mobile_number
+
+
+class Address(models.Model):
+  region = models.ForeignKey(Region, related_name="addresses", on_delete=models.CASCADE)
+  text = models.CharField(max_length=200, default='')
+  latlng = models.CharField(max_length=30, default='')
+  user = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
+
+  def __str__(self):
+    return f'{self.region} - {self.text}'
 
 
 class MobileNumber(models.Model):

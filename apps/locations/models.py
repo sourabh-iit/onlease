@@ -16,7 +16,7 @@ class Region(models.Model):
     state = models.ForeignKey(State, on_delete=models.CASCADE, related_name="regions")
 
     def __str__(self):
-        return self.name
+        return f'{self.name}({self.state})'
 
     class Meta:
         ordering=('name',)

@@ -12,7 +12,6 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
 from django.conf import settings
 
-from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.exceptions import ValidationError
 
 from twilio.rest import Client
@@ -45,11 +44,6 @@ def create_thumbnail(img, size, thumb_name, img_type):
         None, None
     )
     return file
-
-
-class ReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        return request.method in SAFE_METHODS
 
 class EmailOrMobileNumberAuthenticate(object):
     def authenticate(self,request,username=None,password=None,**kwargs):

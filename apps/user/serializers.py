@@ -1,6 +1,9 @@
 from django.forms import fields
 from rest_framework import serializers
-from .models import ProfileImage, User, MobileNumber, Agreement, AgreementPoint
+
+from .models import ProfileImage, User, MobileNumber, Agreement, AgreementPoint, Address
+from apps.locations.serializers import RegionSerializer
+
 
 class MobileNumberSerializer(serializers.ModelSerializer):
   class Meta:
@@ -56,4 +59,17 @@ class UserSerializer(serializers.ModelSerializer):
       'favorites',
       'user_type',
       'is_superuser'
+    )
+
+class AddressSerializer(serializers.ModelSerializer):
+  region = RegionSerializer()
+  region_id = serializers.IntegerField()
+
+  class Meta:
+    model = Address
+    fields = (
+      'id',
+      'region',
+      'text',
+      'region_id'
     )

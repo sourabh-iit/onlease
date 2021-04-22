@@ -187,7 +187,12 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   selectAgreement() {
     const agreementId = this.lodgingForm.get('agreement_id').value;
     if(agreementId != '') {
-      this.selectedAgreement = this.agreements.find((agreement: Agreement) => agreement.id == agreementId)!;
+      const index = this.agreements.findIndex((agreement: Agreement) => agreement.id == agreementId);
+      if(index > -1) {
+        this.selectedAgreement = this.agreements[index];
+      } else {
+        this.lodgingForm.get('agreement_id').setValue('');
+      }
     }
   }
 

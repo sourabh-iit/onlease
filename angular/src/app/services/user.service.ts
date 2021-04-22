@@ -20,14 +20,16 @@ export class UserService {
       this.user = data;
       this.isLoggedIn$.next(!!data && 'mobile_number' in data);
     });
-    this.http.get('/api/account/me').subscribe((data: any) => {
-      if(data) {
-        data.user_type = this.getUserType(data.user_type);
-        this.user$.next(data);
-      }
-    }, () => {
+    this.http.get('/api/account/me').subscribe(this.emitUser, (err) => {
       this.user$.next(null);
     });
+  }
+
+  emitUser = (data: any) => {
+    if(data) {
+      data.user_type = this.getUserType(data.user_type);
+      this.user$.next(data);
+    }
   }
 
   private getUserType(user_type: string) {
@@ -39,16 +41,12 @@ export class UserService {
   }
 
   public getProfile() {
-    this.http.get('/api/account/me').subscribe((data: any) => {
-      this.user$.next(data);
-    });
+    this.http.get('/api/account/me').subscribe(this.emitUser);
   }
 
   public login(data: {username: string, password: string}) {
     return this.http.post('/api/account/login', data).pipe(
-      tap((data: any) => {
-        this.user$.next(data);
-      }),
+      tap(this.emitUser),
       catchError((err) => {
         this.user$.next(null);
         return throwError(err);
@@ -74,9 +72,7 @@ export class UserService {
 
   public verify_registration(otp: string) {
     return this.http.post('/api/account/register/verify', {otp}).pipe(
-      tap((data: any) => {
-        this.user$.next(data);
-      })
+      tap(this.emitUser)
     );
   }
 
@@ -86,9 +82,7 @@ export class UserService {
 
   public saveProfile(data: {first_name: string, last_name: string, email: string, gender: string}) {
     return this.http.post('/api/account/me/save-profile', data).pipe(
-      tap((data: any) => {
-        this.user$.next(data);
-      })
+      tap(this.emitUser)
     );
   }
 
@@ -100,8 +94,8 @@ export class UserService {
     return this.http.post('/api/account/me/number/verify-otp', {otp}).pipe(
       tap((data: any) => {
         if(this.user != null)
-          this.user.mobile_numbers.push(data)
-        this.user$.next(this.user);
+          this.user.mobile_numbers.push(data);
+        this.emitUser(this.user);
       })
     );
   }
@@ -124,7 +118,7 @@ export class UserService {
       tap(() => {
         if(this.user != null) {
           this.user.mobile_numbers = this.user.mobile_numbers.filter((num: MobileNumber) => num.id != number.id);
-          this.user$.next(this.user);
+          this.emitUser(this.user);
         }
       })
     );
@@ -135,7 +129,7 @@ export class UserService {
       tap(() => {
         if(this.user != null)
           this.user.image = undefined;
-        this.user$.next(this.user);
+        this.emitUser(this.user);
       })
     );
   }
@@ -162,12 +156,12 @@ export class UserService {
         this.user!.favorites = this.user!.favorites.filter((p: any) => p != lodgingId);
         this.favorites = this.favorites.filter((f: Lodging) => f.id != lodgingId);
         this.favorites$.next(this.favorites);
-        this.user$.next(this.user);
+        this.emitUser(this.user);
       }));
     } else {
       return this.http.post(url+'add_to_favorites', {}).pipe(tap(() => {
         this.user!.favorites.push(lodgingId);
-        this.user$.next(this.user);
+        this.emitUser(this.user);
       }));
     }
   }

@@ -28,6 +28,12 @@
     <mat-label>Confirm Password</mat-label>
     <input matInput required type="password" formControlName="confirm_password" placeholder="Ex. 9999999999" value="confirm_password">
   </mat-form-field>
+  <section class="w-100">
+    <mat-radio-group formControlName="user_type">
+      <mat-radio-button value="0">Tenant</mat-radio-button>
+      <mat-radio-button class="ml-3" value="1">Owner</mat-radio-button>
+    </mat-radio-group>
+  </section>
   <button type="submit" mat-raised-button color="accent" [disabled]="!registerForm.valid">Register</button>
   <a class="mt-3" [routerLink]="['/user/login']">Already registered? Login</a>
 </form>
