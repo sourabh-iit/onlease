@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('lodging', '0008_lodgingvrimage'),
+        ('user', '0006_address'),
     ]
 
     operations = [
