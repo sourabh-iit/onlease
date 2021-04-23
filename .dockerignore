@@ -1,10 +1,9 @@
 angular
 backup/data
-logs
-docker
-media
-static/images
-static/img
+backend/logs
+backend/media
+backend/static/images
+backend/static/img
 var
 venv
 .git

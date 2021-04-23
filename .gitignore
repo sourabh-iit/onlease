@@ -1,4 +1,4 @@
-media/**
+backend/media/**
 *.pyc
 **.tar.xz
 venv/
@@ -6,7 +6,7 @@ env/
 *.log
 staticfiles
 db.sqlite3
-static/CACHE/**
+backend/static/CACHE/**
 .vscode/
 XDG_CACHE_HOME/
 c
@@ -15,5 +15,5 @@ dump.rdb
 .DS_STORE
 var
 .env
-static/angular/**
+backend/static/angular/**
 backup/data
