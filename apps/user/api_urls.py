@@ -16,4 +16,6 @@ urlpatterns = [
     re_path(r'^password-reset/(?P<action>[\w-]+)/?$', views.PasswordResetView.as_view(), name="password=reset"),
     re_path(r'^agreements/?$', views.AgreementListHandler.as_view(), name="agreements"),
     re_path(r'^agreements/(?P<agreement_id>[0-9]+)/?$', views.AgreementHandler.as_view(), name="agreement"),
+    re_path(r'^addresses/?$', views.AddressListHandler.as_view(), name="addresses"),
+    re_path(r'^address/(?P<address_id>[0-9]+)/?$', views.AddressHandler.as_view(), name="address"),
 ]

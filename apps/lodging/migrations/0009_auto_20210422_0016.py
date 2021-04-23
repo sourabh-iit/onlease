@@ -16,4 +16,22 @@ class Migration(migrations.Migration):
             name='lodging',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='vrimages', to='lodging.Lodging'),
         ),
+        migrations.RemoveField(
+            model_name='lodging',
+            name='latlng',
+        ),
+        migrations.RemoveField(
+            model_name='lodging',
+            name='region',
+        ),
+        migrations.AlterField(
+            model_name='lodging',
+            name='address',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lodgings', to='user.Address'),
+        ),
+        migrations.AlterField(
+            model_name='lodging',
+            name='agreement',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lodgings', to='user.Agreement'),
+        ),
     ]

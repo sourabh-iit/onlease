@@ -1,5 +1,10 @@
 <div>
-    <h2>Select Agreement</h2>
+    <h2 class="heading">
+        <div>Select Agreement</div>
+        <button type="button" mat-mini-fab color="accent" (click)="newAgreement()">
+            <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+        </button>
+    </h2>
     <mat-radio-group [(ngModel)]="selectedAgreement">
         <ng-container *ngFor="let agreement of data.agreements">
             <mat-radio-button class="agreement" [value]="agreement.id">
@@ -18,7 +23,7 @@
             </mat-radio-button>
         </ng-container>
     </mat-radio-group>
-    <div style="text-align: center;">
+    <div style="text-align: center;" class="mt-3">
         <button mat-raised-button color="accent"
             [disabled]="selectedAgreement == ''"
             (click)="dialogRef.close(selectedAgreement)"

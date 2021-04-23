@@ -14,6 +14,8 @@ import { MyFavoritesComponent } from './components/my-favorites/my-favorites.com
 import { MyBookingsComponent } from './components/my-bookings/my-bookings.component';
 import { AgreementComponent } from './components/agreement/agreement.component';
 import { MyAgreementsComponent } from './components/my-agreements/agreements.component';
+import { MyAddressesComponent } from './components/my-addresses/addresses.component';
+import { AddressComponent } from './components/address/address.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +29,9 @@ import { MyAgreementsComponent } from './components/my-agreements/agreements.com
     MyFavoritesComponent,
     MyBookingsComponent,
     AgreementComponent,
-    MyAgreementsComponent
+    MyAgreementsComponent,
+    MyAddressesComponent,
+    AddressComponent
   ],
   imports: [
     ReactiveFormsModule,

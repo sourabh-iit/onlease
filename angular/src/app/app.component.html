@@ -28,6 +28,7 @@
         <div class="item" *ngIf="!isOwner()" (click)="routeTo('/user/me/bookings')">My Bookings</div>
         <div class="item" *ngIf="!isOwner()" (click)="routeTo('/user/me/favorites')">My Favorites</div>
         <div class="item" *ngIf="isOwner()" (click)="routeTo('/user/me/agreements')">My Agreements</div>
+        <div class="item" *ngIf="isOwner()" (click)="routeTo('/user/me/addresses')">My Addresses</div>
         <div class="item" (click)="routeTo('/user/me/profile')">My Profile</div>
         <div class="item" (click)="routeTo('/user/me/change-password')">Change password</div>
         <div class="item" (click)="logout()">Logout</div>

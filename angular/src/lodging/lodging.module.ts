@@ -35,6 +35,7 @@ import { HomeComponent } from './components/home/home.component';
 import { LodgingDetailsComponent } from './components/details/details.component';
 import { LodgingResolver } from './services/lodging-resolver.service';
 import { AgreementChoiceComponent } from './components/agreements-choice/agreements-choice.component';
+import { AddressChoiceComponent } from './components/address-choice/address-choice.component';
 
 export const MY_FORMATS = {
   parse: {
@@ -54,7 +55,8 @@ export const MY_FORMATS = {
     LodgingImageComponent,
     HomeComponent,
     LodgingDetailsComponent,
-    AgreementChoiceComponent
+    AgreementChoiceComponent,
+    AddressChoiceComponent
   ],
   imports: [
     ReactiveFormsModule,
@@ -87,7 +89,8 @@ export const MY_FORMATS = {
   ],
   entryComponents: [
     LodgingImageComponent,
-    AgreementChoiceComponent
+    AgreementChoiceComponent,
+    AddressChoiceComponent
   ]
 })
 export class LodgingModule { }

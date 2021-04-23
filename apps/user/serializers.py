@@ -62,8 +62,12 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
 class AddressSerializer(serializers.ModelSerializer):
-  region = RegionSerializer()
+  region = RegionSerializer(required=False)
   region_id = serializers.IntegerField()
+
+  def create(self, validated_data):
+    user = self.context['user']
+    return Address.objects.create(user=user, **validated_data)
 
   class Meta:
     model = Address

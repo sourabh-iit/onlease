@@ -2,9 +2,9 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from .models import Lodging, Charge, LodgingImage, LodgingVRImage
-from apps.locations.serializers import RegionSerializer
-from apps.user.serializers import UserSerializer, AgreementSerializer
+from apps.user.serializers import UserSerializer, AgreementSerializer, AddressSerializer
 from .utils import clean_data
+from apps.locations.serializers import RegionSerializer
 
 from datetime import datetime
 import json
@@ -59,13 +59,18 @@ class VRImageSerializer(serializers.ModelSerializer):
 class LodgingSerializer(serializers.ModelSerializer):
   images = serializers.SerializerMethodField()
   vrimages = serializers.SerializerMethodField()
-  region = RegionSerializer(required=False)
   lodging_type = serializers.ChoiceField(choices=Lodging.RESIDENTIAL_CHOICES)
   flooring = serializers.ChoiceField(choices=Lodging.FLOORING_CHOICES)
-  region_id = serializers.IntegerField()
   agreement_id = serializers.IntegerField()
-  charges = ChargeSerializer(many=True)
   agreement = AgreementSerializer(required=False)
+  address_id = serializers.IntegerField()
+  region = serializers.SerializerMethodField(required=False)
+  charges = ChargeSerializer(many=True)
+
+  @staticmethod
+  def get_region(lodging):
+    region = lodging.address.region
+    return RegionSerializer(region).data
 
   @staticmethod
   def get_images(lodging):
@@ -79,11 +84,11 @@ class LodgingSerializer(serializers.ModelSerializer):
     model = Lodging
     fields = (
       'id',
-      'address',
+      'region',
+      'address_id',
       'posted_at',
       'updated_at',
       'no_times_booked',
-      'region',
       'lodging_type',
       'total_floors',
       'floor_no',
@@ -104,12 +109,10 @@ class LodgingSerializer(serializers.ModelSerializer):
       'additional_details',
       'is_booked',
       'images',
-      'latlng',
       'virtual_tour_link',
       'unit',
       'last_confirmed',
       'is_confirming',
-      'region_id',
       'reference',
       'isHidden',
       'charges',
@@ -122,7 +125,6 @@ class LodgingSerializer(serializers.ModelSerializer):
       'posted_at',
       'updated_at',
       'no_times_booked',
-      'region',
       'is_confirming',
       'images',
       'charges',
@@ -135,7 +137,6 @@ class LodgingSerializer(serializers.ModelSerializer):
       'facilities': {'required': False, 'allow_blank': True},
       'flooring_other': {'required': False, 'allow_blank': True},
       'latlng': {'required': False, 'allow_blank': True},
-      'address': {'write_only': True},
       'reference': {'write_only': True}
     }
 
@@ -186,11 +187,22 @@ class LodgingSerializer(serializers.ModelSerializer):
 
 class FullLodgingSerializer(LodgingSerializer):
   posted_by = UserSerializer()
+  address = serializers.SerializerMethodField()
+  latlng = serializers.SerializerMethodField()
+
+  @staticmethod
+  def get_address(lodging):
+    address = lodging.address
+    return address.text if address else ''
+  
+  @staticmethod
+  def get_latlng(lodging):
+    address = lodging.address
+    return address.latlng if address else ''
   
   class Meta(LodgingSerializer.Meta):
     model = Lodging
-    fields = LodgingSerializer.Meta.fields + ('address','reference','posted_by')
+    fields = LodgingSerializer.Meta.fields + ('address', 'latlng', 'reference', 'posted_by')
     extra_kwargs = {
-      'address': {'write_only': False},
       'reference': {'write_only': False}
     }

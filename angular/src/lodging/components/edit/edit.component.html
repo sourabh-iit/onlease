@@ -8,24 +8,6 @@
     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
     <mat-datepicker #picker disabled="false"></mat-datepicker>
   </mat-form-field>
-  <mat-form-field class="w-100">
-    <mat-label>Region</mat-label>
-    <input type="text"
-      placeholder="Start typing..."
-      matInput required
-      formControlName="region_temp"
-      [matAutocomplete]="auto">
-    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onRegionSelected($event)" [displayWith]="displayRegionFn">
-      <mat-option *ngFor="let region of regions" [value]="region">
-        {{region.name}} ({{region.state.name}})
-      </mat-option>
-    </mat-autocomplete>
-    <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="loadingRegions" matSuffix></fa-icon>
-  </mat-form-field>
-  <mat-form-field class="w-100">
-    <mat-label>Address</mat-label>
-    <textarea matInput required rows="2" formControlName="address"></textarea>
-  </mat-form-field>
   <div style="display: flex;">
     <mat-form-field class="w-100">
       <mat-label>Property type</mat-label>
@@ -263,6 +245,26 @@
       
           </mat-expansion-panel>
         </mat-accordion>
+      </div>
+    </div>
+  </div>
+  <div class="images-container mt-2 mb-2">
+    <h4 style="display: flex; justify-content: space-between;">
+      <span>Address:</span>
+      <button type="button" (click)="chooseAddress()" mat-mini-fab color="accent">
+        <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+      </button>
+    </h4>
+    <div class="d-flex">
+      <div style="color: gray; text-align: center;" *ngIf="lodgingForm.get('address_id').value == ''">
+        None selected</div>
+      <div *ngIf="lodgingForm.get('address_id').value != ''">
+        <mat-card class="row d-flex m-0">
+          <div class="col-9 p-0">{{selectedAddress?.text}} - {{selectedAddress?.region?.name}} ({{selectedAddress?.region?.state?.name}})</div>
+          <fa-icon (click)="deselectAddress()"
+            style="text-align: right; color: red; cursor: pointer;"
+            class="col-3 p-0" [icon]="['fas', 'times-circle']"></fa-icon>
+        </mat-card>
       </div>
     </div>
   </div>

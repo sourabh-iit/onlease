@@ -318,7 +318,7 @@ class AgreementListHandler(APIView):
     permission_classes = [IsLodgingOwner]
 
     def get(self, request):
-        agreements = request.user.agreements.all()
+        agreements = request.user.agreements.filter(disabled=False)
         return Response(AgreementSerializer(agreements, many=True).data)
 
     def post(self, request):
@@ -352,7 +352,8 @@ class AgreementHandler(APIView):
     def delete(self, request, agreement_id):
         try:
             agreement = Agreement.objects.get(id=agreement_id)
-            agreement.delete()
+            agreement.disabled = True
+            agreement.save()
             return Response("success")
         except Agreement.DoesNotExist:
             raise ValidationError('Invalid id')
@@ -378,9 +379,8 @@ class AddressHandler(APIView):
     def put(self, request, address_id):
         try:
             address = Address.objects.get(id=address_id)
-            if address.user != request.user:
-                raise ValidationError('You don\'t have permission to perform this action.')
             serializer = AddressSerializer(address, request.data)
+            serializer.is_valid(True)
             address = serializer.save()
             return Response(AddressSerializer(address).data)
         except Address.DoesNotExist:
@@ -389,9 +389,8 @@ class AddressHandler(APIView):
     def delete(self, request, address_id):
         try:
             address = Address.objects.get(id=address_id)
-            if address.user != request.user:
-                raise ValidationError('You don\'t have permission to perform this action.')
-                address.delete()
+            address.disabled = True
+            address.save()
             return Response('success')
         except Address.DoesNotExist:
             raise ValidationError("Address does not exist")
@@ -401,10 +400,11 @@ class AddressListHandler(APIView):
     permission_classes = [IsLodgingOwner]
 
     def get(self, request):
-        addresses = request.user.addresses.all()
+        addresses = request.user.addresses.filter(disabled=False)
         return Response(AddressSerializer(addresses, many=True).data)
 
     def post(self, request):
-        serializer = AddressSerializer(None, request.data)
+        serializer = AddressSerializer(None, request.data, context={ 'user': request.user })
+        serializer.is_valid(True)
         address = serializer.save()
         return Response(AddressSerializer(address).data)

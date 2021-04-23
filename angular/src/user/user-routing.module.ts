@@ -2,9 +2,11 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AddNumberComponent } from './components/add-number/add-number.component';
+import { AddressComponent } from './components/address/address.component';
 import { AgreementComponent } from './components/agreement/agreement.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { LoginComponent } from './components/login/login.component';
+import { MyAddressesComponent } from './components/my-addresses/addresses.component';
 import { MyAgreementsComponent } from './components/my-agreements/agreements.component';
 import { MyBookingsComponent } from './components/my-bookings/my-bookings.component';
 import { MyFavoritesComponent } from './components/my-favorites/my-favorites.component';
@@ -22,6 +24,9 @@ const routes: Routes = [
   }, {
     path: 'agreements/:agreementId',
     component: AgreementComponent
+  }, {
+    path: 'address/:addressId',
+    component: AddressComponent
   }, {
     path: 'me',
     children: [{
@@ -45,6 +50,9 @@ const routes: Routes = [
     }, {
       path: 'agreements',
       component: MyAgreementsComponent
+    }, {
+      path: 'addresses',
+      component: MyAddressesComponent
     }]
   }
 ];

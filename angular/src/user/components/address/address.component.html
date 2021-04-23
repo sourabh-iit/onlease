@@ -1,0 +1,28 @@
+<div class="address-container">
+    <h2 *ngIf="addressId != -1">Edit Address</h2>
+    <h2 *ngIf="addressId == -1">New Address</h2>
+    <form [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+        <mat-form-field class="w-100">
+            <mat-label>Address</mat-label>
+            <textarea matInput required rows="2" formControlName="text"></textarea>
+        </mat-form-field>
+        <mat-form-field class="w-100">
+            <mat-label>Region</mat-label>
+            <input type="text"
+                placeholder="Start typing..."
+                matInput required
+                formControlName="region_temp"
+                [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onRegionSelected($event)" [displayWith]="displayRegionFn">
+                <mat-option *ngFor="let region of regions" [value]="region">
+                    {{region.name}} ({{region.state.name}})
+                </mat-option>
+            </mat-autocomplete>
+            <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="loadingRegions" matSuffix></fa-icon>
+        </mat-form-field>
+        <button type="submit" class="mt-3" mat-raised-button color="accent" [disabled]="!addressForm.valid">
+            <span *ngIf="addressId == -1">Create</span>
+            <span *ngIf="addressId != -1">Save</span>
+        </button>
+    </form>
+</div>

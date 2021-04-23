@@ -1,0 +1,15 @@
+<div class="my-addresses-container mt-5">
+    <h2 class="mt-2" style="text-align: center;">My Addresses</h2>
+    <div class="new-address">
+        <button type="button" mat-mini-fab color="accent" routerLink="/user/address/-1">
+          <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+        </button>
+    </div>
+    <mat-card class="row d-flex mt-2" *ngFor="let address of addresses">
+        <div class="col-9">{{address.text}} - {{address.region.name}} ({{address.region.state.name}})</div>
+        <div class="col-3" style="text-align: right;">
+            <fa-icon style="color: #ffd740;" [routerLink]="'/user/address/'+address.id" [icon]="['fas', 'pencil-alt']"></fa-icon>
+            <fa-icon style="color: red;" (click)="delete(address.id)" class="ml-3" [icon]="['fas', 'trash']"></fa-icon>
+        </div>
+    </mat-card>
+</div>

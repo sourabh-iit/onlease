@@ -1,0 +1,21 @@
+<div>
+    <h2 class="heading">
+        <div>Select Address</div>
+        <button type="button" mat-mini-fab color="accent" (click)="newAddress()">
+            <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+        </button>
+    </h2>
+    <mat-radio-group [(ngModel)]="selectedAddress">
+        <ng-container *ngFor="let address of data.addresses">
+            <mat-radio-button class="address" [value]="address.id">
+                <mat-card>{{address.text}} - {{address.region.name}} ({{address.region.state.name}})</mat-card>
+            </mat-radio-button>
+        </ng-container>
+    </mat-radio-group>
+    <div style="text-align: center;" class="mt-3">
+        <button mat-raised-button color="accent"
+            [disabled]="selectedAddress == ''"
+            (click)="dialogRef.close(selectedAddress)"
+        >Select</button>
+    </div>
+</div>

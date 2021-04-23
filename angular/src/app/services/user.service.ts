@@ -36,8 +36,9 @@ export class UserService {
     switch(user_type) {
       case '0': return 'tenant';
       case '1': return 'owner';
+      case '2': return 'admin';
     }
-    return 'admin';
+    return user_type;
   }
 
   public getProfile() {
@@ -196,6 +197,31 @@ export class UserService {
 
   public deleteAgreement(agreementId: number) {
     const url = `/api/account/agreements/${agreementId}`;
+    return this.http.delete(url);
+  }
+
+  public loadAddress(addressId:  number) {
+    const url = `/api/account/address/${addressId}`;
+    return this.http.get(url);
+  }
+
+  public saveAddress(addressId: number, data: any) {
+    const url = `/api/account/address/${addressId}`;
+    return this.http.put(url, data);
+  }
+
+  public createAddress(data: any) {
+    const url = `/api/account/addresses`;
+    return this.http.post(url, data);
+  }
+
+  public loadAddresses() {
+    const url = `/api/account/addresses`;
+    return this.http.get(url);
+  }
+
+  public deleteAddress(addressId: number) {
+    const url = `/api/account/address/${addressId}`;
     return this.http.delete(url);
   }
 }

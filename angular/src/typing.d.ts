@@ -49,7 +49,7 @@ interface Lodging {
   region_id?: number;
   facilities: any;
   available_from: any;
-  address: string;
+  address: Address;
   lodging_type: string;
   lodging_type_other: string;
   total_floors: number;
@@ -96,6 +96,13 @@ interface Agreement {
   id: number;
   points: AgreementPoint[];
   title: string;
+}
+
+interface Address {
+  id: number;
+  region: Region;
+  text: string;
+  latlng: string;
 }
 
 interface User {

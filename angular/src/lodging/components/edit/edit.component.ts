@@ -2,9 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { AbstractControl, FormArray, FormBuilder, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-import { RegionsService } from 'src/app/services/regions.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { LodgingService } from 'src/lodging/services/lodging.service';
 import { finalize } from 'rxjs/operators';
 import { LodgingImageComponent } from '../image/image.component';
@@ -15,6 +13,7 @@ import { ConstantsService } from 'src/app/services/constants.service';
 import { HttpEventType } from '@angular/common/http';
 import { UserService } from 'src/app/services/user.service';
 import { AgreementChoiceComponent } from '../agreements-choice/agreements-choice.component';
+import { AddressChoiceComponent } from '../address-choice/address-choice.component';
 
 export const crossFieldValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const lodgingTypeControl = control.get('lodging_type')!;
@@ -56,8 +55,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   public lodging: any = {};
   public images: LodgingImage[] = [];
 
-  public regions: Region[] = [];
-  public loadingRegions = false;
   public validatingLink = false;
 
   public lodgingTypes: any;
@@ -71,13 +68,15 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   public agreements: Agreement[] = [];
   public selectedAgreement: Agreement|null = null;
 
+  public addresses: Address[] = [];
+  public selectedAddress: Address|null = null;
+
   public vrImages: any = [];
   public uploadingVRImages: any = [];
   @ViewChild('fileUpload') fileUpload!: ElementRef;
 
   constructor(
     private fb: FormBuilder,
-    private regionsService: RegionsService,
     private route: ActivatedRoute,
     private lodgingService: LodgingService,
     private dialog: MatDialog,
@@ -99,7 +98,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
           this.populateForm(localData);
         }
         this.subs.add(this.lodgingForm.valueChanges.subscribe(() => this.saveForm()));
-        this.getLocation();
       }
     }));
   }
@@ -109,14 +107,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     this.facilityOptions = this.constantsService.facilities;
     this.areaUnitOptions = this.constantsService.areaUnitOptions;
     this.flooringOptions = this.constantsService.flooringOptions;
-    this.subs.add(this.lodgingForm.get('region_temp')!.valueChanges.subscribe((query: any) => {
-      if(this.regionControl.value == '') {
-        this.regionTempControl.setErrors({'required': true});
-      }
-      this.subs.add(this.regionsService.loadRegions(query).subscribe((data: any) => {
-        this.regions = data;
-      }));
-    }));
     this.subs.add(this.lodgingForm.get('total_floors')!.valueChanges.subscribe((val: any) => {
       let totalFloors = parseInt(val);
       this.floorNumOptions = [];
@@ -132,12 +122,12 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     }));
     this.lodgingTypes = this.constantsService.lodgingTypes;
     this.loadAgreements();
+    this.loadAddresses();
   }
 
   private createLodgingForm() {
     return this.fb.group({
-      address: ['', [Validators.required]],
-      region: ['', [Validators.required]],
+      address_id: ['', [Validators.required]],
       lodging_type: ['3', [Validators.required]],
       lodging_type_other: [''],
       total_floors: ['', [Validators.required]],
@@ -160,7 +150,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       latlng: [''],
       virtual_tour_link: [''],
       agreement_id: [''],
-      region_temp: ['', [Validators.required]],
       charges: this.fb.array([])
     }, { validator: crossFieldValidator});
   }
@@ -184,9 +173,16 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     }));
   }
 
+  loadAddresses() {
+    this.subs.add(this.userService.loadAddresses().subscribe((addresses: any) => {
+      this.addresses = addresses;
+      this.selectAddress();
+    }));
+  }
+
   selectAgreement() {
     const agreementId = this.lodgingForm.get('agreement_id').value;
-    if(agreementId != '') {
+    if(agreementId != '' && this.agreements.length > 0) {
       const index = this.agreements.findIndex((agreement: Agreement) => agreement.id == agreementId);
       if(index > -1) {
         this.selectedAgreement = this.agreements[index];
@@ -196,25 +192,64 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     }
   }
 
+  selectAddress() {
+    const addressId = this.lodgingForm.get('address_id').value;
+    if(addressId != '' && this.addresses.length > 0) {
+      const index = this.addresses.findIndex((address: Address) => address.id == addressId);
+      if(index > -1) {
+        this.selectedAddress = this.addresses[index];
+      } else {
+        this.lodgingForm.get('address_id').setValue('');
+      }
+    }
+  }
+
   deselectAgreement() {
-    this.lodgingForm.get('agreement_id').setValue('');
+    this.lodgingForm.get('address_id').setValue('');
     this.selectedAgreement = null;
+  }
+
+  deselectAddress() {
+    this.lodgingForm.get('address_id').setValue('');
+    this.selectedAddress = null;
   }
 
   getAgreementById(agreementId: number) {
     return this.agreements.find((agreement: Agreement) => agreement.id == agreementId);
   }
 
+  getAddressById(addressId: number) {
+    return this.addresses.find((address: Address) => address.id == addressId);
+  }
+
   chooseAgreement() {
     const modalRef = this.modalService.open(AgreementChoiceComponent, {
       data: {
         agreements: this.agreements
-      }
+      },
+      panelClass: 'agreement-dialog'
     });
     modalRef.afterClosed().subscribe((agreementId: number) => {
       if(agreementId) {
         this.selectedAgreement = this.agreements.find((a: Agreement) => a.id == agreementId)!;
         this.lodgingForm.get('agreement_id').setValue(agreementId);
+        this.saveForm();
+      }
+    });
+  }
+
+  chooseAddress() {
+    const modalRef = this.modalService.open(AddressChoiceComponent, {
+      data: {
+        addresses: this.addresses
+      },
+      panelClass: 'address-dialog'
+    });
+    modalRef.afterClosed().subscribe((addressId: number) => {
+      if(addressId) {
+        this.selectedAddress = this.addresses.find((a: Address) => a.id == addressId)!;
+        this.lodgingForm.get('address_id').setValue(addressId);
+        this.saveForm();
       }
     });
   }
@@ -227,32 +262,8 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     return new Date(Date.now()+24*60*60*1000);
   }
 
-  private getLocation() {
-    if(navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((location) => {
-        const coords = location.coords;
-        this.lodgingForm.get('latlng')!.setValue(`${coords.latitude},${coords.longitude},${coords.accuracy}`);
-      });
-    }
-  }
-
-  get regionControl() {
-    return this.lodgingForm.get('region')!;
-  }
-
-  get regionTempControl() {
-    return this.lodgingForm.get('region_temp')!;
-  }
-
   get tourLinkControl() {
     return this.lodgingForm.get('virtual_tour_link')!;
-  }
-
-  displayRegionFn(value: any) {
-    if(value) {
-      return `${value.name} (${value.state.name})`;
-    }
-    return "";
   }
 
   private validateTourLink(link: string) {
@@ -376,15 +387,22 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       } else {
         data.agreement_id = data.agreement_id.toString();
       }
+      if(data.address_id == null) {
+        data.address_id = '';
+      } else {
+        data.address_id = data.address_id.toString();
+      }
       this.populateForm(data);
     }));
   }
 
   saveLodging() {
     const data = this.createSaveData();
-    delete data.region;
     if(data.agreement_id == '') {
       delete data.agreement_id;
+    }
+    if(data.address_id == '') {
+      delete data.address_id;
     }
     data.images = data.images.map((image: any) => image.id);
     data.vrimages = data.vrimages.map((image: any) => image.id);
@@ -411,17 +429,12 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     } else {
       data.available_from = data.available_from.format('YYYY-MM-DD');
     }
-    data.region_id = data.region.id;
-    delete data.region_temp;
     return data;
   }
 
   populateForm(data: Lodging) {
     this.images = data.images;
     this.vrImages = data.vrimages ? data.vrimages : [];
-    if(data.region) {
-      this.regions = [data.region];
-    }
     data.available_from = data.available_from == null ? "" : moment(data.available_from, "YYYY-MM-DD");
     data.facilities = JSON.parse(data.facilities);
     for(let charge of data.charges) {
@@ -431,6 +444,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     this.lodgingForm.patchValue(data);
     this.lodgingForm.patchValue({ region_temp: data.region });
     this.selectAgreement();
+    this.selectAddress();
   }
 
   deleteForm() {
@@ -448,11 +462,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       return JSON.parse(data);
     }
     return null;
-  }
-
-  onRegionSelected(event: MatAutocompleteSelectedEvent) {
-    this.regionTempControl.setErrors(null);
-    this.regionControl.setValue(event.option.value);
   }
 
   ngOnDestroy() {

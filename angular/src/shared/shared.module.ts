@@ -15,6 +15,15 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
+import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { IvyCarouselModule } from 'angular-responsive-carousel';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -46,7 +55,18 @@ import { LodgingCardComponent } from './components/lodging-card/lodging-card.com
     MatChipsModule,
     MatTooltipModule,
     MatExpansionModule,
-    MatListModule
+    MatListModule,
+    MatAutocompleteModule,
+    MatSelectModule,
+    MatAutocompleteModule,
+    MatSlideToggleModule,
+    MatDatepickerModule,
+    MatMomentDateModule,
+    MatProgressSpinnerModule,
+    IvyCarouselModule,
+    MatProgressBarModule,
+    MatCheckboxModule
+
   ],
   providers: [
   ],
@@ -56,6 +76,7 @@ import { LodgingCardComponent } from './components/lodging-card/lodging-card.com
     CommonModule,
     ToMinutesAndSecondsPipe,
     LodgingCardComponent,
+    ConfirmDialogComponent,
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
@@ -66,9 +87,17 @@ import { LodgingCardComponent } from './components/lodging-card/lodging-card.com
     MatCardModule,
     MatChipsModule,
     MatTooltipModule,
-    ConfirmDialogComponent,
     MatExpansionModule,
-    MatListModule
+    MatListModule,
+    MatSelectModule,
+    MatAutocompleteModule,
+    MatSlideToggleModule,
+    MatDatepickerModule,
+    MatMomentDateModule,
+    MatProgressSpinnerModule,
+    IvyCarouselModule,
+    MatProgressBarModule,
+    MatCheckboxModule
   ],
   entryComponents: [
     ConfirmDialogComponent,

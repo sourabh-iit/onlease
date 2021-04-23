@@ -69,13 +69,13 @@ class LodgingActionView(APIView):
   def get(self, request, action):
     user = request.user
     if action == 'lodgings':
-      lodgings = Lodging.objects.prefetch_related('images', 'region').filter(posted_by=user)
+      lodgings = Lodging.objects.prefetch_related('images', 'address').filter(posted_by=user)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'bookings':
-      lodgings = user.bookings.prefetch_related('images', 'region').filter(is_booked=True)
+      lodgings = user.bookings.prefetch_related('images', 'address').filter(is_booked=True)
       return Response(FullLodgingSerializer(lodgings, many=True).data)
     if action == 'favorites':
-      lodgings = user.favorite_properties.prefetch_related('images', 'region').all()
+      lodgings = user.favorite_properties.prefetch_related('images', 'address').all()
       return Response(LodgingSerializer(lodgings, many=True).data)
     raise ValidationError('Invalid action')
 
@@ -85,8 +85,8 @@ class LodgingListView(APIView):
     page_num = request.query_params.get('page', 1)
     query = (Q(is_booked=False) | Q(is_booked=True, available_from__lt=datetime.now()+timedelta(days=60))) & Q(isHidden=False)
     if len(regions) > 0:
-      query &= Q(region__in=regions)
-    lodgings = Lodging.objects.prefetch_related('posted_by', 'region', 'images', 'charges').filter(query)
+      query &= Q(address__region__in=regions)
+    lodgings = Lodging.objects.prefetch_related('posted_by', 'address', 'images', 'charges').filter(query)
     paginator = Paginator(lodgings, num_lodgings_per_page)
     page = paginator.page(page_num)
     return Response({
@@ -359,7 +359,7 @@ class ImageListHandler(APIView):
 
   def post(self, request):
     data = request.data
-    if 'image' not in data or not isinstance(data['image'], InMemoryUploadedFile):
+    if 'image' not in data:
       raise ValidationError('invalid image')
     if 'tag' not in data or data['tag'].strip() == "" or ord(data['tag']) < 48 or ord(data['tag']) >= 48+len(LodgingImage.LODGING_TAG_CHOICES):
       raise ValidationError("invalid tag")

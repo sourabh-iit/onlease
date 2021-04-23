@@ -1,0 +1,29 @@
+.my-addresses-container {
+    margin: auto;
+    max-width: 500px;
+
+    .addresses {
+        display: block;
+        margin-top: 20px;
+    
+        .mat-expansion-panel-header-description {
+            justify-content: flex-end;
+        }
+    }
+    
+    .heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    fa-icon {
+        cursor: pointer;
+    }
+
+    .new-address {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+}

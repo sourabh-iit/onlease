@@ -97,6 +97,7 @@ class Address(models.Model):
   text = models.CharField(max_length=200, default='')
   latlng = models.CharField(max_length=30, default='')
   user = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
+  disabled = models.BooleanField(default=False)
 
   def __str__(self):
     return f'{self.region} - {self.text}'
@@ -152,6 +153,10 @@ class Agreement(models.Model):
     related_name='agreements', null=True)
   created_at = models.DateTimeField(auto_now=True)
   title = models.CharField(max_length=200, default="Agreement")
+  disabled = models.BooleanField(default=False)
+
+  def __str__(self):
+        return self.title
 
 class AgreementPoint(models.Model):
   agreement = models.ForeignKey(Agreement, on_delete=models.CASCADE, related_name="points")

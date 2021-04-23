@@ -4,26 +4,26 @@ import { Router } from "@angular/router";
 
 
 export interface DialogData {
-    agreements?: Agreement[];
+    addresses?: Address[];
   }
 
 @Component({
-    templateUrl: './agreements-choice.component.html',
-    styleUrls: ['./agreements-choice.component.scss']
+    templateUrl: './address-choice.component.html',
+    styleUrls: ['./address-choice.component.scss']
 })
-export class AgreementChoiceComponent {
-    public selectedAgreement = '';
+export class AddressChoiceComponent {
+    public selectedAddress = '';
     
     constructor(
-        public dialogRef: MatDialogRef<AgreementChoiceComponent>,
+        public dialogRef: MatDialogRef<AddressChoiceComponent>,
         @Inject(MAT_DIALOG_DATA) public data: DialogData,
         private router: Router
     ) {
         
     }
 
-    newAgreement() {
-        this.router.navigateByUrl('/user/agreements/-1');
+    newAddress() {
+        this.router.navigateByUrl('/user/address/-1');
         this.dialogRef.close();
     }
 }
