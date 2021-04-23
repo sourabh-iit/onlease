@@ -19,7 +19,7 @@ services:
         volumes:
             - ./backend:/code
             - static_data:/vol/static
-            - ./media:/vol/media
+            - ./backend/media:/vol/media
         depends_on:
             - db
         env_file:
@@ -37,7 +37,7 @@ services:
             - "8002:8000"
         volumes:
             - static_data:/vol/static
-            - ./media:/vol/media
+            - ./backend/media:/vol/media
         depends_on:
             - web
         networks:

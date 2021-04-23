@@ -6,7 +6,7 @@ from datetime import datetime
 local_onlease_root = '/Users/sousingh/onlease'
 remote_onlease_root = '/root/prod/onlease'
 local_media_root = f'{local_onlease_root}/backup/data/media'
-remote_media_root = f'{remote_onlease_root}/media'
+remote_media_root = f'{remote_onlease_root}/backend/media'
 local_db_path = f'{local_onlease_root}/backup/data/db'
 
 def log(text):
