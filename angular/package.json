@@ -4,8 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --prod --deploy-url /static/angular/",
-    "watch": "ng build --watch --deploy-url /static/angular/",
+    "build": "ng build --prod --deploy-url /backend/static/angular/",
+    "watch": "ng build --watch --deploy-url /backend/static/angular/",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

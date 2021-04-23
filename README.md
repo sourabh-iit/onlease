@@ -2,35 +2,36 @@
 # Onlease
 https://onlease.herokuapp.com/
 
-**Tech stack used**: Django, Angular, Sass, Bootstrap, Django rest framework, Celery, Postgresql
-
-**Steps to start**
-
-- clone repo using *git clone https://github.com/sourabh-iit/onlease.git*
-- install postgres
-- enter into postgres command line using *sudo su - postgres*
-- enter into postgres db using *psql*
-- create database onlease
-- create user for onlease with required username and password and permissions
-- exit from datbase and psql command line
-- create virtual env using */usr/bin/python3 -m venv venv*
-- activate it using *source venv/bin/activate*
-- install required packages using *pip install -r requirements.txt*
-- create tables in database onlease using *python manage.py migrate*
-- start server using *python manage.py runserver*
+**Tech stack used**: Django, Angular, Sass, Bootstrap, Django rest framework, Celery, Postgresql, Nginx, Docker, Dcoerk compose
 
 ### Features implemented:
-- User registration and login.
-- Session based user authentication.
-- Form to create new posting.
-- User can view ads in a particular area without logging in.
-- To book a room, user needs to create account.
-- Msg91 integration for messaging.
-- Twilio integration for IVR.
-- Instamojo payment integration.
+- uwsgi to run python server.
+- Nginx as a reverse proxy to serve prod and test server and to server static files.
+- Logging rotation and sentry for errors logging.
+- Docker compose containing three services: django, nginx and postgres.
+- Data backup using cron job.
+- Bash scripts for production and test server.
+- Virtual tours using kuula and IVR using twilio.
 
 
-### TODOs:
-Lodging vaccancy setup
-Angular setup
-Frontend design planning
+### Development environment setup guide
+- Install angular
+- Run *docker-compose -p onlease_local up --build -d*
+- Run *npm run watch* in different tab
+- To create and apply migration, enter into container using *docker exec -it {container_id} bash*
+
+
+### Prod and test server setup
+- Install angular
+- Run *./prod-build.sh*
+- Check logs using *docker-compose -p onlease_prod -f docker-compose-prod.yml logs -f web*
+
+
+### Backup setup
+- setup ssh to prod machine and set it as (we can create new user also instead of using root)
+Host onlease
+	Hostname <ip_addrees>
+	User root
+	IdentityFile ~/.ssh/id_rsa
+- Add cron from backup/scripts/cron using crontab -e
+- Data will be backed up in every 15 minutes

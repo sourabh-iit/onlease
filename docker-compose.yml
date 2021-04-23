@@ -15,9 +15,9 @@ services:
     restart: always
     build:
       context: ./
-      dockerfile: docker/web.Dockerfile
+      dockerfile: backend/web.Dockerfile
     volumes:
-      - .:/code
+      - ./backend:/code
     ports:
       - "8000:8000"
     depends_on:

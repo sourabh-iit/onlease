@@ -15,9 +15,9 @@ services:
         restart: always
         build:
             context: ./
-            dockerfile: docker/web.Dockerfile
+            dockerfile: backend/web.Dockerfile
         volumes:
-            - .:/code
+            - ./backend:/code
             - static_data:/vol/static
             - ./media:/vol/media
         depends_on:
@@ -32,7 +32,7 @@ services:
         restart: always
         build:
             context: ./
-            dockerfile: docker/nginx.Dockerfile
+            dockerfile: nginx/nginx.Dockerfile
         ports:
             - "8001:8000"
         volumes:
