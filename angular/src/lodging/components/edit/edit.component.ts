@@ -413,6 +413,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       }
       this.populateForm(data);
       this.lastSavedData = JSON.stringify(this.createSaveData());
+      this.formChanged = false;
     }));
   }
 
