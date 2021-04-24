@@ -17,6 +17,11 @@ export const tagValidator: ValidatorFn = (control: AbstractControl): ValidationE
   return null;
 };
 
+interface DialogData {
+  image: LodgingImage;
+  lodgingId: number;
+}
+
 @Component({
   selector: 'app-lodging-image',
   templateUrl: './image.component.html',
@@ -39,15 +44,18 @@ export class LodgingImageComponent implements OnInit, OnDestroy {
     private lodgingService: LodgingService,
     private constantsService: ConstantsService,
     private fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: LodgingImage
+    @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
+    if(this.data.lodgingId) {
+      this.formData.append('lodgingId', this.data.lodgingId.toString());
+    }
   }
 
   ngOnInit() {
-    if(this.data == null) {
+    if(this.data.image == null) {
       this.imageForm.addControl('url', this.fb.control(['', [Validators.required]]));
     } else {
-      this.imageForm.patchValue(this.data);
+      this.imageForm.patchValue(this.data.image);
     }
     this.tags = this.constantsService.tags;
   }
@@ -63,8 +71,8 @@ export class LodgingImageComponent implements OnInit, OnDestroy {
   saveImage() {
     this.formData.append('tag', this.imageForm.get('tag')!.value);
     this.formData.append('tag_other', this.imageForm.get('tag_other')!.value);
-    if(this.data) {
-      this.subs.add(this.lodgingService.updateImageTag(this.data.id, this.formData).subscribe((data: any) => {
+    if(this.data.image) {
+      this.subs.add(this.lodgingService.updateImageTag(this.data.image.id, this.formData).subscribe((data: any) => {
         this.dialogRef.close(data);
       }));
     } else {

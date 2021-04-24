@@ -269,5 +269,5 @@
     </div>
   </div>
   <button type="submit" mat-raised-button color="accent" class="mt-2"
-    [disabled]="!lodgingForm.valid || validatingLink">Save</button>
+    [disabled]="!lodgingForm.valid || validatingLink || !formChanged">Save</button>
 </form>

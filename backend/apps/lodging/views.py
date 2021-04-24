@@ -361,7 +361,7 @@ class ImageListHandler(APIView):
     data = request.data
     if 'image' not in data:
       raise ValidationError('invalid image')
-    if 'tag' not in data or data['tag'].strip() == "" or ord(data['tag']) < 48 or ord(data['tag']) >= 48+len(LodgingImage.LODGING_TAG_CHOICES):
+    if 'tag' not in data or data['tag'].strip() == "" or int(data['tag']) >= len(LodgingImage.LODGING_TAG_CHOICES):
       raise ValidationError("invalid tag")
     if data['tag'] == 47+len(LodgingImage.LODGING_TAG_CHOICES) and data.get('tag_other', '') == '':
       raise ValidationError("invalid tag")
@@ -382,6 +382,9 @@ class ImageListHandler(APIView):
       image_mobile=image_mobile, tag=data['tag'],
       tag_other=data.get('tag_other', '')
     )
+    if 'lodgingId' in data:
+      im.lodging_id = data['lodgingId']
+      im.save()
     return Response(ImageSerializer(im).data)
 
 class VRImageListHandler(APIView):
@@ -411,6 +414,9 @@ class VRImageListHandler(APIView):
     im = LodgingVRImage.objects.create(
       image=file, image_thumbnail=thumb_file
     )
+    if 'lodgingId' in data:
+      im.lodging_id = data['lodgingId']
+      im.save()
     return Response(VRImageSerializer(im).data)
 
 class VRImageHandler(APIView):

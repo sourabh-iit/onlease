@@ -50,7 +50,7 @@ export const crossFieldValidator: ValidatorFn = (control: AbstractControl): Vali
 export class EditLodgingComponent implements OnInit, OnDestroy {
   public subs = new Subscription();
   public lodgingForm: any;
-  public user: any = {};
+  public user: User|null = null;
   public lodgingId = -1;
   public lodging: any = {};
   public images: LodgingImage[] = [];
@@ -75,6 +75,10 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   public uploadingVRImages: any = [];
   @ViewChild('fileUpload') fileUpload!: ElementRef;
 
+  private localStorageKey = "";
+  private lastSavedData = "";
+  public formChanged = false;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -86,20 +90,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private modalService: MatDialog
   ) {
-    this.subs.add(this.route.params.subscribe(params => {
-      this.lodgingForm = this.createLodgingForm();
-      this.images = [];
-      this.lodgingId = parseInt(params['lodgingId']);
-      if(this.lodgingId > 0) {
-        this.loadLodging();
-      } else {
-        const localData = this.retrieveForm();
-        if(localData != null) {
-          this.populateForm(localData);
-        }
-        this.subs.add(this.lodgingForm.valueChanges.subscribe(() => this.saveForm()));
-      }
-    }));
   }
 
   ngOnInit() {
@@ -107,26 +97,36 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     this.facilityOptions = this.constantsService.facilities;
     this.areaUnitOptions = this.constantsService.areaUnitOptions;
     this.flooringOptions = this.constantsService.flooringOptions;
-    this.subs.add(this.lodgingForm.get('total_floors')!.valueChanges.subscribe((val: any) => {
-      let totalFloors = parseInt(val);
-      this.floorNumOptions = [];
-      for(let i=0; i<totalFloors; i++) {
-        this.floorNumOptions.push({text: i+1, value: i+1});
-      }
+
+    this.subs.add(this.route.paramMap.subscribe((paramMap: any) => {
+      this.lodgingId = parseInt(paramMap.get('lodgingId')!);
+      this.createLodgingForm();
+      this.subs.add(this.userService.user$.subscribe((data: User|null) => {
+        if(data) {
+          this.user = data;
+          this.localStorageKey = `lodging-form-data:${this.user!.mobile_number}`;
+          if(this.lodgingId > 0) {
+            this.loadLodging();
+          } else {
+            const localData = this.retrieveForm();
+            if(localData != null) {
+              this.lastSavedData = JSON.stringify(localData);
+              this.populateForm(localData);
+            }
+          }
+        }
+      }));
     }));
     for(let i=0; i<20; i++) {
       this.totalfloorOptions.push({text: i+1, value: i+1});
     }
-    this.subs.add(this.lodgingForm.get('virtual_tour_link')!.valueChanges.subscribe((val: string) => {
-      this.validateTourLink(val);
-    }));
     this.lodgingTypes = this.constantsService.lodgingTypes;
     this.loadAgreements();
     this.loadAddresses();
   }
 
   private createLodgingForm() {
-    return this.fb.group({
+    this.lodgingForm = this.fb.group({
       address_id: ['', [Validators.required]],
       lodging_type: ['3', [Validators.required]],
       lodging_type_other: [''],
@@ -152,6 +152,19 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       agreement_id: [''],
       charges: this.fb.array([])
     }, { validator: crossFieldValidator});
+    this.subs.add(this.lodgingForm.valueChanges.subscribe(() => this.saveForm()));
+    this.subs.add(this.lodgingForm.get('total_floors')!.valueChanges.subscribe((val: any) => {
+      let totalFloors = parseInt(val);
+      this.floorNumOptions = [];
+      for(let i=0; i<totalFloors; i++) {
+        this.floorNumOptions.push({text: i+1, value: i+1});
+      }
+    }));
+    this.subs.add(this.lodgingForm.get('virtual_tour_link')!.valueChanges.subscribe((val: string) => {
+      this.validateTourLink(val);
+    }));
+    this.images = [];
+    this.vrImages = [];
   }
 
   get charges() {
@@ -287,10 +300,14 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   }
 
   addNewImage() {
-    const dialogRef = this.dialog.open(LodgingImageComponent, {disableClose: true});
+    const dialogRef = this.dialog.open(LodgingImageComponent, {
+      disableClose: true,
+      data: { lodgingId: this.lodgingId }
+    });
     dialogRef.afterClosed().subscribe(data => {
       if(data) {
         this.images.push(data);
+        this.lastSavedData = JSON.stringify(this.createSaveData());
         this.saveForm();
       }
     });
@@ -302,6 +319,9 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
       let uploadVRImage = {src: '', percent: 0};
       let formData = new FormData();
       formData.append('image', file);
+      if(this.lodgingId > 0) {
+        formData.append('lodgingId', this.lodgingId.toString());
+      }
       const reader = new FileReader();
       reader.onload = e => {
         uploadVRImage.src = <string> reader.result;
@@ -314,6 +334,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
             this.uploadingVRImages = [];
           }
           this.vrImages.push(resp.body);
+          this.lastSavedData = JSON.stringify(this.createSaveData());
           this.saveForm();
         }
         if (resp.type === HttpEventType.UploadProgress) {
@@ -336,10 +357,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     });
   }
 
-  downloadVRImage(image: LodgingVRImage) {
-
-  }
-
   getFileName(link: string) {
     const arr = link.split('/');
     return arr[arr.length-1];
@@ -348,7 +365,9 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   editImage(image: any) {
     const dialogRef = this.dialog.open(LodgingImageComponent, {
       disableClose: true,
-      data: image
+      data: {
+        image: image
+      }
     });
     dialogRef.afterClosed().subscribe(data => {
       if(data) {
@@ -393,11 +412,14 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
         data.address_id = data.address_id.toString();
       }
       this.populateForm(data);
+      this.lastSavedData = JSON.stringify(this.createSaveData());
     }));
   }
 
   saveLodging() {
     const data = this.createSaveData();
+    this.formChanged = false;
+    this.lastSavedData = JSON.stringify(data);
     if(data.agreement_id == '') {
       delete data.agreement_id;
     }
@@ -433,7 +455,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   }
 
   populateForm(data: Lodging) {
-    this.images = data.images;
+    this.images = data.images ? data.images : [];
     this.vrImages = data.vrimages ? data.vrimages : [];
     data.available_from = data.available_from == null ? "" : moment(data.available_from, "YYYY-MM-DD");
     data.facilities = JSON.parse(data.facilities);
@@ -448,16 +470,23 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   }
 
   deleteForm() {
-    localStorage.removeItem('lodging-form-data');
+    localStorage.removeItem(this.localStorageKey);
   }
 
   saveForm() {
-    const data = this.createSaveData();
-    localStorage.setItem("lodging-form-data", JSON.stringify(data));
+    const data = JSON.stringify(this.createSaveData());
+    if(this.lastSavedData != data) {
+      this.formChanged = true;
+    } else {
+      this.formChanged = false;
+    }
+    if(this.lodgingId < 0) {
+      localStorage.setItem(this.localStorageKey, data);
+    }
   }
 
   retrieveForm() {
-    const data = localStorage.getItem("lodging-form-data");
+    const data = localStorage.getItem(this.localStorageKey);
     if(data != null) {
       return JSON.parse(data);
     }
