@@ -420,8 +420,6 @@ class VRImageHandler(APIView):
     try:
       image = LodgingVRImage.objects.get(id=image_id)
       lodging = image.lodging
-      if lodging and lodging.images.count() < 3:
-        raise ValidationError('Cannot delete image. Atleast two images are required')
       image.disabled = True
       image.save()
       return Response('success')
