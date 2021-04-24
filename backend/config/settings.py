@@ -147,6 +147,7 @@ MEDIA_URL = '/media/'
 if not DEBUG:
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.FileSystemFinder',
+        'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     )
     STATIC_ROOT = '/vol/static'
     MEDIA_ROOT = '/vol/media'
