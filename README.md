@@ -16,6 +16,7 @@ https://onlease.herokuapp.com/
 
 ### Development environment setup guide
 - Install angular
+- take .env file from other developer
 - Run *docker-compose -p onlease_local up --build -d*
 - Run *npm run watch* in different tab
 - To create and apply migration, enter into container using *docker exec -it {container_id} bash*
@@ -23,6 +24,8 @@ https://onlease.herokuapp.com/
 
 ### Prod and test server setup
 - Install angular
+- pull code from github
+- create .env file with production credentials
 - Run *./prod-build.sh*
 - Check logs using *docker-compose -p onlease_prod -f docker-compose-prod.yml logs -f web*
 

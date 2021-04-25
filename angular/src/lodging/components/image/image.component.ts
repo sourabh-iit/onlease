@@ -46,7 +46,7 @@ export class LodgingImageComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
-    if(this.data.lodgingId) {
+    if(this.data.lodgingId && this.data.lodgingId > 0) {
       this.formData.append('lodgingId', this.data.lodgingId.toString());
     }
   }
