@@ -170,7 +170,7 @@ class Lodging(models.Model):
   additional_details = models.TextField(max_length=2000, default="", blank=True)
   is_booked = models.BooleanField(default=False)
   virtual_tour_link = models.CharField(max_length=300, default="", blank=True)
-  last_confirmed = models.DateTimeField(auto_now=True)
+  last_confirmed = models.DateTimeField(auto_now=True, blank=true)
   is_confirming = models.BooleanField(default=False)
   reference = models.CharField(default="", max_length=10, blank=True)
   agreement = models.ForeignKey('user.Agreement', related_name='lodgings', null=True, on_delete=models.SET_NULL)
@@ -273,7 +273,7 @@ class LodgingImage(models.Model):
   image_mobile = models.ImageField(upload_to=lodging_mobile_image_upload_path)
   created_at = models.DateTimeField(auto_now=True)
   tag = models.CharField(choices=LODGING_TAG_CHOICES, max_length=2, default=BEDROOM)
-  tag_other = models.CharField(max_length=100, default="")
+  tag_other = models.CharField(max_length=100, default="", blank=True)
 
   def __str__(self):
     return self.image_thumbnail.url

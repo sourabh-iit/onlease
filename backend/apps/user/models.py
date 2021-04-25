@@ -60,7 +60,7 @@ class User(AbstractUser):
   mobile_number = models.CharField(max_length=16, primary_key=True, db_index=True,
       validators=[RegexValidator(mobile_number_regex)])
   password = models.CharField(max_length=100, null=False, blank=False, validators=[MinLengthValidator(8)])
-  email = models.EmailField(null=True,blank=True, validators=[RegexValidator(email_regex)])
+  email = models.EmailField(null=True, blank=True, validators=[RegexValidator(email_regex)])
   first_name = models.CharField(max_length=30, null=True, blank=True, validators=[RegexValidator('^[a-zA-Z]{3,}$')])
   last_name = models.CharField(max_length=30, null=True, blank=True, validators=[RegexValidator('^[a-zA-Z]{3,}$')])
   is_allowed = models.BooleanField(default=False, help_text="Profile is not completed yet.")
@@ -68,7 +68,7 @@ class User(AbstractUser):
   gender = models.CharField(choices=GENDER_CHOICES, max_length=1, default="")
   created_at = models.DateTimeField(auto_now=True)
   updated_at = models.DateTimeField(auto_now_add=True, null=True)
-  favorite_properties = models.ManyToManyField("lodging.Lodging", related_name="favorite_of")
+  favorite_properties = models.ManyToManyField("lodging.Lodging", related_name="favorite_of", blank=True)
   user_type = models.CharField(max_length=1, choices=USER_CHOICES, default=TENANT)
 
   USERNAME_FIELD = 'mobile_number'
@@ -117,7 +117,7 @@ class ContactModel(models.Model):
     message = "Enter a valid name."
   )],blank=True, null=True)
   email = models.EmailField(validators=[
-      RegexValidator(email_regex,message="Email address is not valid.")],blank=True, null=True)
+      RegexValidator(email_regex,message="Email address is not valid.")], blank=True, null=True)
   mobile_number = models.CharField(max_length=16,validators=[
       RegexValidator(mobile_number_regex,
           message="Mobile number is not valid.")],null=True,blank=True)
