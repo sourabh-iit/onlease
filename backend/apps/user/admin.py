@@ -4,6 +4,8 @@ from .models import User, Address, MobileNumber, Agreement, AgreementPoint
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('mobile_number', 'email', 'first_name', 'last_name', 'created_at', 'user_type')
+    exclude = ('username', 'password')
+    readonly_fields = ('mobile_number', 'email', 'last_login', 'date_joined', 'favorite_properties')
 
 
 class AddressAdmin(admin.ModelAdmin):
