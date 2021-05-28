@@ -18,7 +18,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 export class LodgingDetailsComponent implements OnDestroy {
   public lodging: any;
   public subs = new Subscription();
-  public me: User;
+  public me: any = {};
   public isFavorite = false;
   public env: any = {};
   public isLoggedIn = false;
@@ -50,8 +50,10 @@ export class LodgingDetailsComponent implements OnDestroy {
       this.lodging = data.lodging;
     }));
     this.subs.add(this.userService.user$.subscribe((user: any) => {
-      this.me = user;
-      this.setIsFavorite();
+      if(user != null) {
+        this.me = user;
+        this.setIsFavorite();
+      }
     }));
     this.subs.add(lodgingService.getAllCharges(this.lodging.id).subscribe((res: any) => {
       this.charges = res.charges;
