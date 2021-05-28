@@ -30,7 +30,7 @@ export class LodgingCardComponent implements OnDestroy {
 
   public subs = new Subscription();
   public currImage = 0;
-  public me: User;
+  public me: any = {};
   public isFavorite = false;
 
   constructor(
@@ -41,8 +41,10 @@ export class LodgingCardComponent implements OnDestroy {
     private router: Router
   ) {
     this.subs.add(this.userService.user$.subscribe((user: any) => {
-      this.me = user;
-      this.setIsFavorite();
+      if(user != null) {
+        this.me = user;
+        this.setIsFavorite();
+      }
     }));
   }
 
