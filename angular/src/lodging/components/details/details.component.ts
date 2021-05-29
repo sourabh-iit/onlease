@@ -146,7 +146,7 @@ export class LodgingDetailsComponent implements OnDestroy {
   }
 
   setIsFavorite() {
-    if(this.lodging) {
+    if(this.lodging && this.me) {
       if(this.me.favorites && this.me.favorites.indexOf(this.lodging.id) > -1) {
         this.isFavorite = true;
       } else {

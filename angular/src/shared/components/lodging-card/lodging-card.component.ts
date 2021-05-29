@@ -41,10 +41,8 @@ export class LodgingCardComponent implements OnDestroy {
     private router: Router
   ) {
     this.subs.add(this.userService.user$.subscribe((user: any) => {
-      if(user != null) {
-        this.me = user;
-        this.setIsFavorite();
-      }
+      this.me = user;
+      this.setIsFavorite();
     }));
   }
 
@@ -77,7 +75,7 @@ export class LodgingCardComponent implements OnDestroy {
   }
 
   setIsFavorite() {
-    if(this.lodging) {
+    if(this.lodging && this.me) {
       if(this.me.favorites && this.me.favorites.indexOf(this.lodging.id) > -1) {
         this.isFavorite = true;
       } else {
