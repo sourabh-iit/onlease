@@ -15,7 +15,7 @@ idna==2.6
 instamojo-wrapper==1.1
 libsass==0.20.1
 pi==0.1.2
-Pillow==8.1.0
+Pillow==8.2.0
 pipenv==11.10.1
 progressbar2==3.53.1
 psycopg2==2.8.4
