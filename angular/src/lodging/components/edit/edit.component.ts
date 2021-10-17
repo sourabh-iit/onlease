@@ -42,6 +42,8 @@ export const crossFieldValidator: ValidatorFn = (control: AbstractControl): Vali
   return null;
 };
 
+const dateFormat = 'DD-MM-YYYY';
+
 @Component({
   selector: 'app-edit-lodging',
   templateUrl: './edit.component.html',
@@ -222,11 +224,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     this.selectedAgreement = null;
   }
 
-  deselectAddress() {
-    this.lodgingForm.get('address_id').setValue('');
-    this.selectedAddress = null;
-  }
-
   getAgreementById(agreementId: number) {
     return this.agreements.find((agreement: Agreement) => agreement.id == agreementId);
   }
@@ -238,7 +235,8 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   chooseAgreement() {
     const modalRef = this.modalService.open(AgreementChoiceComponent, {
       data: {
-        agreements: this.agreements
+        agreements: this.agreements,
+        agreement_id: this.lodgingForm.get('agreement_id').value
       },
       panelClass: 'agreement-dialog'
     });
@@ -254,7 +252,8 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   chooseAddress() {
     const modalRef = this.modalService.open(AddressChoiceComponent, {
       data: {
-        addresses: this.addresses
+        addresses: this.addresses,
+        selectedId: this.lodgingForm.get('address_id').value
       },
       panelClass: 'address-dialog'
     });
@@ -419,7 +418,6 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
 
   saveLodging() {
     const data = this.createSaveData();
-    this.formChanged = false;
     this.lastSavedData = JSON.stringify(data);
     if(data.agreement_id == '') {
       delete data.agreement_id;
@@ -433,6 +431,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     if(this.lodgingId > 0) {
       this.subs.add(this.lodgingService.update(data).subscribe(() => {
         this.toastr.success('Success!', 'Ad updated');
+        this.formChanged = false;
       }));
     } else {
       this.subs.add(this.lodgingService.create(data).subscribe(() => {
@@ -450,7 +449,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
     if(data.available_from == "") {
       delete data.available_from;
     } else {
-      data.available_from = data.available_from.format('YYYY-MM-DD');
+      data.available_from = data.available_from.format(dateFormat);
     }
     return data;
   }
@@ -458,7 +457,7 @@ export class EditLodgingComponent implements OnInit, OnDestroy {
   populateForm(data: Lodging) {
     this.images = data.images ? data.images : [];
     this.vrImages = data.vrimages ? data.vrimages : [];
-    data.available_from = data.available_from == null ? "" : moment(data.available_from, "YYYY-MM-DD");
+    data.available_from = data.available_from == null ? "" : moment(data.available_from, dateFormat);
     data.facilities = JSON.parse(data.facilities);
     for(let charge of data.charges) {
       this.addNewCharge();

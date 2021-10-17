@@ -96,10 +96,6 @@ LOGIN_URL = 'user:login'
 
 LANGUAGE_CODE = 'hi-IN'
 
-DATE_INPUT_FORMATS = ['%d-%m-%Y']
-
-DATE_FORMAT = '%d-%m-%Y'
-
 USE_I18N = False
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -109,7 +105,8 @@ GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 ADMINS_LIST = [ '9899761236', '7827866709' ]
 
 REST_FRAMEWORK = {
-  'DATE_FORMAT' : '%d-%m-%Y'
+  'DATE_INPUT_FORMATS' : ['%d-%m-%Y'],
+  'DATE_FORMAT': '%d-%m-%Y'
 }
 
 TWILIO_SID = os.environ.get('TWILIO_SID')
@@ -216,8 +213,6 @@ EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')
 EMAIL_USE_TLS = True
 
 LANGUAGE_CODE = 'hi-IN'
-
-DATE_INPUT_FORMATS = ['%d-%m-%Y','%Y-%m-%d']
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),

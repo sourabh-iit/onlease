@@ -118,7 +118,7 @@
   </div>
   <div class="images-container">
     <div class="header">
-      <span class="font-weight-bold">Images:</span>
+      <span class="font-weight-bold">Images *:</span>
       <button type="button" mat-mini-fab color="accent" (click)="addNewImage()">
         <fa-icon [icon]="['fas', 'plus']"></fa-icon>
       </button>
@@ -219,7 +219,7 @@
   </mat-form-field>
   <div class="images-container mt-2 mb-2">
     <h4 style="display: flex; justify-content: space-between;">
-      <span>Agreement:</span>
+      <span class="field-label">Agreement:</span>
       <button type="button" (click)="chooseAgreement()" mat-mini-fab color="accent">
         <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
       </button>
@@ -247,7 +247,7 @@
   </div>
   <div class="images-container mt-2 mb-2">
     <h4 style="display: flex; justify-content: space-between;">
-      <span>Address:</span>
+      <span class="field-label">Address *:</span>
       <button type="button" (click)="chooseAddress()" mat-mini-fab color="accent">
         <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
       </button>
@@ -258,13 +258,10 @@
       <div *ngIf="lodgingForm.get('address_id').value != ''">
         <mat-card class="row d-flex m-0">
           <div class="col-9 p-0">{{selectedAddress?.text}} - {{selectedAddress?.region?.name}} ({{selectedAddress?.region?.state?.name}})</div>
-          <fa-icon (click)="deselectAddress()"
-            style="text-align: right; color: red; cursor: pointer;"
-            class="col-3 p-0" [icon]="['fas', 'times-circle']"></fa-icon>
         </mat-card>
       </div>
     </div>
   </div>
   <button type="submit" mat-raised-button color="accent" class="mt-2"
-    [disabled]="!lodgingForm.valid || validatingLink || !formChanged">Save</button>
+    [disabled]="!lodgingForm.valid || validatingLink || (!formChanged && lodgingId != -1)">Save</button>
 </form>

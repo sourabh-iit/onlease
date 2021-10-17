@@ -25,7 +25,7 @@
     </mat-radio-group>
     <div style="text-align: center;" class="mt-3">
         <button mat-raised-button color="accent"
-            [disabled]="selectedAgreement == ''"
+            [disabled]="selectedAgreement == -1"
             (click)="dialogRef.close(selectedAgreement)"
         >Select</button>
     </div>

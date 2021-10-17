@@ -5,6 +5,7 @@ import { Router } from "@angular/router";
 
 export interface DialogData {
     addresses?: Address[];
+    selectedId: string;
   }
 
 @Component({
@@ -12,14 +13,14 @@ export interface DialogData {
     styleUrls: ['./address-choice.component.scss']
 })
 export class AddressChoiceComponent {
-    public selectedAddress = '';
+    public selectedAddress = -1;
     
     constructor(
         public dialogRef: MatDialogRef<AddressChoiceComponent>,
         @Inject(MAT_DIALOG_DATA) public data: DialogData,
         private router: Router
     ) {
-        
+        this.selectedAddress = parseInt(data.selectedId);
     }
 
     newAddress() {
