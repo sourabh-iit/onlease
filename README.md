@@ -21,8 +21,17 @@ https://onlease.herokuapp.com/
 - Bash scripts for production and test server.
 - Virtual tours using kuula and IVR using twilio.
 
+### Database setup
+- Install and start postgres
+#### Run following in terminal
+- psql postgres
+- CREATE ROLE onlease WITH LOGIN PASSWORD 'onlease';
+- ALTER ROLE onlease CREATEDB;
+- CREATE DATABASE onlease;
+
 
 ### Development environment setup guide
+- Setup database
 - Install angular
 - take .env file from other developer
 - Run *docker-compose -p onlease_local up --build -d*
