@@ -37,6 +37,7 @@ https://onlease.herokuapp.com/
 - Run *docker-compose -p onlease_local up --build -d*
 - Run *npm run watch* in different tab
 - To create and apply migration, enter into container using *docker exec -it {container_id} bash*
+- cd into angular folder and run *npm run-script watch*
 
 
 ### Prod and test server setup
