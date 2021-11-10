@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { pipe, Subscription } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 
@@ -8,6 +8,7 @@ import { ToasterService } from 'src/app/services/toaster.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfirmDialogComponent } from 'src/shared/components/confirm-dialog/confirm-dialog.component';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-edit-profile',
@@ -51,9 +52,9 @@ export class EditProfileComponent implements OnDestroy {
     const file = event.target.files[0];
     const formData = new FormData();
     formData.append('image', file);
-    this.userService.uploadProfileImage(formData).subscribe((data: any) => {
-      this.fileUpload.nativeElement.value = "";
-    });
+    this.userService.uploadProfileImage(formData).pipe(
+      finalize(() => this.fileUpload.nativeElement.value = "")
+    ).subscribe(() => { });
   }
 
   removeProfileImage() {

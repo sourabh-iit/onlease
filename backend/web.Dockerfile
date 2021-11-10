@@ -5,13 +5,12 @@ FROM python:3.9
 RUN apt-get update \
 	&& apt-get install -y curl \
 	&& apt-get install -y screen \
-  && apt-get install -y libpython3.9-dev \
 	&& apt-get install -y libpq-dev python3-dev libffi-dev \
 	&& apt-get install -y libxml2-dev libxslt1-dev lib32z1-dev python3-libxml2
 
 WORKDIR /code
 COPY backend/requirements.txt ./
-RUN pip install -r requirements.txt
+RUN export PIP_DEFAULT_TIMEOUT=100 && pip3 install -r requirements.txt
 COPY ./backend .
 
 RUN mkdir -p /vol/static

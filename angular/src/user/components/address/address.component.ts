@@ -119,11 +119,11 @@ export class AddressComponent implements OnDestroy {
             finalize(() => { this.savingAddress = false; })
         ).subscribe((address: any) => {
             if(this.addressId == -1) {
-                this.router.navigateByUrl('/user/me/addresses');
+              this.toaster.success('Success', 'Address created');
             } else {
-                this.patchForm(address);
                 this.toaster.success('Success', 'Address saved');
             }
+            this.router.navigateByUrl('/user/me/addresses');
         }));
     }
 

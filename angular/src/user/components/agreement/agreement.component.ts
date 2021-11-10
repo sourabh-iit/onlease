@@ -86,11 +86,11 @@ export class AgreementComponent implements OnDestroy {
             finalize(() => { this.savingAgreement = false; })
         ).subscribe((agreement: any) => {
             if(this.agreementId == -1) {
-                this.router.navigateByUrl('/user/me/agreements');
+              this.toaster.success('Success', 'Agreement created');
             } else {
-                this.patchForm(agreement);
                 this.toaster.success('Success', 'Agreement saved');
             }
+            this.router.navigateByUrl('/user/me/agreements');
         }));
     }
 
