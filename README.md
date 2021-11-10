@@ -38,14 +38,14 @@ https://onlease.herokuapp.com/
 - To create and apply migration, enter into container using *docker exec -it {container_id} bash*
 - cd into angular folder
 - Run *npm install*
-- Run *npm run-script watch*
+- Run *npm run watch*
 
 
 ### Prod and test server setup
 - Install angular
 - pull code from github
 - create .env file with production credentials
-- Run *./prod-build.sh*
+- Run *./scripts/prod-build.sh*
 - Check logs using *docker-compose -p onlease_prod -f docker-compose-prod.yml logs -f web*
 
 
