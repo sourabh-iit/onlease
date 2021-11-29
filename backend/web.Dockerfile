@@ -12,6 +12,7 @@ WORKDIR /code
 COPY backend/requirements.txt ./
 RUN export PIP_DEFAULT_TIMEOUT=100 && pip3 install -r requirements.txt
 COPY ./backend .
+RUN mkdir logs
 
 RUN mkdir -p /vol/static
 RUN mkdir -p /vol/media
