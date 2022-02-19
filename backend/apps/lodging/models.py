@@ -3,12 +3,17 @@ from django.core.validators import RegexValidator, validate_slug
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 from django.conf import settings
+from django.core.files import File
 
 from apps.locations.models import Region
+from apps.utils import generate_random
 
 import json
 import math
+import logging
 
+
+logger = logging.getLogger('onlease-logger')
 User = get_user_model()
 
 def lodging_image_upload_path(instance, filename):
@@ -178,6 +183,30 @@ class Lodging(models.Model):
   bookedBy = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
   address = models.ForeignKey('user.Address', on_delete=models.SET_NULL, null=True, related_name='lodgings')
 
+  def duplicate(self):
+    charges = self.charges.all()
+    images = self.images.all()
+    vrimages = self.vrimages.all()
+    self.id = None
+    self.no_times_booked = 0
+    self.updated_at = None
+    self.created_at = None
+    self.available_from = None
+    self.is_booked = False
+    self.last_confirmed = None
+    self.reference = ""
+    self.isHidden = False
+    self.bookedBy = None
+    self.save()
+    logger.info(len(images))
+    for charge in charges:
+      charge.duplicate(self)
+    for image in images:
+      image.duplicate(self)
+    for vrimage in vrimages:
+      vrimage.duplicate(self)
+    return self
+
   def get_per_month_amount(self):
     total = int(self.rent)
     for charge in self.charges.all():
@@ -237,6 +266,11 @@ class Charge(models.Model):
   is_per_month=models.BooleanField(default=False)
   lodging=models.ForeignKey(Lodging, on_delete=models.CASCADE, related_name='charges')
 
+  def duplicate(self, lodging):
+    self.lodging = lodging
+    self.id = None
+    self.save()
+
   def __str__(self):
     return self.description+': Rs. '+self.amount
 
@@ -275,6 +309,15 @@ class LodgingImage(models.Model):
   tag = models.CharField(choices=LODGING_TAG_CHOICES, max_length=2, default=BEDROOM)
   tag_other = models.CharField(max_length=100, default="", blank=True)
 
+  def duplicate(self, lodging):
+    createNewFile = lambda image: File(image, image.name[:(len(image.name) - 8)] + generate_random(8))
+    self.image = createNewFile(self.image)
+    self.image_thumbnail = createNewFile(self.image_thumbnail)
+    self.image_mobile = createNewFile(self.image_mobile)
+    self.lodging = lodging
+    self.id = None
+    self.save()
+
   def __str__(self):
     return self.image_thumbnail.url
 
@@ -284,6 +327,14 @@ class LodgingVRImage(models.Model):
   image_thumbnail = models.ImageField(upload_to=lodging_vr_thumbnail_upload_path)
   created_at = models.DateTimeField(auto_now=True)
   disabled = models.BooleanField(default=False)
+
+  def duplicate(self, lodging):
+    createNewFile = lambda image: File(image, image.name[:(len(image.name) - 8)] + generate_random(8))
+    self.image = createNewFile(self.image)
+    self.image_thumbnail = createNewFile(self.image_thumbnail)
+    self.lodging = lodging
+    self.id = None
+    self.save()
 
   def __str__(self):
     return self.image_thumbnail.url

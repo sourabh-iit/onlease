@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, throwError } from "rxjs";
+import { BehaviorSubject, Observable, throwError } from "rxjs";
 import { catchError, tap } from "rxjs/operators";
 
 
@@ -173,6 +173,10 @@ export class UserService {
 
   public enableLodging(lodgingId: any) {
     return this.http.post(`/api/lodging/${lodgingId}/enable`, {});
+  }
+
+  public duplicateLodging(lodgingId: any): Observable<any> {
+    return this.http.post(`/api/lodging/${lodgingId}/duplicate`, {});
   }
 
   public loadAgreement(agreementId:  number) {

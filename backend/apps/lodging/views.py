@@ -62,6 +62,8 @@ class LodgingActionView(APIView):
         raise ValidationError("Not allowed")
       prop.isHidden = True if action == 'disable' else False
       prop.save()
+    elif action == 'duplicate':
+      return Response(LodgingSerializer(prop.duplicate()).data)
     else:
       raise ValidationError("Invalid action")
     return Response('success')

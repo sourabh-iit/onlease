@@ -152,6 +152,12 @@ export class LodgingCardComponent implements OnDestroy {
     }));
   }
 
+  duplicate() {
+    this.userService.duplicateLodging(this.lodging.id).subscribe((data: Lodging) => {
+      this.router.navigateByUrl(`/lodgings/edit/${data.id}`);
+    })
+  }
+
   toDate(date: string) {
     return moment(date, "DD-MM-YYYY").toDate();
   }

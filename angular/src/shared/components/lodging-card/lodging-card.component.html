@@ -51,6 +51,7 @@
   </mat-card-actions>
   <mat-card-actions *ngIf="lodging.posted_by && lodging.posted_by.mobile_number == me.mobile_number">
     <button mat-raised-button color="accent" [routerLink]="['/lodgings/edit', lodging.id]">Edit</button>
+    <button mat-raised-button color="primary" (click)="duplicate()">Duplicate</button>
     <button mat-raised-button color="warn" *ngIf="!lodging.isHidden" (click)="disable()">Disable</button>
     <button mat-raised-button color="secondary" *ngIf="lodging.isHidden" (click)="enable()">Enable</button>
   </mat-card-actions>
