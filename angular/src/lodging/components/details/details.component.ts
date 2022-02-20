@@ -67,8 +67,8 @@ export class LodgingDetailsComponent implements OnDestroy {
 
   ngAfterViewInit() {
     const elem = this.carousel.elementRef.nativeElement;
-    this.prevButton = elem.getElementsByClassName('.carousel-arrow-prev')[0];
-    this.nextButton = elem.getElementsByClassName('.carousel-arrow-next')[0];
+    this.prevButton = elem.getElementsByClassName('carousel-arrow-prev')[0];
+    this.nextButton = elem.getElementsByClassName('carousel-arrow-next')[0];
     this.prevButton.addEventListener('click', () => {
       if(this.currImage > 0) {
         this.currImage -= 1;

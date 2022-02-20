@@ -1,25 +1,17 @@
-from apps.locations.serializers import RegionSerializer
-from .models import Region, State
-
-import googlemaps
-
-from django.db.models import Count
+from apps.clients.google_maps import GoogleMapsClient
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-
-import time
-
-states = []
 
 class RegionListHandler(APIView):
 
+  def __init__(self) -> None:
+      self.client = GoogleMapsClient()
+
   def get(self, request):
     q = request.query_params.get('q')
-    regions = Region.objects.prefetch_related('state').filter(name__istartswith=q)[:20]
-    data = RegionSerializer(regions, many=True).data
-    return Response(data)
+    suggestions = self.client.autocomplete(q)
+    return Response(suggestions)
 
 # def current_location_view(request):
 #   data = request.POST

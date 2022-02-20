@@ -93,9 +93,11 @@ class User(AbstractUser):
 
 
 class Address(models.Model):
-  region = models.ForeignKey(Region, related_name="addresses", on_delete=models.CASCADE)
   text = models.CharField(max_length=200, default='')
   latlng = models.CharField(max_length=30, default='')
+  google_place_id = models.CharField(max_length=30, default='')
+  google_place_main_text = models.CharField(max_length=100, default='')
+  google_place_secondary_text = models.CharField(max_length=200, default='')
   user = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
   disabled = models.BooleanField(default=False)
 

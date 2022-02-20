@@ -9,7 +9,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('id', 'region', 'text', 'user')
+    list_display = ('id', 'google_place_id', 'google_place_main_text', 'google_place_secondary_text', 'text', 'user')
 
 
 class MobileNumberAdmin(admin.ModelAdmin):

@@ -62,9 +62,6 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
 class AddressSerializer(serializers.ModelSerializer):
-  region = RegionSerializer(required=False)
-  region_id = serializers.IntegerField()
-
   def create(self, validated_data):
     user = self.context['user']
     return Address.objects.create(user=user, **validated_data)
@@ -73,7 +70,8 @@ class AddressSerializer(serializers.ModelSerializer):
     model = Address
     fields = (
       'id',
-      'region',
       'text',
-      'region_id'
+      'google_place_id',
+      'google_place_main_text',
+      'google_place_secondary_text'
     )

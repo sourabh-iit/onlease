@@ -8,7 +8,7 @@
     <mat-radio-group [(ngModel)]="selectedAddress">
         <ng-container *ngFor="let address of data.addresses">
             <mat-radio-button class="address" [value]="address.id">
-                <mat-card>{{address.text}} - {{address.region.name}} ({{address.region.state.name}})</mat-card>
+                <mat-card>{{address.text}} - {{address.google_place_main_text}} ({{address.google_place_secondary_text}})</mat-card>
             </mat-radio-button>
         </ng-container>
     </mat-radio-group>

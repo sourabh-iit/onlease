@@ -23,7 +23,7 @@
       <div class="row container">
         <div class="col-6 col-md-4 mb-3">
           <span class="name">Location:</span>
-          <span class="value">{{lodging.region.name}} ({{lodging.region.state.name}})</span>
+          <span class="value">{{lodging.address.google_place_main_text}} ({{lodging.address.google_place_secondary_text}})</span>
         </div>
         <div class="col-6 col-md-4 mb-3">
           <span class="name">Floor:</span>
@@ -71,7 +71,7 @@
       <h2><fa-icon [icon]="['fas', 'address-book']" class="mr-2"></fa-icon> Contact Details</h2>
       <div class="mb-3">
         <span class="name">Address: </span>
-        <span class="value">{{lodging.address}}</span>
+        <span class="value">{{lodging.address.text}}</span>
       </div>
       <div>
         <span class="name">Phone numbers: </span>

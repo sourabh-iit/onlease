@@ -8,12 +8,9 @@ interface MobileNumber {
 }
 
 interface Region {
-  id: number;
-  name: string;
-  state: {
-    id: number;
-    name: string;
-  }
+  main_text: string;
+  secondary_text: string;
+  place_id: string;
 }
 
 interface AgreementPoint {
@@ -100,7 +97,9 @@ interface Agreement {
 
 interface Address {
   id: number;
-  region: Region;
+  google_place_main_text: string;
+  google_place_secondary_text: string;
+  google_place_id: string;
   text: string;
   latlng: string;
 }

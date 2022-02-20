@@ -257,7 +257,7 @@
         None selected</div>
       <div *ngIf="lodgingForm.get('address_id').value != ''">
         <mat-card class="row d-flex m-0">
-          <div class="col-9 p-0">{{selectedAddress?.text}} - {{selectedAddress?.region?.name}} ({{selectedAddress?.region?.state?.name}})</div>
+          <div class="col-9 p-0">{{selectedAddress?.text}} - {{selectedAddress?.google_place_main_text}} ({{selectedAddress?.google_place_secondary_text}})</div>
         </mat-card>
       </div>
     </div>

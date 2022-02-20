@@ -4,7 +4,6 @@ from rest_framework.exceptions import ValidationError
 from .models import Lodging, Charge, LodgingImage, LodgingVRImage
 from apps.user.serializers import UserSerializer, AgreementSerializer, AddressSerializer
 from .utils import clean_data
-from apps.locations.serializers import RegionSerializer
 
 from datetime import datetime
 import json
@@ -64,13 +63,8 @@ class LodgingSerializer(serializers.ModelSerializer):
   agreement_id = serializers.IntegerField(required=False)
   agreement = AgreementSerializer(required=False)
   address_id = serializers.IntegerField()
-  region = serializers.SerializerMethodField(required=False)
+  address = AddressSerializer(required=False)
   charges = ChargeSerializer(many=True)
-
-  @staticmethod
-  def get_region(lodging):
-    region = lodging.address.region
-    return RegionSerializer(region).data
 
   @staticmethod
   def get_images(lodging):
@@ -84,7 +78,7 @@ class LodgingSerializer(serializers.ModelSerializer):
     model = Lodging
     fields = (
       'id',
-      'region',
+      'address',
       'address_id',
       'posted_at',
       'updated_at',
@@ -136,12 +130,8 @@ class LodgingSerializer(serializers.ModelSerializer):
       'available_from': {'required': False},
       'facilities': {'required': False, 'allow_blank': True},
       'flooring_other': {'required': False, 'allow_blank': True},
-      'latlng': {'required': False, 'allow_blank': True},
       'reference': {'write_only': True}
     }
-
-  def clean_address(self, value):
-    return clean_data(value)
 
   def clean_total_floors(self, value):
     if value and value < 1:
@@ -187,22 +177,10 @@ class LodgingSerializer(serializers.ModelSerializer):
 
 class FullLodgingSerializer(LodgingSerializer):
   posted_by = UserSerializer()
-  address = serializers.SerializerMethodField()
-  latlng = serializers.SerializerMethodField()
-
-  @staticmethod
-  def get_address(lodging):
-    address = lodging.address
-    return address.text if address else ''
-  
-  @staticmethod
-  def get_latlng(lodging):
-    address = lodging.address
-    return address.latlng if address else ''
   
   class Meta(LodgingSerializer.Meta):
     model = Lodging
-    fields = LodgingSerializer.Meta.fields + ('address', 'latlng', 'reference', 'posted_by')
+    fields = LodgingSerializer.Meta.fields + ('reference', 'posted_by')
     extra_kwargs = {
       'reference': {'write_only': False}
     }

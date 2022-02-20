@@ -6,7 +6,7 @@
         </button>
     </div>
     <mat-card class="row d-flex mt-2" *ngFor="let address of addresses">
-        <div class="col-9">{{address.text}} - {{address.region.name}} ({{address.region.state.name}})</div>
+        <div class="col-9">{{address.text}} - {{address.google_place_main_text}} ({{address.google_place_secondary_text}})</div>
         <div class="col-3" style="text-align: right;">
             <fa-icon style="color: #ffd740;" [routerLink]="'/user/address/'+address.id" [icon]="['fas', 'pencil-alt']"></fa-icon>
             <fa-icon style="color: red;" (click)="delete(address.id)" class="ml-3" [icon]="['fas', 'trash']"></fa-icon>

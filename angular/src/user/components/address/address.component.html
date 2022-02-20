@@ -11,11 +11,11 @@
             <input type="text"
                 placeholder="Start typing..."
                 matInput required
-                formControlName="region_temp"
+                formControlName="place_text"
                 [matAutocomplete]="auto">
             <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onRegionSelected($event)" [displayWith]="displayRegionFn">
                 <mat-option *ngFor="let region of regions" [value]="region">
-                    {{region.name}} ({{region.state.name}})
+                    {{region.main_text}} ({{region.secondary_text}})
                 </mat-option>
             </mat-autocomplete>
             <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="loadingRegions" matSuffix></fa-icon>
