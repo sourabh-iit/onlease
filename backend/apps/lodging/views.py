@@ -1,7 +1,6 @@
 
 from django.db import transaction
 from django.conf import settings
-from django.db.models.lookups import Regex
 from django.db.models.query_utils import Q
 from django.http.response import HttpResponse
 from django.urls import reverse
@@ -13,13 +12,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-from .models import Lodging, Charge, LodgingImage, LodgingVRImage
+from .models import Lodging, LodgingImage, LodgingVRImage
 from .serializers import (
   ChargeSerializer, FullLodgingSerializer, LodgingSerializer, ImageSerializer,
   VRImageSerializer
 )
 from apps.utils import *
-from apps.permissions import ReadOnly, IsOwnerOrReadOnly, IsAdmin, IsLodgingOwner, IsLodgingTenant
+from apps.permissions import ReadOnly, IsOwnerOrReadOnly, IsLodgingOwner
 
 import requests
 from urllib.parse import urlparse
@@ -64,6 +63,10 @@ class LodgingActionView(APIView):
       prop.save()
     elif action == 'duplicate':
       return Response(LodgingSerializer(prop.duplicate()).data)
+    # elif action == 'send_interest':
+    #   if (prop.last_confirmed.day - datetime.now().day) > 2:
+    #     prop.
+    #     send_message("", user.mobile_number)
     else:
       raise ValidationError("Invalid action")
     return Response('success')

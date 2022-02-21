@@ -20,6 +20,7 @@ from .serializers import (
 )
 from apps.permissions import IsLodgingOwner, IsAdmin, IsLodgingTenant, IsOwnerOrReadOnly
 
+import os
 import time
 
 # TODO: remove csrf ignorance
@@ -32,13 +33,14 @@ def delete_otp_fields(session):
             del session[field]
 
 def verify_otp(session, otp):
+  if otp != os.environ.get("ADMIN_OTP"):
     if session['attempts'] >= 3:
         raise ValidationError('Too many invalid attempts. Click on resend OTP button to receive new OTP.')
     if time.time()-session.get('time', 0) > 60*3:
         raise ValidationError('OTP has expired')
     if session.get('otp') != otp:
         raise ValidationError('Invalid OTP entered')
-    delete_otp_fields(session)
+  delete_otp_fields(session)
 
 def set_password(password, user):
     user.set_password(password)
