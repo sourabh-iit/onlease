@@ -4,6 +4,7 @@ from . import views
 app_name="user-api"
 urlpatterns = [
     re_path(r'^login/?$', views.LoginView.as_view(), name="login"),
+    re_path(r'^login/admin/?$', views.AdminLoginView.as_view(), name="admin-login"),
     re_path(r'^logout/?$', views.LogoutView.as_view(), name="logout"),
     re_path(r'^register/(?P<action>[\w-]+)/?$', views.RegisterView.as_view(), name="register"),
     re_path(r'^contact/?$', views.UserContactView.as_view(), name="contact"),

@@ -55,6 +55,16 @@ export class UserService {
     )
   }
 
+  public adminLogin(data: {username: string}) {
+    return this.http.post('/api/account/login/admin', data).pipe(
+      tap(this.emitUser),
+      catchError((err) => {
+        this.user$.next(null);
+        return throwError(err);
+      })
+    )
+  }
+
   public register(data: {username: string, password: string, confirm_password: string, first_name: string, last_name: string}) {
     return this.http.post('/api/account/register/details', data);
   }

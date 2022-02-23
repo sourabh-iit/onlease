@@ -1,13 +1,7 @@
 from django.conf import settings
-import os
-import requests
-import random
-import json
-import time
-
-from rest_framework.exceptions import ValidationError
-
 from django.urls import reverse
+
+from apps.utils import onlease_last_message
 
 def get_name(user):
     if not user.first_name:

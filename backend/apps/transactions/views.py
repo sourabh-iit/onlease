@@ -107,7 +107,7 @@ class TransactionHandler(APIView):
             purpose=trans_id,
             buyer_name=request.user.full_name,
             allow_repeated_payments=False,
-            redirect_url=base_url+reverse('transactions-api:lodging-booking'),
+            redirect_url=base_url+reverse('transactions:lodging-booking'),
             webhook=base_url+reverse('transactions-api:lodging-actions', args=[lodging.id, "webhook"])
           )
         else:

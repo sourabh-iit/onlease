@@ -16,10 +16,12 @@ import { AgreementComponent } from './components/agreement/agreement.component';
 import { MyAgreementsComponent } from './components/my-agreements/agreements.component';
 import { MyAddressesComponent } from './components/my-addresses/addresses.component';
 import { AddressComponent } from './components/address/address.component';
+import { AdminLoginComponent } from './components/admin-login/admin-login.component';
 
 @NgModule({
   declarations: [
     LoginComponent,
+    AdminLoginComponent,
     RegisterComponent,
     VerifyOtpComponent,
     ChangePasswordComponent,

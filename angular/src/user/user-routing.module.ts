@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AddNumberComponent } from './components/add-number/add-number.component';
 import { AddressComponent } from './components/address/address.component';
+import { AdminLoginComponent } from './components/admin-login/admin-login.component';
 import { AgreementComponent } from './components/agreement/agreement.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { LoginComponent } from './components/login/login.component';
@@ -18,6 +19,9 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
+  }, {
+    path: 'login/admin',
+    component: AdminLoginComponent
   }, {
     path: 'register',
     component: RegisterComponent

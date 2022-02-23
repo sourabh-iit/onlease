@@ -109,7 +109,7 @@
         </span>
       </div>
     </div>
-    <div class="box p-3 mt-4" *ngIf="lodging.agreement && !needToConfirm">
+    <div class="box p-3 mt-4" *ngIf="lodging.agreement">
       <h2><fa-icon [icon]="['fas', 'handshake']" class="mr-2"></fa-icon> Agreement</h2>
       <mat-list role="list">
         <mat-list-item role="listitem" *ngFor="let point of lodging.agreement.points">
@@ -131,21 +131,16 @@
           </button>
         </div>
         <ng-template #testConfirmAndBook>
-          <div *ngIf="env.pre_release_test; else confirmAndBook">
-            <button class="w-100" mat-raised-button color="accent" type="button">Book now</button>
+          <!-- <div *ngIf="needToConfirm; else book">
+            <button class="w-100" mat-raised-button color="primary" (click)="confirmVaccant()" type="button">Confirm vaccant</button>
+            <small class="help-text">Confirming vaccancy before booking is required. We will send an sms to your number after confirmation for further steps.</small>
           </div>
-          <ng-template #confirmAndBook>
-            <div *ngIf="needToConfirm; else book">
-              <button class="w-100" mat-raised-button color="primary" (click)="confirmVaccant()" type="button">Confirm vaccant</button>
-              <small class="help-text">Confirming vaccancy before booking is required. We will send an sms to your number after confirmation for further steps.</small>
+          <ng-template #book> -->
+            <div>
+              <button class="w-100" mat-raised-button color="accent" (click)="bookLodging()" type="button">Book now</button>
+              <small class="help-text">Availabe from: </small>
             </div>
-            <ng-template #book>
-              <div>
-                <button class="w-100" mat-raised-button color="accent" (click)="bookLodging()" type="button">Book now</button>
-                <small class="help-text">Availabe from: </small>
-              </div>
-            </ng-template>
-          </ng-template>
+          <!-- </ng-template> -->
         </ng-template>
       </ng-template>
     </div>

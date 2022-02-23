@@ -1,3 +1,4 @@
+from asyncio.log import logger
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail, BadHeaderError
@@ -265,16 +266,28 @@ class LoginView(APIView):
     data = request.data
     username = data.get('username')
     password = data.get('password')
-    if ',' in username:
-      username = username.split(',')
-      authenticate(username=username[0], password=password)
-      if not user.is_superuser:
-        raise ValidationError("Invalid username and password combination --")
-      user = User.objects.get(username[1])
-    else:
-      user = authenticate(username=username, password=password)
+    user = authenticate(username=username, password=password)
     if not user:
       raise ValidationError('Invalid mobile number and password combination')
+    if user.status==User.BLOCKED:
+      raise ValidationError('You are blocked. Contact admin for further action')
+    if not user.is_active:
+      raise ValidationError('Account is not active. Contact admin for further information')
+    login(request, user)
+    return Response(UserSerializer(user).data)
+
+class AdminLoginView(APIView):
+  permission_classes = (IsAuthenticated,)
+
+  def post(self, request):
+    if not request.user.is_superuser:
+      raise ValidationError("Invalid action")
+    data = request.data
+    username = data.get('username')
+    try:
+      user = User.objects.get(username=username)
+    except Exception as e:
+      raise ValidationError(f"User {username} does not exist")
     if user.status==User.BLOCKED:
       raise ValidationError('You are blocked. Contact admin for further action')
     if not user.is_active:
