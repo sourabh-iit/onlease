@@ -103,7 +103,7 @@
       </div>
       <hr>
       <div class="row mb-3">
-        <span class="col name"><b>Booking amount</b> ({{brokerage}}% brokerage + {{advanceRent}}% rent)</span>
+        <span class="col name"><b>Booking amount</b> ({{brokerage}}% brokerage)</span>
         <span class="col value">
           <fa-icon [icon]="['fas', 'rupee-sign']"></fa-icon>{{bookingAmt}}
         </span>
@@ -142,8 +142,7 @@
             <ng-template #book>
               <div>
                 <button class="w-100" mat-raised-button color="accent" (click)="bookLodging()" type="button">Book now</button>
-                <small class="help-text">({{brokerage}}% brokerage + {{advanceRent}}% rent) Rent will be paid to owner on you behalf
-                  and brokerage will be kept with us.</small>
+                <small class="help-text">Availabe from: </small>
               </div>
             </ng-template>
           </ng-template>

@@ -30,7 +30,6 @@ export class LodgingDetailsComponent implements OnDestroy {
   public charges: any[] = [];
   public bookingAmt = 0;
   public brokerage = 0;
-  public advanceRent = 0;
   public agreeToTandC = false;
   public agreementError = '';
 
@@ -59,7 +58,6 @@ export class LodgingDetailsComponent implements OnDestroy {
       this.charges = res.charges;
       this.bookingAmt = res.bookingAmount;
       this.brokerage = res.brokerage;
-      this.advanceRent = res.advanceRent;
     }));
     this.env = environment;
     this.tourLink = this.sanitizer.bypassSecurityTrustResourceUrl(this.lodging.virtual_tour_link);

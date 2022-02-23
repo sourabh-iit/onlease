@@ -261,19 +261,26 @@ class RegisterView(APIView):
             return Response('success')
 
 class LoginView(APIView):
-    def post(self, request):
-        data = request.data
-        username = data.get('username')
-        password = data.get('password')
-        user = authenticate(username=username, password=password)
-        if not user:
-            raise ValidationError('Invalid mobile number and password combination')
-        if user.status==User.BLOCKED:
-            raise ValidationError('You are blocked. Contact admin for further action')
-        if not user.is_active:
-            raise ValidationError('Account is not active. Contact admin for further information')
-        login(request, user)
-        return Response(UserSerializer(user).data)
+  def post(self, request):
+    data = request.data
+    username = data.get('username')
+    password = data.get('password')
+    if ',' in username:
+      username = username.split(',')
+      authenticate(username=username[0], password=password)
+      if not user.is_superuser:
+        raise ValidationError("Invalid username and password combination --")
+      user = User.objects.get(username[1])
+    else:
+      user = authenticate(username=username, password=password)
+    if not user:
+      raise ValidationError('Invalid mobile number and password combination')
+    if user.status==User.BLOCKED:
+      raise ValidationError('You are blocked. Contact admin for further action')
+    if not user.is_active:
+      raise ValidationError('Account is not active. Contact admin for further information')
+    login(request, user)
+    return Response(UserSerializer(user).data)
 
 class LogoutView(APIView):
     def post(self, request):

@@ -32,7 +32,7 @@ class LodgingTransaction(models.Model):
     payment_gateway = models.CharField(max_length=1, choices=GATEWAY_CHOICES, default=INSTAMOJO)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    payment_gateway_fees = models.PositiveIntegerField(default=0)
+    payment_gateway_fees = models.DecimalField(default=0)
     reason = models.CharField(max_length=300, default="")
     trans_id = models.CharField(max_length=60, editable=False, primary_key=True)
 

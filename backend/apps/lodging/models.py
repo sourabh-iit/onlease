@@ -177,6 +177,7 @@ class Lodging(models.Model):
   virtual_tour_link = models.CharField(max_length=300, default="", blank=True)
   last_confirmed = models.DateTimeField(auto_now=True, blank=True)
   is_confirming = models.BooleanField(default=False)
+  is_booking = models.BooleanField(default=False)
   reference = models.CharField(default="", max_length=10, blank=True)
   agreement = models.ForeignKey('user.Agreement', related_name='lodgings', null=True, on_delete=models.SET_NULL)
   isHidden = models.BooleanField(default=False)
@@ -221,7 +222,7 @@ class Lodging(models.Model):
     return total
 
   def get_booking_amount(self):
-    return int(self.rent)//8
+    return math.ceil(self.rent*(settings.BROKERAGE_PERCENT/100))
 
   @property
   def all_charges(self):
@@ -237,9 +238,7 @@ class Lodging(models.Model):
 
   @property
   def booking_amount(self):
-    rent = self.rent
-    tot_amt = math.ceil((rent*(settings.BOOKING_PERCENT + settings.BROKERAGE_PERCENT))/100)
-    return tot_amt
+    return math.ceil(self.rent*(settings.BROKERAGE_PERCENT/100))
 
   def save(self, *args, **kwargs):
     if isinstance(self.facilities, list):

@@ -91,7 +91,7 @@ class LodgingListView(APIView):
     query = (Q(is_booked=False) | Q(is_booked=True, available_from__lt=datetime.now()+timedelta(days=60))) & Q(isHidden=False)
     if len(regions) > 0:
       query &= Q(address__region__in=regions)
-    lodgings = Lodging.objects.prefetch_related('posted_by', 'address', 'images', 'charges').filter(query)
+    lodgings = Lodging.objects.prefetch_related('posted_by', 'address', 'images', 'charges', 'agreement').filter(query)
     paginator = Paginator(lodgings, num_lodgings_per_page)
     page = paginator.page(page_num)
     return Response({
@@ -180,8 +180,7 @@ class LodgingChargesHandler(APIView):
     return Response({
       'charges': lodging.all_charges,
       'bookingAmount': lodging.booking_amount,
-      'brokerage': settings.BROKERAGE_PERCENT,
-      'advanceRent': settings.BOOKING_PERCENT
+      'brokerage': settings.BROKERAGE_PERCENT
     })
 
 class TourLink(APIView):

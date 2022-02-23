@@ -90,9 +90,9 @@ class TransactionHandler(APIView):
         base_url = settings.BASE_URL
       try:
         lodging = Lodging.objects.get(id=lodging_id)
-        if not lodging.last_confirmed or lodging.last_confirmed.timestamp() - time.time() > 24*60*60:
-          raise ValidationError('Latest confirmation for vaccancy is not done')
-        if lodging.is_booked or lodging.isHidden:
+        # if not lodging.last_confirmed or lodging.last_confirmed.timestamp() - time.time() > 24*60*60:
+        #   raise ValidationError('Latest confirmation for vaccancy is not done')
+        if lodging.is_booked or lodging.isHidden or lodging.is_booking:
           raise ValidationError('It is already booked.')
         trans_id = TransactionHandler.generate_random_transaction_id()
         trans = LodgingTransaction.objects.create(
@@ -107,7 +107,7 @@ class TransactionHandler(APIView):
             purpose=trans_id,
             buyer_name=request.user.full_name,
             allow_repeated_payments=False,
-            redirect_url=base_url+reverse('transactions-api:lodging-actions'),
+            redirect_url=base_url+reverse('transactions-api:lodging-booking'),
             webhook=base_url+reverse('transactions-api:lodging-actions', args=[lodging.id, "webhook"])
           )
         else:
@@ -124,7 +124,8 @@ class TransactionHandler(APIView):
             'status': 200
           })
         else:
-          raise ValidationError(json.dumps({"message": response["message"], "code": response["code"]}))
+          logger.error(json.dumps(response))
+          raise ValidationError("Got some error while processing")
       except Lodging.DoesNotExist:
         raise ValidationError('Lodging with id '+lodging_id+' does not exist.')
     elif action == 'webhook':
@@ -140,6 +141,7 @@ class TransactionHandler(APIView):
           trans = LodgingTransaction.objects.get(trans_id=trans_id)
         except LodgingTransaction.DoesNotExist:
           raise ValidationError("transaction does not exist")
+        logger.debug("reach here")
         on_transaction(trans, data, request.user, trans.lodging)
       return Response('ok')
     raise ValidationError("invalid action")
@@ -149,12 +151,11 @@ def on_transaction(trans, response, user, lodging):
   if not trans.payment_id:
     trans.payment_id = response['payment_id']
     trans.status = LodgingTransaction.FAIL
-    refund = False
     transaction_success = False
     owner = None
     if response['status'] == 'Credit':
       amount_paid = int(float(response['amount']))
-      if amount_paid == lodging.booking_amount:
+      if amount_paid == math.ceil(lodging.rent * (settings.BROKERAGE_PERCENT/100)):
         trans.amount = amount_paid
         trans.payment_gateway_fees = response['fees']
         trans.status = LodgingTransaction.SUCCESS
@@ -162,19 +163,16 @@ def on_transaction(trans, response, user, lodging):
         owner = lodging.posted_by
         transaction_success = True
       else:
-        trans.status = LodgingTransaction.REFUNDED
+        trans.status = LodgingTransaction.PENDING
         trans.reason = "partial payment done"
-        refund = True
     with transaction.atomic():
       trans.save()
       lodging.save()
-      if refund:
-        refund_amount(trans.payment_id, "PTH", trans.reason)
-      if transaction_success:
-        msg = lodging_booked_message(owner, user)
-        send_message(msg, owner.mobile_number)
-        msg = successfull_transaction_message(user, trans, lodging)
-        send_message(msg, user.mobile_number)
+    if transaction_success:
+      msg = lodging_booked_message(owner, user)
+      send_message(msg, owner.mobile_number)
+      msg = successfull_transaction_message(user, trans, lodging)
+      send_message(msg, user.mobile_number)
 
 def refund_amount(payment_id, type, body, attempt=1):
   logger.info(f"Refunding for payment id: {payment_id}, attempt: {attempt}")
@@ -190,19 +188,21 @@ def refund_amount(payment_id, type, body, attempt=1):
     capture_message(f"Unable to refund for payment_id: {payment_id}", level='error')
 
 
-@login_required
-def lodging_post_redirection_view(request):
-  data = request.query_params
-  trans_id = -1
-  try:
-    payment_id = data.get('payment_id')
-    payment_request_id = data.get('payment_request_id')
-    response = api.payment_request_payment_status(payment_request_id, payment_id)
-    if response['success'] == True:
-      trans_id = response['payment_request']['purpose']
-      trans = LodgingTransaction.objects.get(id=trans_id)
-      if trans.user == request.user:
-        on_transaction(trans, response['payment_request']['payment'], request.user, trans.lodging)
-  except LodgingTransaction.DoesNotExist:
-    pass
-  return HttpResponseRedirect(f"/transactions/{trans_id}")
+class LodgingBookingHandler(APIView):
+  permission_classes = (IsAuthenticated, )
+
+  def get(self, request):
+    data = request.query_params
+    trans_id = -1
+    try:
+      payment_id = data.get('payment_id')
+      payment_request_id = data.get('payment_request_id')
+      response = api.payment_request_payment_status(payment_request_id, payment_id)
+      if response['success'] == True:
+        trans_id = response['payment_request']['purpose']
+        trans = LodgingTransaction.objects.get(trans_id=trans_id)
+        if trans.user == request.user:
+          on_transaction(trans, response['payment_request']['payment'], request.user, trans.lodging)
+    except LodgingTransaction.DoesNotExist:
+      pass
+    return HttpResponseRedirect(f"/transactions/{trans_id}")
