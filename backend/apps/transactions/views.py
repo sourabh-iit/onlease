@@ -216,5 +216,5 @@ class LodgingBookingHandler(APIView):
         if trans.user == request.user:
           on_transaction(trans, response['payment_request']['payment'], request.user, trans.lodging)
     except LodgingTransaction.DoesNotExist:
-      pass
+      return HttpResponseRedirect("/")
     return HttpResponseRedirect(f"/transactions/{trans_id}")
