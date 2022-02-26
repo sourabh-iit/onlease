@@ -1,0 +1,15 @@
+<mat-card class="transaction-box">
+  <mat-card-title class="success" *ngIf="transaction.status == '0'">
+    <fa-icon [icon]="['fas', 'check-circle']"></fa-icon> Payment {{transactionStatus}}
+  </mat-card-title>
+  <mat-card-title class="fail" *ngIf="transaction.status == '1'">
+    <fa-icon [icon]="['fas', 'times-circle']"></fa-icon> Payment {{transactionStatus}}
+  </mat-card-title>
+  <div class="contact-details-text">Contact details</div>
+  <div class="address">
+    {{address.text}} <br>
+    {{address.google_place_main_text}} <br>
+    {{address.google_place_secondary_text}} <br>
+  </div>
+  <div class="phone-numbers">{{ownerPhoneNumbers}}</div>
+</mat-card>

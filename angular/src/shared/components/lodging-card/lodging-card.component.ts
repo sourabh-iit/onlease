@@ -9,6 +9,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ToasterService } from 'src/app/services/toaster.service';
 import { Router } from '@angular/router';
 import { VirtualTourComponent } from '../virutal-tour/virtual-tour.component';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-lodging-card',
@@ -38,12 +39,21 @@ export class LodgingCardComponent implements OnDestroy {
     private constantsService: ConstantsService,
     private dialog: MatDialog,
     private toasterService: ToasterService,
-    private router: Router
+    private router: Router,
+    private datePipe: DatePipe
   ) {
     this.subs.add(this.userService.user$.subscribe((user: any) => {
       this.me = user;
       this.setIsFavorite();
     }));
+  }
+
+  get availableFrom() {
+    if (this.lodging.available_from) {
+      const available_from = this.toDate(this.lodging.available_from);
+      return this.datePipe.transform(available_from);
+    }
+    return "Unknown"
   }
 
   get lodgingType() {

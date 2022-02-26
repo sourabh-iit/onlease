@@ -19,7 +19,8 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "strictPropertyInitialization": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -28,5 +29,5 @@
     "strictTemplates": true,
     "strictPropertyInitialization": false
   },
-  "typeRoots": [ "node_modules/@types", "../src/typings.d.ts" ]
+  "typeRoots": [ "node_modules/@types", "src/typing.d.ts" ]
 }

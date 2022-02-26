@@ -17,6 +17,7 @@ import { GlobalErrorHandler } from './services/error-handler.service';
 import {
   faAddressBook,
   faBuilding,
+  faCheckCircle,
   faChevronLeft,
   faChevronRight,
   faDownload,
@@ -89,5 +90,6 @@ export class AppModule {
     library.addIcons(faMoneyBill);
     library.addIcons(faAddressBook);
     library.addIcons(faInfoCircle);
+    library.addIcons(faCheckCircle);
   }
 }

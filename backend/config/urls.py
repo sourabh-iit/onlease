@@ -32,6 +32,7 @@ urlpatterns = [
     re_path(r'^user/me/add-number/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/agreements/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^user/me/addresses/?$', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^transactions/(?P<trans_id>\w+)/?$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^transactions/', include("apps.transactions.urls")),
     re_path(r'^api/.*', not_found_handler),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

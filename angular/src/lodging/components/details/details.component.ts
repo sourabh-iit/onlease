@@ -180,7 +180,7 @@ export class LodgingDetailsComponent implements OnDestroy {
   }
 
   bookLodging() {
-    if(!this.agreeToTandC) {
+    if(this.lodging.agreement && !this.agreeToTandC) {
       this.agreementError = "Accept owner terms and conditions";
       return;
     }

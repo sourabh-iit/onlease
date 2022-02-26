@@ -116,7 +116,7 @@ class LodgingView(APIView):
     return Response(serializer.data)
 
   def can_show_contact_details(self, user, lodging):
-    return user.is_authenticated and (lodging.posted_by == user or (lodging.is_booked and lodging.tenant == user))
+    return user.is_authenticated and (lodging.posted_by == user or (lodging.is_booked and lodging.bookedBy == user))
 
   def post(self, request):
     lodging = self.save_lodging(request.data, request.user, None)

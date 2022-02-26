@@ -126,3 +126,20 @@ interface Charge {
   description: string;
   is_per_month: boolean;
 }
+
+// export enum LodgingTransactionStatus {
+//   SUCCESS = "SUCCESS",
+//   PENDING = "PENDING",
+//   FAILED = "FAILED",
+//   CANCELLED = "CANCELLED",
+//   REFUNDED = "REFUNDED"
+// }
+
+interface LodgingTransaction {
+  lodging: any;
+  user: User;
+  status: string;
+  amount: number;
+  trans_id: string;
+  created_at: Date;
+}

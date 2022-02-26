@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { MatInputModule } from '@angular/material/input';
@@ -69,6 +69,8 @@ import { LodgingCardComponent } from './components/lodging-card/lodging-card.com
 
   ],
   providers: [
+    DatePipe,
+    TitleCasePipe
   ],
   exports: [
     FormsModule,

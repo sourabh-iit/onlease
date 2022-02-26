@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.conf import settings
 from apps.lodging.models import Lodging
 from django.http import HttpResponseRedirect
@@ -13,7 +14,7 @@ from rest_framework.exceptions import ValidationError, PermissionDenied
 import math
 import hmac
 import hashlib
-import time
+import json
 from threading import Timer
 import logging
 
@@ -73,7 +74,7 @@ class TransactionHandler(APIView):
 
   def get(self, request, trans_id):
     try:
-      trans = LodgingTransaction.objects.get(id=trans_id)
+      trans = LodgingTransaction.objects.get(trans_id=trans_id)
     except LodgingTransaction.DoesNotExist:
       raise ValidationError("Transaction does not exist")
     if trans.user != request.user:
@@ -94,6 +95,12 @@ class TransactionHandler(APIView):
         #   raise ValidationError('Latest confirmation for vaccancy is not done')
         if lodging.is_booked or lodging.isHidden or lodging.is_booking:
           raise ValidationError('It is already booked.')
+        if lodging.is_booking:
+          if (lodging.updated_at - datetime.now()).seconds > 600:
+            lodging.is_booking = False
+            lodging.save()
+          else:
+            raise ValidationError('It is already booked.')
         trans_id = TransactionHandler.generate_random_transaction_id()
         trans = LodgingTransaction.objects.create(
           user = request.user,
@@ -101,15 +108,19 @@ class TransactionHandler(APIView):
           trans_id = trans_id,
           payment_gateway = gateway
         )
+        payment_request_data = {
+          "amount": lodging.booking_amount,
+          "purpose": trans_id,
+          "email": request.user.email,
+          "phone": f"+91{request.user.mobile_number}",
+          "buyer_name": request.user.full_name,
+          "allow_repeated_payments": False,
+          "redirect_url": base_url+reverse('transactions:lodging-booking'),
+          "webhook": base_url+reverse('transactions-api:lodging-actions', args=[lodging.id, "webhook"])
+        }
+        logger.info(payment_request_data)
         if gateway == LodgingTransaction.INSTAMOJO:
-          response = api.payment_request_create(
-            amount=lodging.booking_amount,
-            purpose=trans_id,
-            buyer_name=request.user.full_name,
-            allow_repeated_payments=False,
-            redirect_url=base_url+reverse('transactions:lodging-booking'),
-            webhook=base_url+reverse('transactions-api:lodging-actions', args=[lodging.id, "webhook"])
-          )
+          response = api.payment_request_create(**payment_request_data)
         else:
           raise ValidationError("invalid gateway")
         if response['success']:
@@ -159,6 +170,7 @@ def on_transaction(trans, response, user, lodging):
         trans.amount = amount_paid
         trans.payment_gateway_fees = response['fees']
         trans.status = LodgingTransaction.SUCCESS
+        lodging.bookedBy = user
         lodging.is_booked = True
         owner = lodging.posted_by
         transaction_success = True
@@ -168,11 +180,11 @@ def on_transaction(trans, response, user, lodging):
     with transaction.atomic():
       trans.save()
       lodging.save()
-    if transaction_success:
-      msg = lodging_booked_message(owner, user)
-      send_message(msg, owner.mobile_number)
-      msg = successfull_transaction_message(user, trans, lodging)
-      send_message(msg, user.mobile_number)
+    # if transaction_success:
+    #   msg = lodging_booked_message(owner, user)
+    #   send_message(msg, owner.mobile_number)
+    #   msg = successfull_transaction_message(user, trans, lodging)
+    #   send_message(msg, user.mobile_number)
 
 def refund_amount(payment_id, type, body, attempt=1):
   logger.info(f"Refunding for payment id: {payment_id}, attempt: {attempt}")

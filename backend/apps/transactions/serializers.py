@@ -1,3 +1,4 @@
+from apps.user.serializers import AddressSerializer
 from rest_framework import serializers
 
 from .models import LodgingTransaction
@@ -12,7 +13,9 @@ class TransactionSerializer(serializers.ModelSerializer):
         return {
             'posted_by': UserSerializer(lodging.posted_by).data,
             'reference': lodging.reference,
-            'address': lodging.address
+            'address': AddressSerializer(lodging.address).data,
+            'bookedBy': UserSerializer(lodging.bookedBy).data,
+            'id': lodging.id
         }
 
     class Meta:
@@ -21,7 +24,6 @@ class TransactionSerializer(serializers.ModelSerializer):
             'status',
             'amount',
             'lodging',
-            'owner',
             'created_at',
             'updated_at',
             'reason',

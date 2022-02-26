@@ -28,7 +28,7 @@
     <div class="booking">
       <div class="display vaccant" *ngIf="!lodging.is_booked">Vaccant</div>
       <div style="color: red;" *ngIf="lodging.is_booked">
-        <div style="font-size: 14px;">Available from: {{toDate(lodging.available_from) | date}}</div>
+        <div style="font-size: 14px;">Available from: {{availableFrom}}</div>
         <div></div>
       </div>
     </div>
