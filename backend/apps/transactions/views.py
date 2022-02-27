@@ -78,8 +78,6 @@ class TransactionHandler(APIView):
       trans = LodgingTransaction.objects.get(trans_id=trans_id)
     except LodgingTransaction.DoesNotExist:
       raise ValidationError("Transaction does not exist")
-    if trans.user != request.user:
-      raise PermissionDenied()
     return Response(TransactionSerializer(trans).data)
 
   def post(self, request, lodging_id, action):

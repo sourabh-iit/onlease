@@ -10,6 +10,8 @@ class TransactionSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_lodging(transaction):
         lodging = transaction.lodging
+        if transaction.status != LodgingTransaction.SUCCESS:
+          return {}
         return {
             'posted_by': UserSerializer(lodging.posted_by).data,
             'reference': lodging.reference,
