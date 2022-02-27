@@ -33,7 +33,7 @@ from twilio.rest import Client
 
 # TODO: Cron job to call owner of every booked property to ask if is vaccant
 
-num_lodgings_per_page = 20
+NUM_LODGINGS_PER_PAGE = 10
 
 logger = logging.getLogger('onlease-logger')
 
@@ -92,7 +92,7 @@ class LodgingListView(APIView):
     if len(regions) > 0:
       query &= Q(address__region__in=regions)
     lodgings = Lodging.objects.prefetch_related('posted_by', 'address', 'images', 'charges', 'agreement').filter(query)
-    paginator = Paginator(lodgings, num_lodgings_per_page)
+    paginator = Paginator(lodgings, NUM_LODGINGS_PER_PAGE)
     page = paginator.page(page_num)
     return Response({
       'data': LodgingSerializer(page.object_list, many=True).data,

@@ -49,12 +49,10 @@ export class LodgingService {
     return this.http.delete(`/api/lodging/vrimages/${imageId}`);
   }
 
-  loadLodgings(regions: string[]) {
-    let params = new HttpParams();
-    for(let region of regions) {
-      params.set("regions", region);
-    }
-    return this.http.get('/api/lodging/list', {params});
+  loadLodgings(regions: string[], page = 1) {
+    return this.http.get('/api/lodging/list', {
+      params: {regions, page: page.toString()}
+    });
   }
 
   confirmVaccant(lodgingId: any) {
