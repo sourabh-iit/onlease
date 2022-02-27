@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.views import View
 
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -200,11 +201,12 @@ def refund_amount(payment_id, type, body, attempt=1):
     capture_message(f"Unable to refund for payment_id: {payment_id}", level='error')
 
 
-class LodgingBookingHandler(APIView):
-  permission_classes = (IsAuthenticated, )
+class LodgingBookingHandler(View):
 
   def get(self, request):
-    data = request.query_params
+    if not request.user.is_authenticated:
+      return HttpResponseRedirect("/")
+    data = request.GET
     trans_id = -1
     try:
       payment_id = data.get('payment_id')

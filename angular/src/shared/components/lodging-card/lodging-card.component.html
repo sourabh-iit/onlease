@@ -9,7 +9,7 @@
     <div class="sub-title">
       <span>
         <fa-icon style="color: blue;" [icon]="['fas', 'map-marker-alt']"></fa-icon>
-        {{lodging.address?.google_place_main_text}}
+        {{lodging.address.google_place_main_text.split(',')[0]}}
       </span>
       <span style="border-bottom: 1px solid gray;">{{lodgingFurnishing}}</span>
     </div>
