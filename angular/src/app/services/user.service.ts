@@ -77,6 +77,14 @@ export class UserService {
     return this.http.post('/api/account/me/verify-otp', {mobile_number});
   }
 
+  public resetPasswordRequestOtp(mobile_number: string) {
+    return this.http.post('/api/account/password-reset/request', { mobile_number });
+  }
+
+  public resetPasswordVerifyOtpAndSetPassword(data: {otp: string, password: string}) {
+    return this.http.post('/api/account/password-reset/verify', data);
+  }
+
   public resendOtp() {
     return this.http.post('/api/account/register/resend-otp', {});
   }
@@ -89,6 +97,10 @@ export class UserService {
 
   public changePassword(data: {new_password: string, current_password: string}) {
     return this.http.post('/api/account/me/change-password', data);
+  }
+
+  public resetPassword(data: {new_password: string, otp: string}) {
+    return this.http.post('/api/account/me/reset-password', data);
   }
 
   public saveProfile(data: {first_name: string, last_name: string, email: string, gender: string}) {

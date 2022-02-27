@@ -33,7 +33,7 @@ from twilio.rest import Client
 
 # TODO: Cron job to call owner of every booked property to ask if is vaccant
 
-NUM_LODGINGS_PER_PAGE = 10
+NUM_LODGINGS_PER_PAGE = 2
 
 logger = logging.getLogger('onlease-logger')
 

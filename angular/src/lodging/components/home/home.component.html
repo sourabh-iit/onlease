@@ -10,8 +10,8 @@
       <fa-icon [icon]="['fas', 'times-circle']" style="color: red;"></fa-icon> No ad match your search criteria</div>
   </ng-container>
 </div>
-<div class="load-more-div">
-  <button (click)="loadMore()" *ngIf="hasNextPage" mat-raised-button>
-    <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="loadingPage"></fa-icon> Load more
+<div class="load-more-div" *ngIf="!loading && hasNextPage">
+  <button (click)="loadMore()" [disabled]="loadingPage" mat-raised-button>
+    <fa-icon [icon]="['fas', 'spinner']" [spin]="true" *ngIf="loadingPage"></fa-icon> Load more ads
   </button>
 </div>

@@ -17,6 +17,7 @@ import { MyAgreementsComponent } from './components/my-agreements/agreements.com
 import { MyAddressesComponent } from './components/my-addresses/addresses.component';
 import { AddressComponent } from './components/address/address.component';
 import { AdminLoginComponent } from './components/admin-login/admin-login.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { AdminLoginComponent } from './components/admin-login/admin-login.compon
     AgreementComponent,
     MyAgreementsComponent,
     MyAddressesComponent,
-    AddressComponent
+    AddressComponent,
+    ResetPasswordComponent
   ],
   imports: [
     ReactiveFormsModule,

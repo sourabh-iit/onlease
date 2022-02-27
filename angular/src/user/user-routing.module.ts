@@ -14,6 +14,7 @@ import { MyFavoritesComponent } from './components/my-favorites/my-favorites.com
 import { MyLodgingsComponent } from './components/my-lodgings/my-lodgings.component';
 import { EditProfileComponent } from './components/profile/edit-profile.component';
 import { RegisterComponent } from './components/register/register.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 const routes: Routes = [
   {
@@ -31,6 +32,9 @@ const routes: Routes = [
   }, {
     path: 'address/:addressId',
     component: AddressComponent
+  }, {
+    path: 'reset-password',
+    component: ResetPasswordComponent
   }, {
     path: 'me',
     children: [{

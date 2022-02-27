@@ -159,12 +159,14 @@ class PasswordResetView(APIView):
     @staticmethod
     def request_otp(session, data):
         if 'mobile_number' not in data:
-            raise ValidationError("mobile number is required")
+          raise ValidationError("mobile number is required")
         mobile_number = data['mobile_number']
         users_count = User.objects.filter(mobile_number=mobile_number).count()
+        if users_count == 0:
+          raise ValidationError("User with this mobile number does not exist")
         numbers_count = MobileNumber.objects.filter(value=mobile_number).count()
         if users_count != 0 or numbers_count != 0:
-            send_otp(session, mobile_number)
+          send_otp(session, mobile_number)
 
     @staticmethod
     def set_password(session, data):
@@ -178,7 +180,6 @@ class PasswordResetView(APIView):
             user = MobileNumber.objects.get(value=mobile_number).user
         verify_otp(session, otp)
         password = data['password']
-        confirm_password = data['confirm_password']
         set_password(password, user)
 
 class UserContactView(APIView):
