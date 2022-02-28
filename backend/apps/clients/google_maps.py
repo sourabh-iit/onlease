@@ -12,6 +12,7 @@ class GoogleMapsClient:
   def autocomplete(self, query):
     now = time.time()
     if query not in self.cache or now - self.cache[query]['time'] > DAY_IN_SECONDS:
+      self.cache[query] = {}
       resp = self.client.places_autocomplete_query(query)
       self.cache[query]['data'] = map(lambda place: {
         "main_text": place["structured_formatting"]["main_text"],
