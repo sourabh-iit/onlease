@@ -44,10 +44,12 @@ export class AddressComponent implements OnInit, OnDestroy {
     if(this.addressId != -1) {
       this.loadAddress();
     }
-    this.subs.add(this.placeTextControl?.valueChanges.subscribe((query: any) => {
-      this.subs.add(this.regionsService.loadRegions(query).subscribe((data: any) => {
-        this.regions = data;
-      }));
+    this.subs.add(this.placeTextControl?.valueChanges.subscribe((query: string) => {
+      if (query.length > 1) {
+        this.subs.add(this.regionsService.loadRegions(query).subscribe((data: any) => {
+          this.regions = data;
+        }));
+      }
     }));
     this.getLocation();
   }
