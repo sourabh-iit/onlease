@@ -12,7 +12,7 @@
         <carousel #carousel arrowsTheme="dark" cellWidth="100%" [dots]="true" [height]="400" [arrowsOutside]="true">
           <ng-container *ngFor="let image of lodging.images">
             <div class="carousel-cell">
-              <lib-ngx-image-zoom [thumbImage]="image.image"></lib-ngx-image-zoom>
+              <lib-ngx-image-zoom [thumbImage]="image.image" zoomMode="toggle"></lib-ngx-image-zoom>
             </div>
           </ng-container>
         </carousel>

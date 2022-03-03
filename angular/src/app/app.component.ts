@@ -7,6 +7,8 @@ import { UserService } from './services/user.service';
 import { Router } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
+import * as $ from "jquery";
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -30,6 +32,12 @@ export class AppComponent implements OnDestroy {
     this.subs.add(this.userService.user$.subscribe((data: any) => {
       this.user = data;
     }));
+    setInterval(() => {
+      for (let i = 0; i < window.frames.length; i++) {
+        let $doc = $(window.frames[i].document);
+        $doc.find('a[href*="tawk.to"]').remove();
+      }
+    }, 2000);
   }
 
   ngOnDestroy() {
