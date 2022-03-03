@@ -36,6 +36,7 @@ import { LodgingDetailsComponent } from './components/details/details.component'
 import { LodgingResolver } from './services/lodging-resolver.service';
 import { AgreementChoiceComponent } from './components/agreements-choice/agreements-choice.component';
 import { AddressChoiceComponent } from './components/address-choice/address-choice.component';
+import { NgxImageZoomModule } from 'ngx-image-zoom';
 
 export const MY_FORMATS = {
   parse: {
@@ -79,7 +80,8 @@ export const MY_FORMATS = {
     MatProgressSpinnerModule,
     IvyCarouselModule,
     MatProgressBarModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    NgxImageZoomModule
   ],
   providers: [
     LodgingService,
