@@ -102,7 +102,7 @@ class Address(models.Model):
   disabled = models.BooleanField(default=False)
 
   def __str__(self):
-    return f'{self.region} - {self.text}'
+    return f'{self.text}, {self.google_place_main_text}, {self.google_place_secondary_text}'
 
 
 class MobileNumber(models.Model):
